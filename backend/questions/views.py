@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import QuestionSerializer
 from .models import Question
+from rest_framework.permissions import IsAuthenticated
+
 
 class QuestionCreateAPIView(APIView):
     def post(self, request):
@@ -11,3 +13,15 @@ class QuestionCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserChapterQuestionsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        chapter_id = request.query_params.get('chapter_id')
+        if not chapter_id:
+            return Response({'detail': 'chapter_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        questions = Question.objects.filter(chapter_id=chapter_id, chapter__user=request.user)
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data)
