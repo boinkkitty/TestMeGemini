@@ -12,11 +12,13 @@
     "@types/cookie": "^1.0.0",
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
+    "flowbite-react": "^0.12.6",
     "jsonwebtoken": "^9.0.2",
     "next": "15.4.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-hook-form": "^7.62.0"
+    "react-hook-form": "^7.62.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
