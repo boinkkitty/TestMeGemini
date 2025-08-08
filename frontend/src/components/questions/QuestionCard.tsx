@@ -34,19 +34,24 @@ const QuestionCard: React.FC<Props> = ({ question }) => {
     };
 
     return (
-        <div className="question-card">
-            <h3>{question.question_text}</h3>
+        <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">{question.question_text}</h3>
             <form>
                 {question.choices.map((choice, idx) => (
-                    <div key={idx}>
-                        <label>
+                    <div key={idx} className="mb-3">
+                        <label
+                            className="flex items-center cursor-pointer select-none text-gray-700 hover:text-blue-600"
+                            htmlFor={`choice-${question.id}-${idx}`}
+                        >
                             <input
+                                id={`choice-${question.id}-${idx}`}
                                 type={question.question_type === "multiselect" ? "checkbox" : "radio"}
                                 name={`question-${question.id}`}
                                 checked={selected.includes(idx)}
                                 onChange={() => handleChange(idx)}
+                                className="form-checkbox text-blue-600 focus:ring-blue-500 rounded"
                             />
-                            {choice.text}
+                            <span className="ml-2">{choice.text}</span>
                         </label>
                     </div>
                 ))}

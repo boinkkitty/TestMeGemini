@@ -14,7 +14,7 @@ export default function CustomSidebar() {
 
     const middleItems = [
         { text: "Chapters", icon: <HiOutlineBookOpen size={24} />, activeIcon: <HiBookOpen size={24} />, href: "/chapters" },
-        { text: "Quiz", icon: <HiOutlineClipboardList size={24} />, activeIcon: <HiClipboardList size={24} />, href: "/quiz" },
+        { text: "Test", icon: <HiOutlineClipboardList size={24} />, activeIcon: <HiClipboardList size={24} />, href: "/test" },
         { text: "Attempts", icon: <HiOutlineCheckCircle size={24} />, activeIcon: <HiCheckCircle size={24} />, href: "/attempts" },
     ];
 

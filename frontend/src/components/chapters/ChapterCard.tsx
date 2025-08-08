@@ -5,6 +5,7 @@ type Chapter = {
     id: number;
     title: string;
     description: string;
+    index: number;
 };
 
 function getRandomColor() {
@@ -15,8 +16,9 @@ type Props = {
     chapter: Chapter;
 };
 
-const ChapterCard: React.FC<Props> = ({ chapter }) => {
-    const colorClass = getRandomColor();
+const ChapterCard: React.FC<Props> = ({ chapter, index }) => {
+    // const colorClass = getRandomColor();
+    const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
 
     return (
         <div className={`rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-100 ${colorClass} text-white`}>
