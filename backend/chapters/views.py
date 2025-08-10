@@ -1,23 +1,30 @@
 from rest_framework import generics, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from .models import Chapter
 from .serializers import ChapterSerializer
+from .services.question_generation import generate_and_persist
 
-class ChapterWithQuestionsCreateView(APIView):
+# Ingest PDF and create chapter with questions using OpenAI
+class CreateChapterWithQuestionsView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     permission_classes = [permissions.IsAuthenticated]
 
-    # Create a chapter with associated questions
     def post(self, request):
-        data = request.data.get('chapter', {})
-        questions = request.data.get('questions', [])
-        data['questions'] = questions
-        serializer = ChapterSerializer(data=data, context={'request': request})
-        if serializer.is_valid():
-            chapter = serializer.save()
-            return Response(ChapterSerializer(chapter).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        pdf = request.FILES.get("file")
+        title = request.data.get("title") or "Untitled Chapter"
+        if not pdf:
+            return Response({"error": "file required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Generate chapter and questions from PDF
+            result = generate_and_persist(title, pdf)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_201_CREATED)
     
+# Retrieve chapters for the authenticated user
 class UserChaptersAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -25,3 +32,4 @@ class UserChaptersAPIView(APIView):
         chapters = Chapter.objects.filter(user=request.user)
         serializer = ChapterSerializer(chapters, many=True)
         return Response(serializer.data)
+    
