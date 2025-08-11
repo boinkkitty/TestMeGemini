@@ -45,8 +45,8 @@ function LoginForm({
     };
     const doLogin = async (data: Inputs) => {
         try {
-            const res = await axios.post(
-                "/users/register/",
+            const res = await api.post(
+                "/users/login/",
                 {
                     email: data.email,
                     password: data.password,
@@ -54,7 +54,7 @@ function LoginForm({
                 { withCredentials: true }
             );
             // Cookies are set by backend, so just redirect
-            router.push("/home");
+            router.push("/dashboard");
         } catch (err: any) {
             // Handle error (show message, etc.)
             alert(err?.response?.data?.error || "Login failed");
