@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import User
+from users.models import CustomUser
 from chapters.models import Chapter
 
 class Question(models.Model):
