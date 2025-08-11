@@ -15,9 +15,9 @@ class RegisterUserSerializer(ModelSerializer):
         fields = ("email", "username", "password")
         extra_kwargs = {"password": {"write_only":True}}
 
-        def create(self, validated_data):
-            user = CustomUser.objects.create_user(**validated_data)
-            return user      
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(**validated_data)
+        return user      
 
 class LoginUserSerializer(Serializer):
     email = serializers.EmailField(required=True)
@@ -28,10 +28,5 @@ class LoginUserSerializer(Serializer):
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Incorrect ccredentials!")
-    
-class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginUserSerializer(data=request.data)
 
-        # generate tokens
 
