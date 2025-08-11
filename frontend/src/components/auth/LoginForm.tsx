@@ -2,6 +2,8 @@
 
 import {SubmitHandler, useForm} from "react-hook-form";
 import {useRouter} from "next/navigation";
+import axios from "axios";
+import api from "@/utils/axiosInstance";
 
 type LoginFormProps = {
     formLabel: string;
@@ -24,10 +26,39 @@ function LoginForm({
     const {register, handleSubmit} = useForm<Inputs>();
 
     const doSignup = async (data: Inputs) => {
-        router.push("/login");
+        try {
+            const res = await api.post(
+                "/users/register/",
+                {
+                    username: data.username,
+                    email: data.email,
+                    password: data.password,
+                },
+                { withCredentials: true }
+            );
+            // Cookies are set by backend, so just redirect
+            router.push("/login");
+        } catch (err: any) {
+            // Handle error (show message, etc.)
+            alert(err?.response?.data?.error || "Login failed");
+        }
     };
     const doLogin = async (data: Inputs) => {
-        router.push("/home");
+        try {
+            const res = await axios.post(
+                "/users/register/",
+                {
+                    email: data.email,
+                    password: data.password,
+                },
+                { withCredentials: true }
+            );
+            // Cookies are set by backend, so just redirect
+            router.push("/home");
+        } catch (err: any) {
+            // Handle error (show message, etc.)
+            alert(err?.response?.data?.error || "Login failed");
+        }
     };
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {

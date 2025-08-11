@@ -9,7 +9,7 @@ import { HiLogout, HiOutlineLogout } from "react-icons/hi";
 
 export default function CustomSidebar() {
     const topItems = [
-        { text: "Home", icon: <HiOutlineHome size={24} />, activeIcon: <HiHome size={24} />, href: "/" },
+        { text: "Home", icon: <HiOutlineHome size={24} />, activeIcon: <HiHome size={24} />, href: "/dashboard" },
     ];
 
     const middleItems = [

@@ -1,18 +1,19 @@
 'use client';
 
-
-import { useCallback, useState } from "react";
+import {useCallback, useState} from "react";
 import UploadComponent from "../../../components/UploadComponent";
 import { useDropzone } from "react-dropzone";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import api from "@/utils/axiosInstance";
 
 export default function UploadClient() {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Only add new files that aren't already in the list
     setFiles((prev) => {
       const existingNames = prev.map((f) => f.name);
       const newFiles = acceptedFiles.filter((f) => !existingNames.includes(f.name));
@@ -34,8 +35,54 @@ export default function UploadClient() {
     noKeyboard: false,
   });
 
+  const handleGenerate = async () => {
+    setError("");
+    setSuccess("");
+    if (!title.trim()) {
+      setError("Please enter a chapter title.");
+      return;
+    }
+    if (files.length === 0) {
+      setError("Please upload at least one PDF file.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("file", files[0]); // Try to post more files
+
+      const res = await api.post("/chapters/create-with-questions/", formData);
+      // Axios response data is in res.data
+      setSuccess("Chapter and questions generated successfully!");
+      setFiles([]);
+      setTitle("");
+    } catch (error) {
+      // Get error message from Axios error response if possible
+      const errMsg =
+          error.response?.data?.error || "Failed to generate chapter and questions.";
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-xl mx-auto">
+      <div className="mb-6">
+        <label htmlFor="chapter-title" className="block text-md font-semibold mb-2 text-gray-700">
+          Chapter Title
+        </label>
+        <input
+          id="chapter-title"
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter chapter title..."
+          disabled={loading}
+        />
+      </div>
       <UploadComponent
         isDragActive={isDragActive}
         getInputProps={getInputProps}
@@ -66,6 +113,20 @@ export default function UploadClient() {
           File rejected: Only PDF files allowed.
         </div>
       )}
+      {error && (
+        <div className="mt-4 text-red-600 font-semibold">{error}</div>
+      )}
+      {success && (
+        <div className="mt-4 text-green-600 font-semibold">{success}</div>
+      )}
+      <button
+        type="button"
+        onClick={handleGenerate}
+        disabled={loading}
+        className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed`}
+      >
+        {loading ? "Generating..." : "Generate"}
+      </button>
     </div>
   );
 }
