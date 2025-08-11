@@ -3,11 +3,11 @@
 import ChapterCard from "@/components/chapters/ChapterCard";
 import {Chapter} from "@/lib/types";
 
-type DashboardClientProps = {
+type ChaptersClientProps = {
     // chapters: Chapter[];
 }
 
-export default function DashboardClient() {
+export default function ChaptersClient() {
     const chapters: Chapter[] = [
         {
             id: 1,
@@ -32,11 +32,14 @@ export default function DashboardClient() {
     ]
 
     return (<div className="p-6">
-            {/* Top container */}
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold">Welcome back!</h1>
-                <p className="text-gray-600">Here’s what’s going on...</p>
-            </div>
+            {/* Top container
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold">Welcome back!</h1>
+                    <p className="text-gray-600">Here’s what’s going on...</p>
+                </div>
+
+             */}
+
 
             {/* 5-column grid for chapters */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">

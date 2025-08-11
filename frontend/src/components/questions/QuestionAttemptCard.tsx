@@ -22,7 +22,7 @@ type Props = {
 
 // TO EDIT: TAKES IN ANSWERS AS WELL
 
-const QuestionCard: React.FC<Props> = ({ question }) => {
+const QuestionAttemptCard: React.FC<Props> = ({ question }) => {
     const [selected, setSelected] = useState<number[]>([]);
 
     const handleChange = (idx: number) => {
@@ -57,4 +57,4 @@ const QuestionCard: React.FC<Props> = ({ question }) => {
     );
 };
 
-export default QuestionCard;
+export default QuestionAttemptCard;
