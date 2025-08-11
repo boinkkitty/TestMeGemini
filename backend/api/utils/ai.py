@@ -1,6 +1,6 @@
 import json, re
 from openai import OpenAI
-client = OpenAI() # Need to get key from .env
+# client = OpenAI() # Need to get key from .env
 
 BASE_INSTRUCTIONS = """You are a helpful assistant that creates quiz questions based on the given chapter content.  
 Generate questions only of these three types:  

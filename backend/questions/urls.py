@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import QuestionCreateAPIView, UserChapterQuestionsAPIView, UserChapterLimitedQuestionsAPIView
+from .views import UserChapterQuestionsAPIView, UserChapterLimitedQuestionsAPIView
 
 urlpatterns = [
     # path('create-bulk/', QuestionCreateAPIView.as_view(), name='create-bulk-questions'),

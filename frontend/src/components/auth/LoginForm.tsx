@@ -40,13 +40,14 @@ function LoginForm({
             router.push("/login");
         } catch (err: any) {
             // Handle error (show message, etc.)
-            alert(err?.response?.data?.error || "Login failed");
+            alert(err?.response?.data?.error || "Sign up failed");
         }
     };
     const doLogin = async (data: Inputs) => {
+        console.log(data.email, data.password);
         try {
-            const res = await axios.post(
-                "/users/register/",
+            const res = await api.post(
+                "/users/login/",
                 {
                     email: data.email,
                     password: data.password,
