@@ -1,35 +1,14 @@
 'use client';
 
 import ChapterCard from "@/components/chapters/ChapterCard";
-import {Chapter} from "@/lib/types";
+import {Chapter, dummyChapters} from "@/lib/types";
 
 type ChaptersClientProps = {
     // chapters: Chapter[];
 }
 
 export default function ChaptersClient() {
-    const chapters: Chapter[] = [
-        {
-            id: 1,
-            title: 'Chapter 1',
-            description: 'Chapter 1',
-        },
-        {
-            id: 2,
-            title: 'Chapter 2',
-            description: 'Chapter 2',
-        },
-        {
-            id: 3,
-            title: 'Chapter 3',
-            description: 'Chapter 3',
-        },
-        {
-            id: 4,
-            title: 'Chapter 4',
-            description: 'Chapter 4',
-        }
-    ]
+    const chapters: Chapter[] = dummyChapters;
 
     return (<div className="p-6">
             {/* Top container

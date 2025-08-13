@@ -43,7 +43,7 @@ const QuestionCard: React.FC<Props> = ({
                                     id={`choice-${question.id}-${idx}`}
                                     type={question.question_type === "MRQ" ? "checkbox" : "radio"}
                                     name={`question-${question.id}`}
-                                    checked={isSelected}
+                                    checked={!!isSelected}
                                     onChange={() => onSelect(idx)}
                                     disabled={submitted}
                                     className="form-checkbox text-blue-600 focus:ring-blue-500 rounded"

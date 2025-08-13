@@ -6,6 +6,7 @@ import { HiBookOpen, HiOutlineBookOpen } from "react-icons/hi";
 import { HiClipboardList, HiOutlineClipboardList } from "react-icons/hi";
 import { HiCheckCircle, HiOutlineCheckCircle } from "react-icons/hi";
 import { HiLogout, HiOutlineLogout } from "react-icons/hi";
+import Link from "next/link";
 
 export default function CustomSidebar() {
     const topItems = [
@@ -19,18 +20,24 @@ export default function CustomSidebar() {
     ];
 
     const bottomItems = [
-        { text: "Log Out", icon: <HiOutlineLogout size={24} />, activeIcon: <HiLogout size={24} />, href: "/logout" },
+        { text: "Log Out", icon: <HiOutlineLogout size={24} />, activeIcon: <HiLogout size={24} />, href: "/login" },
     ];
 
     return (
         <div className="h-screen w-64 bg-gray-800 text-white flex flex-col">
-            <div className="basis-1/3 p-4 border-b border-gray-700">
+            <div className="basis-1/6 p-4 border-b border-gray-700 flex flex-col gap-4">
                 {topItems.map((item, idx) => (
                     <SidebarItem key={idx} {...item} />
                 ))}
+                <Link
+                    href="/upload"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-center text-lg transition-colors duration-200 shadow-md m-4"
+                >
+                    Upload Notes
+                </Link>
             </div>
 
-            <div className="basis-1/2 p-4 border-b border-gray-700">
+            <div className="basis-2/3 p-4 border-b border-gray-700">
                 {middleItems.map((item, idx) => (
                     <SidebarItem key={idx} {...item} />
                 ))}
