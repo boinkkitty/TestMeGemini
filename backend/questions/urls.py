@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import QuestionCreateAPIView
+from .views import ChapterQuestionsAPIView
 
 urlpatterns = [
-    path('create-bulk/', QuestionCreateAPIView.as_view(), name='create_bulk_questions'),
+    path('chapter/<int:chapter_id>/questions/', ChapterQuestionsAPIView.as_view(), name='chapter_questions'),
 ]
