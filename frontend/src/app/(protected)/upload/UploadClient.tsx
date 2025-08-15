@@ -53,6 +53,7 @@ export default function UploadClient() {
       formData.append("file", files[0]); // Try to post more files
 
       const res = await api.post("/chapters/create-with-questions/", formData);
+      console.log(res);
       // Axios response data is in res.data
       setSuccess("Chapter and questions generated successfully!");
       setFiles([]);
@@ -68,7 +69,7 @@ export default function UploadClient() {
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="p-6 max-w-xl h-full mx-auto flex flex-col gap-3 justify-center align-center">
       <div className="mb-6">
         <label htmlFor="chapter-title" className="block text-md font-semibold mb-2 text-gray-700">
           Chapter Title
