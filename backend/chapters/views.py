@@ -13,13 +13,15 @@ class CreateChapterWithQuestionsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        pdf = request.FILES.get("file")
-        title = request.data.get("title") or "Untitled Chapter"
-        if not pdf:
+        files = request.FILES.getlist("files")
+        if not files:
             return Response({"error": "file required"}, status=status.HTTP_400_BAD_REQUEST)
+        title = request.data.get("title")
+        if not title:
+            return Response({"error": "title required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             # Generate chapter and questions from PDF
-            result = generate_and_persist(title, pdf)
+            result = generate_and_persist(title, files)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)

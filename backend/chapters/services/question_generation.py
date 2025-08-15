@@ -3,8 +3,11 @@ from api.utils.ai import call_model
 from api.utils.parsing import validate_structure
 from api.utils.pdf import extract_text
 
-def generate_and_persist(chapter_title: str, pdf_file) -> dict:
-    chapter_content = extract_text(pdf_file)
+def generate_and_persist(chapter_title: str, pdf_files) -> dict:
+    """
+    Extract text from PDF files, generate chapter content and questions using AI
+    """
+    chapter_content = extract_text(pdf_files)
     data = call_model(chapter_title, chapter_content)
     validate_structure(data)
     payload = {
