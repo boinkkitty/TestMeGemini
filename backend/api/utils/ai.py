@@ -1,63 +1,72 @@
-import json, re
 from openai import OpenAI
+from google import genai
+from django.conf import settings
+from typing import List, Literal
+from pydantic import BaseModel
+
+class Choice(BaseModel):
+    text: str
+    is_correct: bool
+
+class Question(BaseModel):
+    question_text: str
+    question_type: Literal["MCQ", "MRQ", "TF"]
+    choices: List[Choice]
+
+class ChapterContent(BaseModel):
+    title: str
+    content: str
+
+class ChapterSchema(BaseModel):
+    chapter: ChapterContent
+    questions: List[Question]
+
 # client = OpenAI() # Need to get key from .env
 
-BASE_INSTRUCTIONS = """You are a helpful assistant that creates quiz questions based on the given chapter content.  
+BASE_INSTRUCTIONS = """You are a helpful assistant that creates quiz questions based on the given chapter content. Generate at least 20 questions based on the content provided.  
 Generate questions only of these three types:  
-- MCQ (Multiple Choice Question) with exactly one correct choice  
-- MRQ (Multi Response Question) with one or more correct choices  
-- TF (True/False) with two choices: True and False, only one correct  
-
-Output the result as a JSON object with this structure:
-
-{
-  "chapter": {
-    "title": "<chapter title>",
-    "content": "<chapter content>"
-  },
-  "questions": [
-    {
-      "question_text": "<question text>",
-      "question_type": "<MCQ|MRQ|TF>",
-      "choices": [
-        {"text": "<choice text>", "is_correct": <true|false>},
-        ...
-      ]
-    },
-    ...
-  ]
-}
-
-Make sure:  
-- For MCQ, exactly one choice is marked correct.  
-- For MRQ, one or more choices are marked correct.  
-- For TF, only two choices: "True" and "False".  
-- The JSON must be valid and well-formed.
+- MCQ (Multiple Choice Question) with exactly one correct choice. 3 to 4 choices are allowed.
+- MRQ (Multi Response Question) with one or more correct choices. 3 to 4 choices are allowed.
+- TF (True/False) with two choices: True and False, only one correct. Only two options, True and False.
 """
 
 def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
-    return f"""{BASE_INSTRUCTIONS}
+    """
+    Build content to send to the AI model
+    """
+    return f"""
+      <chapter_title>
+      {chapter_title}
+      </chapter_title>
 
-<chapter_title>
-{chapter_title}
-</chapter_title>
-
-<chapter_content>
-{chapter_content}
-</chapter_content>
-Return ONLY the JSON object described."""
+      <chapter_content>
+      {chapter_content}
+      </chapter_content>
+      """
     
-def call_model(chapter_title: str, chapter_content: str) -> dict:
+def call_gpt_model(chapter_title: str, chapter_content: str) -> dict:
     prompt = build_user_prompt(chapter_title, chapter_content)
-    resp = client.chat.completions.create(
+    client = OpenAI(api_key = settings.OPENAI_API_KEY)
+    response = client.chat.completions.parse(
         model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}],
-        temperature=0.2
+        messages=[
+            {"role": "system", "content": BASE_INSTRUCTIONS},
+            {"role": "user", "content": prompt}
+        ],
+        response_format=ChapterSchema,
     )
-    raw = resp.choices[0].message.content
-    # Extract JSON
-    match = re.search(r'\{.*\}\s*$', raw, re.DOTALL)
-    if not match:
-        raise ValueError("No JSON found")
-    data = json.loads(match.group(0))
-    return data
+    return response.choices[0].message.parsed.dict()
+
+def call_gemini_model(chapter_title: str, chapter_content: str) -> dict:
+    prompt = build_user_prompt(chapter_title, chapter_content)
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={
+            "response_mime_type": "application/json",
+            "response_json_schema": ChapterSchema
+        },
+    )
+    print(response)
+    return response

@@ -5,7 +5,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from .models import Chapter
 from .serializers import ChapterSerializer
-from .services.question_generation import generate_and_persist
+from api.utils.ai import call_gpt_model
+from api.utils.pdf import extract_text
 
 # Ingest PDF and create chapter with questions using OpenAI
 class CreateChapterWithQuestionsView(APIView):
@@ -20,8 +21,22 @@ class CreateChapterWithQuestionsView(APIView):
         if not title:
             return Response({"error": "title required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            # Generate chapter and questions from PDF
-            result = generate_and_persist(title, files)
+            chapter_content = extract_text(files)
+            data = call_gpt_model(title, chapter_content)
+            # The AI should return a dict with chapter and questions keys
+            payload = {
+                "user": request.user.id,
+                "title": data["chapter"]["title"] or title,
+                "content": data["chapter"]["content"],
+                "questions": data["questions"]
+            }
+            serializer = ChapterSerializer(data=payload)
+            serializer.is_valid(raise_exception=True)
+            chapter = serializer.save()
+            
+            # Get all question IDs for the created chapter
+            question_ids = list(chapter.questions.values_list("id", flat=True))
+            result = {"chapter_id": chapter.id, "question_ids": question_ids}
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)
