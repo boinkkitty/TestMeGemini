@@ -56,7 +56,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         choices_data = validated_data.pop('choices')
         question = Question.objects.create(**validated_data)
-        for choice_data in choices_data:
-            Choice.objects.create(question=question, **choice_data)
+        choice_instances = [Choice(question=question, **choice_data) for choice_data in choices_data]
+        Choice.objects.bulk_create(choice_instances)
         return question
 

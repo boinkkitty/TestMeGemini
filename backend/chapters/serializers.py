@@ -21,16 +21,7 @@ class ChapterSerializer(serializers.ModelSerializer):
         # Validate and create questions
         for question_data in questions_data:
             question_serializer = QuestionSerializer(data=question_data)
-            if not question_serializer.is_valid():
-                continue  # Skip invalid questions
-
-            valid_data = question_serializer.validated_data
-            choices_data = valid_data.pop('choices')
-            question = Question.objects.create(chapter=chapter, **valid_data)
-
-            # Create choices for the question
-            choice_instances = [Choice(question=question, **c) for c in choices_data]
-            Choice.objects.bulk_create(choice_instances)  
-
+            if question_serializer.is_valid():
+                question_serializer.save(chapter=chapter)
         return chapter
 

@@ -8,8 +8,11 @@ from .serializers import ChapterSerializer
 from api.utils.ai import call_gpt_model
 from api.utils.pdf import extract_text
 
-# Ingest PDF and create chapter with questions using OpenAI
+
 class CreateChapterWithQuestionsView(APIView):
+    """
+    Parse PDF files, extract text, and create a chapter with associated questions using AI.
+    """
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -41,8 +44,10 @@ class CreateChapterWithQuestionsView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)
     
-# Retrieve chapters for the authenticated user
 class UserChaptersAPIView(APIView):
+    """
+    Retrieve chapters for the authenticated user
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
