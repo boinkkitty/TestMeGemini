@@ -3,13 +3,18 @@ from .models import Question, Choice
 from chapters.models import Chapter
 
 class ChoiceSerializer(serializers.ModelSerializer):
-    """Serializer for the Choice model."""
+    """
+    Serializer for the Choice model.
+    """
+
     class Meta:
         model = Choice
         fields = ['text', 'is_correct']
 
 class QuestionSerializer(serializers.ModelSerializer):
-    """Serializer for the Question model."""
+    """
+    Serializer for the Question model.
+    """
     choices = ChoiceSerializer(many=True)
 
     class Meta:
@@ -25,6 +30,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         True/False must have exactly two choices.
         MRQ must have at least one correct choice and at least three choices.
         """
+        
         q_type = data["question_type"]
         choices = data.get("choices", [])
         correct_count = sum(1 for c in choices if c.get("is_correct"))
@@ -52,8 +58,13 @@ class QuestionSerializer(serializers.ModelSerializer):
 
         return data
 
-
     def create(self, validated_data):
+        """
+        Create a Question instance with associated choices.
+        This method expects 'choices' to be part of validated_data.
+        It creates the Question instance and then creates Choice instances for each choice.
+        """
+
         choices_data = validated_data.pop('choices')
         question = Question.objects.create(**validated_data)
         choice_instances = [Choice(question=question, **choice_data) for choice_data in choices_data]

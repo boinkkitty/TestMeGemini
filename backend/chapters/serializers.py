@@ -5,6 +5,9 @@ from .models import Chapter
 from questions.models import Choice, Question
 
 class ChapterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Chapter model, including nested questions.
+    """
     questions = QuestionSerializer(many=True)
 
     class Meta:
