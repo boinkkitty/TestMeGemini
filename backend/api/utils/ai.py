@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI
 from google import genai
 from django.conf import settings
@@ -66,8 +67,11 @@ def call_gemini_model(chapter_title: str, chapter_content: str) -> dict:
         contents=prompt,
         config={
             "response_mime_type": "application/json",
-            "response_json_schema": ChapterSchema
+            "response_schema": ChapterSchema
         },
     )
     print(response)
-    return response
+    generated_text = response.candidates[0].content.parts[0].text
+    print("Generated text:", generated_text)
+    data = json.loads(generated_text)
+    return data

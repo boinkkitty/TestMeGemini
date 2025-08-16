@@ -32,17 +32,17 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
 
             <div className="mt-4 flex justify-between gap-4">
                 {!isFirst && (
-                    <button onClick={goLeft}>
+                    <button onClick={goLeft} className="px-3 py-1 rounded transition-colors hover:bg-gray-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
                         Left
                     </button>
                 )}
 
-                <button onClick={onSubmit}>
+                <button onClick={onSubmit} className="px-3 py-1 rounded transition-colors hover:bg-blue-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
                     Submit
                 </button>
 
                 {!isLast && (
-                    <button onClick={goRight}>
+                    <button onClick={goRight} className="px-3 py-1 rounded transition-colors hover:bg-gray-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
                         Right
                     </button>
                 )}

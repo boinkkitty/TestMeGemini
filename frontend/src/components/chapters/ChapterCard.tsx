@@ -10,7 +10,7 @@ type ChapterCardProps = {
 const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, index }) => {
     const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
     return (
-        <div className={`rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-100 ${colorClass} text-white`}>
+        <div className={`rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-100 ${colorClass} text-white cursor-pointer`}>
             <h3 className="text-lg font-semibold mb-2">{chapter.title}</h3>
             <p>{chapter.description}</p>
         </div>

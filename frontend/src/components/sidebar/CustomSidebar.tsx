@@ -7,8 +7,12 @@ import { HiClipboardList, HiOutlineClipboardList } from "react-icons/hi";
 import { HiCheckCircle, HiOutlineCheckCircle } from "react-icons/hi";
 import { HiLogout, HiOutlineLogout } from "react-icons/hi";
 import Link from "next/link";
+import api from "@/utils/axiosInstance";
+import { useRouter } from 'next/navigation'
 
 export default function CustomSidebar() {
+    const router = useRouter();
+
     const topItems = [
         { text: "Home", icon: <HiOutlineHome size={24} />, activeIcon: <HiHome size={24} />, href: "/dashboard" },
     ];
@@ -20,7 +24,20 @@ export default function CustomSidebar() {
     ];
 
     const bottomItems = [
-        { text: "Log Out", icon: <HiOutlineLogout size={24} />, activeIcon: <HiLogout size={24} />, href: "/login" },
+        {
+            text: "Log Out",
+            icon: <HiOutlineLogout size={24} />,
+            activeIcon: <HiLogout size={24} />,
+            href: "/login",
+            onClick: async () => {
+                try {
+                    await api.post("/users/logout/");
+                    router.push("/login");
+                } catch (error) {
+                    console.error("Logout failed", error);
+                }
+            },
+        },
     ];
 
     return (
@@ -31,7 +48,7 @@ export default function CustomSidebar() {
                 ))}
                 <Link
                     href="/upload"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-center text-lg transition-colors duration-200 shadow-md m-4"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-center text-lg transition-colors duration-200 shadow-md m-4 hover:cursor-pointer"
                 >
                     Upload Notes
                 </Link>

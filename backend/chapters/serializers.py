@@ -1,4 +1,3 @@
-from backend import questions
 from rest_framework import serializers
 from questions.serializers import QuestionSerializer
 from .models import Chapter
@@ -12,7 +11,7 @@ class ChapterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'user', 'title', 'content', 'created_at']
+        fields = ['id', 'user', 'title', 'content', 'created_at', 'questions']
         read_only_fields = ['id', 'created_at']
 
     def create(self, validated_data):

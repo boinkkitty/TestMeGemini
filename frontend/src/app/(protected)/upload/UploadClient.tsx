@@ -50,8 +50,9 @@ export default function UploadClient() {
     try {
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("file", files[0]); // Try to post more files
-
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]); // note plural "files" if your backend expects that
+      }
       const res = await api.post("/chapters/create-with-questions/", formData);
       console.log(res);
       // Axios response data is in res.data
@@ -59,6 +60,7 @@ export default function UploadClient() {
       setFiles([]);
       setTitle("");
     } catch (error) {
+      console.log(error);
       // Get error message from Axios error response if possible
       const errMsg =
           error.response?.data?.error || "Failed to generate chapter and questions.";
@@ -99,8 +101,9 @@ export default function UploadClient() {
                 <button
                   type="button"
                   onClick={() => removeFile(file.name)}
-                  className="ml-2 text-gray-400 hover:text-red-500"
+                  className="ml-2 text-gray-400 hover:text-red-500 enabled:hover:cursor-pointer disabled:cursor-not-allowed"
                   aria-label={`Remove ${file.name}`}
+                  disabled={false}
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>
@@ -124,7 +127,7 @@ export default function UploadClient() {
         type="button"
         onClick={handleGenerate}
         disabled={loading}
-        className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed`}
+        className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed enabled:hover:cursor-pointer`}
       >
         {loading ? "Generating..." : "Generate"}
       </button>

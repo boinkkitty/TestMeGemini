@@ -20,7 +20,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = ['id', 'chapter', 'question_text', 'question_type', 'choices', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'created_at', 'chapter']
 
     def validate(self, data):
         """
