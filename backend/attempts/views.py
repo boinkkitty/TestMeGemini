@@ -2,10 +2,10 @@ from backend.api.utils.score import get_score
 from backend.attempts.serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
 from backend.questions.models import Question
 from rest_framework import permissions, status
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from .models import ChapterAttempt
-from .serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
+from .serializers import ChapterAttemptDetailSerializer, ChapterAttemptSerializer, QuestionAttemptSerializer
 
 class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     serializer_class = ChapterAttemptSerializer
@@ -46,6 +46,13 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+class ChapterAttemptRetrieveAPIView(RetrieveAPIView):
+    serializer_class = ChapterAttemptDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ChapterAttempt.objects.all()
+
+    def get_queryset(self):
+        return ChapterAttempt.objects.filter(user=self.request.user)
 
 # TEMPORARY
 # from backend import attempts

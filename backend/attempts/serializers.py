@@ -1,27 +1,11 @@
 from backend.attempts.models import ChapterAttempt, QuestionAttempt
 from backend.chapters.models import Chapter
 from backend.questions.models import Choice
-from backend.questions.serializers import ChoiceSerializer
+from backend.questions.serializers import ChoiceSerializer, QuestionSerializer
 from rest_framework import serializers
 
-class ChapterAttemptSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the ChapterAttempt model.
-    """
-    chapter_id = serializers.PrimaryKeyRelatedField(
-        source='chapter',   # Map to the chapter field
-        queryset=Chapter.objects.all()
-    )
-
-    class Meta:
-        model = ChapterAttempt
-        fields = ['id', 'chapter_id', 'user', 'score', 'attempted_at', 'order']
-        read_only_fields = ['id', 'attempted_at']
-
 class QuestionAttemptSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the QuestionAttempt model.
-    """
+    question = QuestionSerializer(read_only=True)
     selected_choices = serializers.PrimaryKeyRelatedField(
         queryset=Choice.objects.all(),
         many=True
@@ -37,5 +21,23 @@ class QuestionAttemptSerializer(serializers.ModelSerializer):
         question_attempt = QuestionAttempt.objects.create(**validated_data)
         question_attempt.selected_choices.set(selected_choices_data)
         return question_attempt
-    
 
+class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
+    chapter_id = serializers.PrimaryKeyRelatedField(
+        source='chapter',
+        queryset=Chapter.objects.all()
+    )
+
+    class Meta:
+        model = ChapterAttempt
+        fields = ['id', 'chapter_id', 'user', 'score', 'attempted_at', 'order']
+        read_only_fields = ['id', 'attempted_at']
+
+class ChapterAttemptSerializer(ChapterAttemptBaseSerializer):
+    pass
+
+class ChapterAttemptDetailSerializer(ChapterAttemptBaseSerializer):
+    question_attempts = QuestionAttemptSerializer(many=True, read_only=True)
+
+    class Meta(ChapterAttemptBaseSerializer.Meta):
+        fields = ChapterAttemptBaseSerializer.Meta.fields + ['question_attempts']
