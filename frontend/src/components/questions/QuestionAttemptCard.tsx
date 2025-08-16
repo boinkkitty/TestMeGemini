@@ -4,7 +4,7 @@ import React from "react";
 import { QuestionAttempt } from "@/lib/types";
 import AttemptChoices from "@/components/questions/AttemptChoices";
 
-interface Props {
+type Props = {
   attempt: QuestionAttempt;
 }
 

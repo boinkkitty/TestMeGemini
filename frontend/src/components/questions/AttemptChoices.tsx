@@ -1,7 +1,7 @@
 import React from "react";
 import { Choice } from "@/lib/types";
 
-interface AttemptChoicesProps {
+type AttemptChoicesProps = {
   choices: Choice[];
   selected: number[];
 }

@@ -29,6 +29,7 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
         <div className="w-128 h-128">
             <QuestionCard
                 question={currentQuestion}
+
             />
 
             <div className="mt-4 flex justify-between gap-4">

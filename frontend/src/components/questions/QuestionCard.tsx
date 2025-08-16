@@ -1,14 +1,14 @@
 import React from "react";
 import { Question } from "@/lib/types";
 
-type Props = {
+type QuestionCardProps = {
     question: Question;
     selected?: number[];
     onSelect: (idx: number) => void;
     submitted: boolean;
 };
 
-const QuestionCard: React.FC<Props> = ({
+const QuestionCard: React.FC<QuestionCardProps> = ({
                                            question,
                                            selected,
                                            onSelect,

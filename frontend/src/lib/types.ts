@@ -42,7 +42,7 @@ export type QuestionAttempt = {
 export const dummyQuestions: Question[] = [
     {
         id: 1,
-        chapter: 101,
+        chapter: 1,
         question_text: "What is the capital of France?",
         question_type: "MCQ",
         created_at: "2025-08-11T10:00:00Z",
@@ -55,7 +55,7 @@ export const dummyQuestions: Question[] = [
     },
     {
         id: 2,
-        chapter: 101,
+        chapter: 1,
         question_text: "Select all prime numbers.",
         question_type: "MRQ",
         created_at: "2025-08-11T10:10:00Z",
@@ -68,7 +68,7 @@ export const dummyQuestions: Question[] = [
     },
     {
         id: 3,
-        chapter: 101,
+        chapter: 1,
         question_text: "The Earth is flat.",
         question_type: "TF",
         created_at: "2025-08-11T10:15:00Z",
@@ -84,6 +84,7 @@ export const dummyChapters: Chapter[] = [
         id: 1,
         title: 'Chapter 1',
         description: 'Chapter 1',
+        questions: dummyQuestions,
     },
     {
         id: 2,
