@@ -3,6 +3,7 @@
 import {Question} from "@/lib/types";
 import {useState} from "react";
 import QuestionCard from "@/components/questions/QuestionCard";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
 type Props = {
     questions: Question[];
@@ -33,7 +34,7 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
             <div className="mt-4 flex justify-between gap-4">
                 {!isFirst && (
                     <button onClick={goLeft} className="px-3 py-1 rounded transition-colors hover:bg-gray-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
-                        Left
+                        <HiChevronLeft size={22} />
                     </button>
                 )}
 
@@ -43,7 +44,7 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
 
                 {!isLast && (
                     <button onClick={goRight} className="px-3 py-1 rounded transition-colors hover:bg-gray-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
-                        Right
+                        <HiChevronRight size={22} />
                     </button>
                 )}
             </div>

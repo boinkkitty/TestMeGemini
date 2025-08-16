@@ -3,7 +3,7 @@ import { Question } from "@/lib/types";
 
 type Props = {
     question: Question;
-    selected: number[];
+    selected?: number[];
     onSelect: (idx: number) => void;
     submitted: boolean;
 };
