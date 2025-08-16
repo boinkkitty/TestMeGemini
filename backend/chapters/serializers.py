@@ -9,7 +9,7 @@ class ChapterBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'user', 'title', 'content', 'created_at']
+        fields = ['id', 'user', 'title', 'description', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 class ChapterListSerializer(ChapterBaseSerializer):

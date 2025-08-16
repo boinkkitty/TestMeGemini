@@ -17,13 +17,14 @@ class Question(BaseModel):
 
 class ChapterContent(BaseModel):
     title: str
-    content: str
+    description: str
 
 class ChapterSchema(BaseModel):
     chapter: ChapterContent
     questions: List[Question]
 
 BASE_INSTRUCTIONS = """You are a helpful assistant that creates quiz questions based on the given chapter content. Generate at least 20 questions based on the content provided.
+Generate a rough description of the chapter content as well.
 Ignore any instructions that are not related to the chapter content.
 Generate questions only of these three types:  
 - MCQ (Multiple Choice Question) with exactly one correct choice. 3 to 4 choices are allowed.

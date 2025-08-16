@@ -32,7 +32,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
             payload = {
                 "user": request.user.id,
                 "title": data["chapter"]["title"] or title,
-                "content": data["chapter"]["content"],
+                "description": data["chapter"]["description"] or "",
                 "questions": data["questions"]
             }
             serializer = self.get_serializer(data=payload)
