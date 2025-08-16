@@ -1,60 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-
-type Choice = {
-    text: string;
-    is_correct?: boolean; // Optional, not needed for display
-};
-
-type Question = {
-    id: number;
-    chapter: number;
-    question_text: string;
-    question_type: "multiselect" | "single"; // Adjust if you have other types
-    choices: Choice[];
-    created_at: string;
-};
+import React from "react";
+import { QuestionAttempt } from "@/lib/types";
+import AttemptChoices from "@/components/questions/AttemptChoices";
 
 type Props = {
-    question: Question;
-};
+  attempt: QuestionAttempt;
+}
 
-// TO EDIT: TAKES IN ANSWERS AS WELL
-
-const QuestionAttemptCard: React.FC<Props> = ({ question }) => {
-    const [selected, setSelected] = useState<number[]>([]);
-
-    const handleChange = (idx: number) => {
-        if (question.question_type === "multiselect") {
-            setSelected((prev) =>
-                prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-            );
-        } else {
-            setSelected([idx]);
-        }
-    };
-
-    return (
-        <div className="question-card">
-            <h3>{question.question_text}</h3>
-            <form>
-                {question.choices.map((choice, idx) => (
-                    <div key={idx}>
-                        <label>
-                            <input
-                                type={question.question_type === "multiselect" ? "checkbox" : "radio"}
-                                name={`question-${question.id}`}
-                                checked={selected.includes(idx)}
-                                onChange={() => handleChange(idx)}
-                            />
-                            {choice.text}
-                        </label>
-                    </div>
-                ))}
-            </form>
-        </div>
-    );
+const QuestionAttemptCard: React.FC<Props> = ({ attempt }) => {
+  const { question, selected_choices, score } = attempt;
+  return (
+    <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto relative">
+      <div className="absolute top-4 right-6 text-green-700 font-bold text-lg">{score} / 1</div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-800">
+        {question.question_text}
+      </h3>
+      <AttemptChoices choices={question.choices} selected={selected_choices} />
+    </div>
+  );
 };
 
 export default QuestionAttemptCard;

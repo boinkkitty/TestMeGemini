@@ -4,6 +4,7 @@ export type Chapter = {
     id: number;
     title: string;
     description: string;
+    questions?: Question[];
 }
 
 export type Choice = {
@@ -21,10 +22,27 @@ export type Question = {
     created_at: string;
 };
 
+export type ChapterAttempt = {
+    id: number;
+    score: number;
+    attempted_at: string;
+    chapter_id: number;
+    order: Array<number>;
+    question_attempts?: QuestionAttempt[];
+}
+
+export type QuestionAttempt = {
+    id: number;
+    score: number;
+    chapter_attempt: number;
+    selected_choices: number[];
+    question: Question;
+}
+
 export const dummyQuestions: Question[] = [
     {
         id: 1,
-        chapter: 101,
+        chapter: 1,
         question_text: "What is the capital of France?",
         question_type: "MCQ",
         created_at: "2025-08-11T10:00:00Z",
@@ -37,7 +55,7 @@ export const dummyQuestions: Question[] = [
     },
     {
         id: 2,
-        chapter: 101,
+        chapter: 1,
         question_text: "Select all prime numbers.",
         question_type: "MRQ",
         created_at: "2025-08-11T10:10:00Z",
@@ -50,7 +68,7 @@ export const dummyQuestions: Question[] = [
     },
     {
         id: 3,
-        chapter: 101,
+        chapter: 1,
         question_text: "The Earth is flat.",
         question_type: "TF",
         created_at: "2025-08-11T10:15:00Z",
@@ -66,6 +84,7 @@ export const dummyChapters: Chapter[] = [
         id: 1,
         title: 'Chapter 1',
         description: 'Chapter 1',
+        questions: dummyQuestions,
     },
     {
         id: 2,
@@ -83,3 +102,46 @@ export const dummyChapters: Chapter[] = [
         description: 'Chapter 4',
     }
 ]
+
+export const dummyQuestionAttempts: QuestionAttempt[] = [
+    {
+        id: 1,
+        score: 1,
+        chapter_attempt: 1,
+        selected_choices: [1],
+        question: dummyQuestions[0],
+    },
+    {
+        id: 2,
+        score: 2,
+        chapter_attempt: 1,
+        selected_choices: [5, 6, 8],
+        question: dummyQuestions[1],
+    },
+    {
+        id: 3,
+        score: 1,
+        chapter_attempt: 2,
+        selected_choices: [10],
+        question: dummyQuestions[2],
+    },
+];
+
+export const dummyChapterAttempts: ChapterAttempt[] = [
+    {
+        id: 1,
+        score: 2,
+        attempted_at: "2025-08-16T10:00:00Z",
+        chapter_id: 1,
+        order: [1, 2],
+        question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 1),
+    },
+    {
+        id: 2,
+        score: 1,
+        attempted_at: "2025-08-16T11:00:00Z",
+        chapter_id: 2,
+        order: [3],
+        question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 2),
+    },
+];
