@@ -2,6 +2,7 @@
 
 import {SubmitHandler, useForm} from "react-hook-form";
 import {useRouter} from "next/navigation";
+import { useState } from "react";
 import axios from "axios";
 import api from "@/utils/axiosInstance";
 
@@ -24,6 +25,8 @@ function LoginForm({
    }: LoginFormProps) {
     const router = useRouter();
     const {register, handleSubmit} = useForm<Inputs>();
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const doSignup = async (data: Inputs) => {
         try {
@@ -97,12 +100,21 @@ function LoginForm({
                 </div>
                 <div className="flex flex-col gap-2">
                     <h1>Password</h1>
-                    <input
-                        {...register("password")}
-                        placeholder="Password"
-                        type="text"
-                        className="border border-gray-300 rounded-md shadow-md px-4 py-2"
-                    />
+                    <div className="relative flex items-center">
+                        <input
+                            {...register("password")}
+                            placeholder="Password"
+                            type={showPassword ? "text" : "password"}
+                            className="border border-gray-300 rounded-md shadow-md px-4 py-2 w-full"
+                        />
+                        <button
+                            type="button"
+                            className="absolute right-3 text-xs text-blue-600 hover:underline focus:outline-none"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                        >
+                            {showPassword ? "Hide" : "Show"}
+                        </button>
+                    </div>
                 </div>
                 {children}
                 <button
