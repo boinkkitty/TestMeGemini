@@ -1,6 +1,5 @@
 from django.db import models
-from users.models import CustomUser
-from chapters.models import Chapter
+from chapters.models import Chapter, ChapterAttempt
 
 class Question(models.Model):
     """Model representing a question associated with a chapter."""

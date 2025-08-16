@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Question, Choice
+from .models import Question, Choice, QuestionAttempt
 from chapters.models import Chapter
 
 class ChoiceSerializer(serializers.ModelSerializer):

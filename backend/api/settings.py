@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'users',
     'chapters',
     'questions',
+    'attempts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

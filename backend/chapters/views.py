@@ -1,4 +1,5 @@
-from rest_framework import generics, status, permissions
+from rest_framework import status
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -44,16 +45,13 @@ class CreateChapterWithQuestionsView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(result, status=status.HTTP_201_CREATED)
-    
 
-class UserChaptersAPIView(APIView):
+class UserChaptersAPIView(ListAPIView):
     """
     Retrieve chapters for the authenticated user
     """
+    serializer_class = ChapterSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        chapters = Chapter.objects.filter(user=request.user)
-        serializer = ChapterSerializer(chapters, many=True)
-
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Chapter.objects.filter(user=self.request.user)
