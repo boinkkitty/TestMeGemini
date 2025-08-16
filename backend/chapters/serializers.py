@@ -6,7 +6,6 @@ class ChapterBaseSerializer(serializers.ModelSerializer):
     """
     Serializer for the Chapter model, including nested questions.
     """
-    questions = QuestionSerializer(many=True)
 
     class Meta:
         model = Chapter
