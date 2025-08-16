@@ -5,21 +5,25 @@ import PaginatedQuestions from "@/components/questions/PaginatedQuestions";
 import QuizComponent from "@/components/questions/QuizComponent";
 import {useState} from "react";
 import ChapterSelection from "@/components/chapters/ChapterSelection";
+import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
 
 type QuizClientProps = {
     chapters: Chapter[];
 }
 
-export default function QuizClient() {
-    const chapters = dummyChapters;
+export default function QuizClient({ chapters }: QuizClientProps)  {
+    // const chapters = dummyChapters;
 
     const [isStarted, setIsStarted] = useState(false);
     const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+    const [questions, setQuestions] = useState<Question[]>([]);
 
     // Set selectedChapter by id
-    const handleSelectedChapter = (chapterId: number) => {
+    const handleSelectedChapter = async (chapterId: number) => {
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         setSelectedChapter(chapter);
+        const chapterQuestions = await getChapterQuestions(chapter!.id);
+        setQuestions(chapterQuestions);
     };
 
     // Need to create function call
@@ -37,7 +41,7 @@ export default function QuizClient() {
                     handleStart={() => setIsStarted(true)}
                 />
             ) : (
-                <QuizComponent questions={dummyQuestions} />
+                <QuizComponent questions={questions} />
             )}
         </div>
     );

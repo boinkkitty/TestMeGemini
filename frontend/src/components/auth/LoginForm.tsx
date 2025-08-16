@@ -40,7 +40,7 @@ function LoginForm({
             router.push("/login");
         } catch (err: any) {
             // Handle error (show message, etc.)
-            alert(err?.response?.data?.error || "Login failed");
+            alert(err?.response?.data?.error || "Signup failed");
         }
     };
     const doLogin = async (data: Inputs) => {
@@ -106,7 +106,7 @@ function LoginForm({
                 </div>
                 {children}
                 <button
-                    className="py-3 rounded-md bg-blue-600 text-white shadow-md"
+                    className="py-3 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-colors enabled:hover:cursor-pointer disabled:cursor-not-allowed"
                     type="submit"
                 >
                     {formLabel}
