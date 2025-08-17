@@ -10,7 +10,7 @@ export default function LoginPage() {
                 <div className="flex item-center justify-center gap-2">
                     <Image src="/public/file.svg" width={30} height={30} alt="" />
                     <h1 className="flex text-4xl font-bold items-center justify-center">
-                        TestMeGPT
+                        TestMeGemini
                     </h1>
                 </div>
             </div>
