@@ -7,7 +7,7 @@ async function getUserChapters(): Promise<Chapter[]> {
     console.log(accessToken);
     const cookieHeader = accessToken ? `access_token=${accessToken}` : "";
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chapters/my-chapters/`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chapters/`, {
         headers: {
             Cookie: cookieHeader,
         },

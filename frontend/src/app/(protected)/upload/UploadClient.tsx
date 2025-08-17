@@ -11,6 +11,7 @@ export default function UploadClient() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -42,6 +43,10 @@ export default function UploadClient() {
       setError("Please enter a chapter title.");
       return;
     }
+    if (!category.trim()) {
+      setError("Please enter a category.");
+      return;
+    }
     if (files.length === 0) {
       setError("Please upload at least one PDF file.");
       return;
@@ -50,10 +55,11 @@ export default function UploadClient() {
     try {
       const formData = new FormData();
       formData.append("title", title);
+      formData.append("category", category);
       for (let i = 0; i < files.length; i++) {
         formData.append("files", files[i]); // note plural "files" if your backend expects that
       }
-      const res = await api.post("/chapters/create-with-questions/", formData);
+      const res = await api.post("/api/chapters/", formData);
       console.log(res);
       // Axios response data is in res.data
       setSuccess("Chapter and questions generated successfully!");
@@ -83,6 +89,20 @@ export default function UploadClient() {
           onChange={e => setTitle(e.target.value)}
           className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           placeholder="Enter chapter title..."
+          disabled={loading}
+        />
+      </div>
+      <div className="mb-6">
+        <label htmlFor="chapter-category" className="block text-md font-semibold mb-2 text-gray-700">
+          Category
+        </label>
+        <input
+          id="chapter-category"
+          type="text"
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter category..."
           disabled={loading}
         />
       </div>

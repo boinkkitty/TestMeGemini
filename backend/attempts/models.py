@@ -1,9 +1,8 @@
 from django.db import models
 
-from backend.api.utils import score
-from backend.chapters.models import Chapter
-from backend.questions.models import Choice, Question
-from backend.users.models import CustomUser
+from chapters.models import Chapter
+from questions.models import Choice, Question
+from users.models import CustomUser
 
 # Create your models here.
 

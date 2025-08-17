@@ -13,8 +13,8 @@ export const ChapterAttemptCard = ({ attempt, onViewDetails }: ChapterAttemptCar
         <div className="border rounded p-2 px-6 mb-2 flex flex-row items-center justify-between shadow bg-white text-xs">
             <div className="flex flex-1 flex-row items-center justify-between gap-2">
                 <div className="flex-1">
-                    <div className="font-bold text-[11px] text-gray-700">Chapter Id:</div>
-                    <div className="text-sm">{attempt.chapter_id}</div>
+                    <div className="font-bold text-[11px] text-gray-700">Title:</div>
+                    <div className="text-sm">{attempt.title}</div>
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Score:</div>

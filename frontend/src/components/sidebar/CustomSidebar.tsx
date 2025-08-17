@@ -31,7 +31,7 @@ export default function CustomSidebar() {
             href: "/login",
             onClick: async () => {
                 try {
-                    await api.post("/users/logout/");
+                    await api.post("/api/users/logout/");
                     router.push("/login");
                 } catch (error) {
                     console.error("Logout failed", error);

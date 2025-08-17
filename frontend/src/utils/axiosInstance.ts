@@ -16,7 +16,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                await api.post("/users/refresh/");
+                await api.post("/api/users/refresh/");
                 // Retry original request
                 return api(originalRequest);
             } catch (refreshError) {

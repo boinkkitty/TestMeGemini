@@ -22,10 +22,13 @@ class ChapterListCreateAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         files = request.FILES.getlist("files")
         title = request.data.get("title")
+        category = request.data.get("category")
         if not files:
             return Response({"error": "file required"}, status=status.HTTP_400_BAD_REQUEST)
         if not title:
             return Response({"error": "title required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not category:
+            return Response({"error": "category required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             chapter_content = extract_text(files)
             data = call_gemini_model(title, chapter_content)
@@ -33,6 +36,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
                 "user": request.user.id,
                 "title": data["chapter"]["title"] or title,
                 "description": data["chapter"]["description"] or "",
+                "category": category,
                 "questions": data["questions"]
             }
             serializer = self.get_serializer(data=payload)

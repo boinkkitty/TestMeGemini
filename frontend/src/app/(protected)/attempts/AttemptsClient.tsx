@@ -23,7 +23,7 @@ function AttemptsClient() {
         <div className="flex flex-col p-6">
             <div className="flex justify-between items-center p-2 mb-4">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedAttempt ? `Chapter ${selectedAttempt.chapter_id}` : "Chapter Attempts"}
+                    {selectedAttempt ? `${selectedAttempt.title}` : "Chapter Attempts"}
                 </h1>
                 {/*
                     To add

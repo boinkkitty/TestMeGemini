@@ -10,8 +10,11 @@ type Props = {
     onSubmit: () => void;
 }
 
+
 const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [selected, setSelected] = useState<number[]>([]);
+    const [submitted, setSubmitted] = useState(false);
     const currentQuestion = questions[currentIndex];
 
     const isFirst = currentIndex === 0;
@@ -25,11 +28,28 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
         if (!isLast) setCurrentIndex(currentIndex + 1);
     }
 
+    const handleSelect = (idx: number) => {
+        if (currentQuestion.question_type === "MRQ") {
+            setSelected((prev) =>
+                prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+            );
+        } else {
+            setSelected([idx]);
+        }
+    };
+
+    const handleSubmit = () => {
+        setSubmitted(true);
+        onSubmit();
+    };
+
     return (
         <div className="w-128 h-128">
             <QuestionCard
                 question={currentQuestion}
-
+                selected={selected}
+                onSelect={handleSelect}
+                submitted={submitted}
             />
 
             <div className="mt-4 flex justify-between gap-4">
@@ -39,7 +59,7 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
                     </button>
                 )}
 
-                <button onClick={onSubmit} className="px-3 py-1 rounded transition-colors hover:bg-blue-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
+                <button onClick={handleSubmit} className="px-3 py-1 rounded transition-colors hover:bg-blue-200 enabled:hover:cursor-pointer disabled:cursor-not-allowed" disabled={false}>
                     Submit
                 </button>
 

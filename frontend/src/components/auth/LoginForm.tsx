@@ -31,7 +31,7 @@ function LoginForm({
     const doSignup = async (data: Inputs) => {
         try {
             const res = await api.post(
-                "/users/register/",
+                "/api/users/register/",
                 {
                     username: data.username,
                     email: data.email,
@@ -49,7 +49,7 @@ function LoginForm({
     const doLogin = async (data: Inputs) => {
         try {
             const res = await api.post(
-                "/users/login/",
+                "/api/users/login/",
                 {
                     email: data.email,
                     password: data.password,

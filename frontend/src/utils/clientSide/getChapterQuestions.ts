@@ -10,7 +10,7 @@ import api from "@/utils/axiosInstance";
  */
 async function getChapterQuestions(chapterId: number): Promise<Question[]> {
     try {
-        const res = await api.get(`/questions/chapter/${chapterId}/questions/`, {
+        const res = await api.get(`/api/chapters/${chapterId}/questions/`, {
             withCredentials: true, 
         });
         return res.data;

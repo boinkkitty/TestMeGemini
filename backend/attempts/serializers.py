@@ -1,7 +1,7 @@
-from backend.attempts.models import ChapterAttempt, QuestionAttempt
-from backend.chapters.models import Chapter
-from backend.questions.models import Choice
-from backend.questions.serializers import ChoiceSerializer, QuestionSerializer
+from attempts.models import ChapterAttempt, QuestionAttempt
+from chapters.models import Chapter
+from questions.models import Choice
+from questions.serializers import ChoiceSerializer, QuestionSerializer
 from rest_framework import serializers
 
 class QuestionAttemptSerializer(serializers.ModelSerializer):

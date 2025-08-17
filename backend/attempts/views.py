@@ -1,6 +1,6 @@
-from backend.api.utils.score import get_score
-from backend.attempts.serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
-from backend.questions.models import Question
+from api.utils.score import get_score
+from attempts.serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
+from questions.models import Question
 from rest_framework import permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response

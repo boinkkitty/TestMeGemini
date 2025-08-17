@@ -1,5 +1,5 @@
 from django.db import models
-from chapters.models import Chapter, ChapterAttempt
+from chapters.models import Chapter
 
 class Question(models.Model):
     """Model representing a question associated with a chapter."""

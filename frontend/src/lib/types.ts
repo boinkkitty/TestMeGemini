@@ -4,6 +4,7 @@ export type Chapter = {
     id: number;
     title: string;
     description: string;
+    category: string;
     questions?: Question[];
 }
 
@@ -24,6 +25,7 @@ export type Question = {
 
 export type ChapterAttempt = {
     id: number;
+    title: string;
     score: number;
     attempted_at: string;
     chapter_id: number;
@@ -84,24 +86,31 @@ export const dummyChapters: Chapter[] = [
         id: 1,
         title: 'Chapter 1',
         description: 'Chapter 1',
+        category: "Beginner",
         questions: dummyQuestions,
     },
     {
         id: 2,
         title: 'Chapter 2',
         description: 'Chapter 2',
+        category: "Advanced",
+        questions: [],
     },
     {
         id: 3,
         title: 'Chapter 3',
         description: 'Chapter 3',
+        category: "Intermediate",
+        questions: [],
     },
     {
         id: 4,
         title: 'Chapter 4',
         description: 'Chapter 4',
-    }
-]
+        category: "Advanced",
+        questions: [],
+    },
+];
 
 export const dummyQuestionAttempts: QuestionAttempt[] = [
     {
@@ -130,6 +139,7 @@ export const dummyQuestionAttempts: QuestionAttempt[] = [
 export const dummyChapterAttempts: ChapterAttempt[] = [
     {
         id: 1,
+        title: "Test 1",
         score: 2,
         attempted_at: "2025-08-16T10:00:00Z",
         chapter_id: 1,
@@ -138,6 +148,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
     },
     {
         id: 2,
+        title: "Test 2",
         score: 1,
         attempted_at: "2025-08-16T11:00:00Z",
         chapter_id: 2,

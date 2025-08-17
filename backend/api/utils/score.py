@@ -1,4 +1,4 @@
-from question.models import Question
+from questions.models import Question
 
 def get_score(question, selected_choice_ids, correct_choices) -> float:
     # MRQ: partial credit for each correct choice selected, no penalty for extra
