@@ -33,7 +33,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
             chapter_content = extract_text(files)
             data = call_gemini_model(title, chapter_content)
             payload = {
-                "user": request.user.id,
+                # user will be set by serializer.save(user=request.user)
                 "title": data["chapter"]["title"] or title,
                 "description": data["chapter"]["description"] or "",
                 "category": category,
@@ -41,7 +41,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
             }
             serializer = self.get_serializer(data=payload)
             serializer.is_valid(raise_exception=True)
-            chapter = serializer.save()
+            chapter = serializer.save(user=request.user)
             question_ids = list(chapter.questions.values_list("id", flat=True))
             result = {"chapter_id": chapter.id, "question_ids": question_ids}
         except Exception as e:

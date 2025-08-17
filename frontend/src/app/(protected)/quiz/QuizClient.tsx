@@ -23,6 +23,7 @@ export default function QuizClient({ chapters }: QuizClientProps)  {
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         setSelectedChapter(chapter);
         const chapterQuestions = await getChapterQuestions(chapter!.id);
+        console.log(chapterQuestions);
         setQuestions(chapterQuestions);
     };
 
@@ -41,7 +42,7 @@ export default function QuizClient({ chapters }: QuizClientProps)  {
                     handleStart={() => setIsStarted(true)}
                 />
             ) : (
-                <QuizComponent questions={questions} />
+                <QuizComponent questions={questions} chapter={selectedChapter} />
             )}
         </div>
     );

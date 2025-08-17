@@ -1,9 +1,10 @@
 'use client';
 
 import ChapterCard from "@/components/chapters/ChapterCard";
-import {Chapter, dummyChapters, dummyQuestions} from "@/lib/types";
+import {Chapter, Question} from "@/lib/types";
 import { useState } from "react";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
+import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
 
 type ChaptersClientProps = {
     chapters: Chapter[];
@@ -11,20 +12,29 @@ type ChaptersClientProps = {
 
 export default function ChaptersClient({chapters}: ChaptersClientProps) {
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const handleSelectChapter = (chapterId: number) => {
+    const handleSelectChapter = async (chapterId: number) => {
+        setLoading(true);
+        const chapter = chapters.find(ch => ch.id === chapterId) || null;
+        const chapterQuestions = await getChapterQuestions(chapter!.id);
+        setQuestions(chapterQuestions);
         setSelectedChapterId(chapterId);
+        setLoading(false);
     };
-    const handleBack = () => setSelectedChapterId(null);
+    const handleBack = () => {
+        setSelectedChapterId(null);
+        setQuestions([]);
+    }
 
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
-    const questions = dummyQuestions.filter(q => q.chapter === selectedChapterId);
 
     return (
         <div className="flex flex-col p-6">
             <div className="flex justify-between items-center p-2 mb-4">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedChapter ? `Chapter ${selectedChapterId}` : "Chapter Attempts"}
+                    {selectedChapter ? `${selectedChapter.title}` : "Chapter Attempts"}
                 </h1>
             </div>
             {selectedChapter && (
@@ -33,8 +43,10 @@ export default function ChaptersClient({chapters}: ChaptersClientProps) {
                 </div>
             )}
             <div className={selectedChapterId && selectedChapter ? "p-2 flex justify-center items-center min-h-[60vh]" : "p-2"}>
-                {selectedChapterId && selectedChapter ? (
-                    <PaginatedQuestionsForChapter questions={questions} onBack={handleBack} />
+                {loading ? (
+                    <div className="flex items-center justify-center min-h-[40vh] text-lg font-semibold text-blue-600">Loading questions...</div>
+                ) : selectedChapterId && selectedChapter ? (
+                    <PaginatedQuestionsForChapter questions={questions} />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
                         {chapters.map((chapter, index) => (
@@ -46,6 +58,5 @@ export default function ChaptersClient({chapters}: ChaptersClientProps) {
                 )}
             </div>
         </div>
-
     );
 }

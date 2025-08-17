@@ -7,6 +7,8 @@ class ChapterBaseSerializer(serializers.ModelSerializer):
     Serializer for the Chapter model, including nested questions.
     """
 
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Chapter
         fields = ['id', 'user', 'title', 'description', 'category', 'created_at']

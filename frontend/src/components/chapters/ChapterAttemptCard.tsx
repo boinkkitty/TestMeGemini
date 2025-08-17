@@ -8,7 +8,7 @@ type ChapterAttemptCardProps = {
 
 export const ChapterAttemptCard = ({ attempt, onViewDetails }: ChapterAttemptCardProps) => {
     // Format date as dd/mm/yy
-    const formattedDate = new Date(attempt.attempted_at).toLocaleDateString('en-GB');
+    const formattedDate = new Date(attempt.completed_at).toLocaleDateString('en-GB');
     return (
         <div className="border rounded p-2 px-6 mb-2 flex flex-row items-center justify-between shadow bg-white text-xs">
             <div className="flex flex-1 flex-row items-center justify-between gap-2">

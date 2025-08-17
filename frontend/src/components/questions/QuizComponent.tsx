@@ -1,15 +1,18 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import {Question} from "@/lib/types";
+import {Chapter, ChapterAttempt, ChapterAttemptInput, Question} from "@/lib/types";
 import QuestionCard from "@/components/questions/QuestionCard";
+import {submitChapterAttempt} from "@/utils/clientSide/submitChapterAttempt";
 
 type QuizComponentProps = {
+    chapter?: Chapter | null;
     questions: Question[];
 }
 
-const QuizComponent: React.FC<QuizComponentProps> = ({questions}) => {
+const QuizComponent: React.FC<QuizComponentProps> = ({chapter, questions}) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    // Store selected choice IDs for each question
     const [answers, setAnswers] = useState<number[][]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [score, setScore] = useState(0);
@@ -21,23 +24,32 @@ const QuizComponent: React.FC<QuizComponentProps> = ({questions}) => {
         }
     }, [questions]);
 
-    const handleSelect = (questionIdx: number, choiceIdx: number) => {
+    const handleSelect = (questionIdx: number, choiceId: number) => {
+        console.log("Adding choice", choiceId, "for question", questionIdx)
         setAnswers((prev) => {
             const newAnswers = [...prev];
             const currQuestion: Question = questions[questionIdx];
             if (currQuestion.question_type === "MRQ") {
-                newAnswers[questionIdx] = newAnswers[questionIdx].includes(choiceIdx)
-                ? newAnswers[questionIdx].filter((i) => i !== choiceIdx)
-                    : [...newAnswers[questionIdx], choiceIdx];
+                newAnswers[questionIdx] = newAnswers[questionIdx].includes(choiceId)
+                    ? newAnswers[questionIdx].filter((id) => id !== choiceId)
+                    : [...newAnswers[questionIdx], choiceId];
             } else {
-                newAnswers[questionIdx] = [choiceIdx];
+                newAnswers[questionIdx] = [choiceId];
             }
+            console.log("Prev answers:", prev);
+            console.log("Updated answers:", newAnswers);
+
             return newAnswers;
-        })
-    }
+        });
+    };
+
+    useEffect(() => {
+        console.log(questions);
+        console.log(answers);
+    }, [questions, answers]);
 
     // Need to work on this
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let newScore = 0;
         questions.forEach((q, idx) => {
             const correctIdxs = q.choices
@@ -50,7 +62,21 @@ const QuizComponent: React.FC<QuizComponentProps> = ({questions}) => {
             if (isCorrect) newScore++;
         });
         setScore(newScore);
-        setSubmitted(true);
+
+        const data: ChapterAttemptInput = {
+            chapter_id: chapter!.id,
+            order: questions.map(question => question.id),
+            questions: questions.map((question, i) => ({
+                question_id: question.id,
+                selected_choices: answers[i] || [],
+            })),
+        };
+
+        console.log(data);
+        const res = await submitChapterAttempt(data);
+        if (res) {
+            setSubmitted(true);
+        }
     };
 
     return (
@@ -66,7 +92,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({questions}) => {
             <QuestionCard
                 question={questions[currentIndex]}
                 selected={answers[currentIndex]}
-                onSelect={(choiceIdx) => handleSelect(currentIndex, choiceIdx)}
+                onSelect={(choiceId) => handleSelect(currentIndex, choiceId)}
                 submitted={submitted}
             />
 

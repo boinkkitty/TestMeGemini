@@ -27,7 +27,7 @@ export type ChapterAttempt = {
     id: number;
     title: string;
     score: number;
-    attempted_at: string;
+    completed_at: string;
     chapter_id: number;
     order: Array<number>;
     question_attempts?: QuestionAttempt[];
@@ -39,6 +39,17 @@ export type QuestionAttempt = {
     chapter_attempt: number;
     selected_choices: number[];
     question: Question;
+}
+
+export type ChapterAttemptInput = {
+    chapter_id: number;
+    order: number[];
+    questions: QuestionAttemptInput[];
+}
+
+export type QuestionAttemptInput = {
+    question_id: number;
+    selected_choices: number[];
 }
 
 export const dummyQuestions: Question[] = [
@@ -141,7 +152,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         id: 1,
         title: "Test 1",
         score: 2,
-        attempted_at: "2025-08-16T10:00:00Z",
+        completed_at: "2025-08-16T10:00:00Z",
         chapter_id: 1,
         order: [1, 2],
         question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 1),
@@ -150,7 +161,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         id: 2,
         title: "Test 2",
         score: 1,
-        attempted_at: "2025-08-16T11:00:00Z",
+        completed_at: "2025-08-16T11:00:00Z",
         chapter_id: 2,
         order: [3],
         question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 2),

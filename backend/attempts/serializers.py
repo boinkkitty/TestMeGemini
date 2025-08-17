@@ -2,19 +2,22 @@ from attempts.models import ChapterAttempt, QuestionAttempt
 from chapters.models import Chapter
 from questions.models import Choice
 from questions.serializers import ChoiceSerializer, QuestionSerializer
+from questions.models import Question
 from rest_framework import serializers
 
 class QuestionAttemptSerializer(serializers.ModelSerializer):
-    question = QuestionSerializer(read_only=True)
+    question = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all())
+    question_detail = QuestionSerializer(source='question', read_only=True)
     selected_choices = serializers.PrimaryKeyRelatedField(
         queryset=Choice.objects.all(),
         many=True
     )
+    # user is not needed here, it's on ChapterAttempt
 
     class Meta:
         model = QuestionAttempt
-        fields = ['id', 'chapter_attempt', 'question', 'selected_choices', 'score', 'attempted_at']
-        read_only_fields = ['id', 'attempted_at']
+        fields = ['id', 'chapter_attempt', 'question', 'question_detail', 'selected_choices', 'score', 'attempted_at']
+        read_only_fields = ['id', 'attempted_at', 'question_detail']
 
     def create(self, validated_data):
         selected_choices_data = validated_data.pop('selected_choices')
@@ -37,11 +40,12 @@ class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(),
         allow_empty=True
     )
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = ChapterAttempt
-        fields = ['id', 'chapter_id', 'title', 'user', 'score', 'attempted_at', 'order']
-        read_only_fields = ['id', 'attempted_at', 'title']
+        fields = ['id', 'chapter_id', 'title', 'user', 'score', 'completed_at', 'order']
+        read_only_fields = ['id', 'completed_at', 'title']
 
 class ChapterAttemptSerializer(ChapterAttemptBaseSerializer):
     pass

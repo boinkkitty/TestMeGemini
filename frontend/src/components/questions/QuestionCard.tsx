@@ -4,7 +4,7 @@ import { Question } from "@/lib/types";
 type QuestionCardProps = {
     question: Question;
     selected?: number[];
-    onSelect: (idx: number) => void;
+    onSelect: (choiceId: number) => void;
     submitted: boolean;
 };
 
@@ -14,15 +14,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                                            onSelect,
                                            submitted,
                                        }) => {
+    console.log("QuestionCard", question);
+
     return (
         <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">
                 {question.question_text}
             </h3>
             <form>
-                {question.choices.map((choice, idx) => {
+                {question.choices.map((choice) => {
                     const isCorrect = choice.is_correct;
-                    const isSelected = selected?.includes(idx);
+                    const isSelected = selected?.includes(choice.id);
 
                     let indicator = null;
                     if (submitted) {
@@ -33,18 +35,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         }
                     }
 
+                    console.log(choice.id, "Is this really undefined?");
+
+
                     return (
-                        <div key={idx} className="mb-3">
+                        <div key={choice.id} className="mb-3">
                             <label
                                 className="flex items-center cursor-pointer select-none text-gray-700"
-                                htmlFor={`choice-${question.id}-${idx}`}
+                                htmlFor={`choice-${question.id}-${choice.id}`}
                             >
                                 <input
-                                    id={`choice-${question.id}-${idx}`}
+                                    id={`choice-${question.id}-${choice.id}`}
                                     type={question.question_type === "MRQ" ? "checkbox" : "radio"}
                                     name={`question-${question.id}`}
                                     checked={!!isSelected}
-                                    onChange={() => onSelect(idx)}
+                                    onChange={() => onSelect(choice.id)}
                                     disabled={submitted}
                                     className="form-checkbox text-blue-600 focus:ring-blue-500 rounded"
                                 />

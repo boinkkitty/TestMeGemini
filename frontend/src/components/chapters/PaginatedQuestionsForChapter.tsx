@@ -6,10 +6,9 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
 interface Props {
   questions: Question[];
-  onBack: () => void;
 }
 
-const PaginatedQuestionsForChapter: React.FC<Props> = ({ questions, onBack }) => {
+const PaginatedQuestionsForChapter: React.FC<Props> = ({ questions }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const currentQuestion = questions[currentIndex];
