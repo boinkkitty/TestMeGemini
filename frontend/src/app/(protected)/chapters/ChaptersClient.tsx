@@ -34,7 +34,7 @@ export default function ChaptersClient({chapters}: ChaptersClientProps) {
         <div className="flex flex-col p-6">
             <div className="flex justify-between items-center p-2 mb-4">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedChapter ? `${selectedChapter.title}` : "Chapter Attempts"}
+                    {selectedChapter ? `${selectedChapter.title}` : "Chapters"}
                 </h1>
             </div>
             {selectedChapter && (

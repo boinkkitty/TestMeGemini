@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react";
-import {ChapterAttempt, dummyChapterAttempts} from "@/lib/types";
+import {ChapterAttempt, dummyChapterAttempts, QuestionAttempt} from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
+import getChapterAttempt from "@/utils/clientSide/getChapterAttempt";
 
 type AttemptsClientProps = {
     attempts: ChapterAttempt[];
@@ -11,13 +12,21 @@ type AttemptsClientProps = {
 
 function AttemptsClient({attempts}: AttemptsClientProps) {
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
+    const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const handleViewDetails = (attemptId: number) => {
+    const handleSelectAttempt = async (attemptId: number) => {
+        setLoading(true);
         setSelectedAttemptId(attemptId);
+        const attempt = attempts.find((attempt) => attempt.id === attemptId);
+        const attemptDetails = await getChapterAttempt(attempt!.id);
+        setQuestionAttempts(attemptDetails.question_attempts ?? []);
+        setLoading(false);
     };
 
     const handleBack = () => {
         setSelectedAttemptId(null);
+        setQuestionAttempts([]);
     };
 
     const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
@@ -34,27 +43,37 @@ function AttemptsClient({attempts}: AttemptsClientProps) {
                     2. Category filter
                 */}
             </div>
-            {selectedAttempt && (
-                <div className="mb-4 flex justify-start">
-                    <button onClick={handleBack} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold">Back</button>
-                </div>
+            {loading ? (
+                <div className="flex items-center justify-center min-h-[40vh] text-lg font-semibold text-blue-600">Loading...</div>
+            ) : (
+                <>
+                    {selectedAttempt && (
+                        <div className="mb-4 flex justify-start">
+                            <button onClick={handleBack} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold">Back</button>
+                        </div>
+                    )}
+                    <div className={selectedAttempt ? "p-2 flex justify-center items-center" : "p-2 flex flex-col gap-2"}>
+                        {selectedAttempt ? (
+                            (questionAttempts && questionAttempts.length > 0) ? (
+                                <PaginatedQuestionAttempts
+                                    attempts={questionAttempts}
+                                    onBack={handleBack}
+                                />
+                            ) : (
+                                <div className="text-gray-500 text-center">No question attempts found for this attempt.</div>
+                            )
+                        ) : (
+                            attempts.map((attempt) => (
+                                <ChapterAttemptCard
+                                    key={attempt.id}
+                                    attempt={attempt}
+                                    onViewDetails={handleSelectAttempt}
+                                />
+                            ))
+                        )}
+                    </div>
+                </>
             )}
-            <div className={selectedAttempt ? "p-2 flex justify-center items-center" : "p-2 flex flex-col gap-2"}>
-                {selectedAttempt ? (
-                    <PaginatedQuestionAttempts
-                        attempts={selectedAttempt.question_attempts || []}
-                        onBack={handleBack}
-                    />
-                ) : (
-                    attempts.map((attempt) => (
-                        <ChapterAttemptCard
-                            key={attempt.id}
-                            attempt={attempt}
-                            onViewDetails={handleViewDetails}
-                        />
-                    ))
-                )}
-            </div>
         </div>
     );
 }

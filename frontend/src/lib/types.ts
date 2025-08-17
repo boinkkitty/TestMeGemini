@@ -38,7 +38,7 @@ export type QuestionAttempt = {
     score: number;
     chapter_attempt: number;
     selected_choices: number[];
-    question: Question;
+    question_detail: Question;
 }
 
 export type ChapterAttemptInput = {

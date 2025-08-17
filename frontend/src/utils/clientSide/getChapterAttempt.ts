@@ -6,7 +6,7 @@ import api from "@/utils/axiosInstance";
  *
  * @param attemptId
  */
-async function getChapterAttempt(attemptId: number): Promise<ChapterAttempt[]> {
+async function getChapterAttempt(attemptId: number): Promise<ChapterAttempt> {
     try {
         const res = await api.get(`/api/attempts/${attemptId}/`, {
             withCredentials: true,
