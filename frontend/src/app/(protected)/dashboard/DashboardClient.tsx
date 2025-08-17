@@ -4,11 +4,10 @@ import ChapterCard from "@/components/chapters/ChapterCard";
 import {Chapter, dummyChapters} from "@/lib/types";
 
 type DashboardClientProps = {
-    // chapters: Chapter[];
+    chapters: Chapter[];
 }
 
-export default function DashboardClient() {
-    const chapters: Chapter[] = dummyChapters;
+export default function DashboardClient({chapters}: DashboardClientProps) {
 
     return (<div className="p-6">
             {/* Top container */}

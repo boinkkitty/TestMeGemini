@@ -6,11 +6,10 @@ import { useState } from "react";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 
 type ChaptersClientProps = {
-    // chapters: Chapter[];
+    chapters: Chapter[];
 }
 
-export default function ChaptersClient() {
-    const chapters: Chapter[] = dummyChapters;
+export default function ChaptersClient({chapters}: ChaptersClientProps) {
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
 
     const handleSelectChapter = (chapterId: number) => {

@@ -1,12 +1,15 @@
 "use client"
 
 import { useState } from "react";
-import {dummyChapterAttempts} from "@/lib/types";
+import {ChapterAttempt, dummyChapterAttempts} from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
 
-function AttemptsClient() {
-    const attempts = dummyChapterAttempts;
+type AttemptsClientProps = {
+    attempts: ChapterAttempt[];
+}
+
+function AttemptsClient({attempts}: AttemptsClientProps) {
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
 
     const handleViewDetails = (attemptId: number) => {
