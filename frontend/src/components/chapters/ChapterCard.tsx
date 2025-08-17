@@ -16,7 +16,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, index, onClick }) =>
             onClick={onClick}
         >
             <h3 className="text-lg font-semibold mb-2">{chapter.title}</h3>
-            <p>{chapter.description}</p>
+            <p className="line-clamp-3 overflow-hidden text-ellipsis">{chapter.description}</p>
         </div>
     );
 };

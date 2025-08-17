@@ -41,7 +41,7 @@ export default function CustomSidebar() {
     ];
 
     return (
-        <div className="h-screen w-64 bg-gray-800 text-white flex flex-col">
+        <div className="sticky top-0 h-screen w-64 bg-gray-800 text-white flex flex-col">
             <div className="basis-1/6 p-4 border-b border-gray-700 flex flex-col gap-4">
                 {topItems.map((item, idx) => (
                     <SidebarItem key={idx} {...item} />
