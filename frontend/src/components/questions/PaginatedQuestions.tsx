@@ -5,13 +5,12 @@ import {useState} from "react";
 import QuestionCard from "@/components/questions/QuestionCard";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
-type Props = {
+type PaginatedQuestionsProps = {
     questions: Question[];
     onSubmit: () => void;
-}
+};
 
-
-const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
+function PaginatedQuestions({ questions, onSubmit }: PaginatedQuestionsProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selected, setSelected] = useState<number[]>([]);
     const [submitted, setSubmitted] = useState(false);
@@ -28,13 +27,13 @@ const PaginatedQuestions: React.FC<Props> = ({ questions, onSubmit }) => {
         if (!isLast) setCurrentIndex(currentIndex + 1);
     }
 
-    const handleSelect = (idx: number) => {
+    const handleSelect = (choiceId: number) => {
         if (currentQuestion.question_type === "MRQ") {
             setSelected((prev) =>
-                prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+                prev.includes(choiceId) ? prev.filter((i) => i !== choiceId) : [...prev, choiceId]
             );
         } else {
-            setSelected([idx]);
+            setSelected([choiceId]);
         }
     };
 

@@ -3,12 +3,12 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { QuestionAttempt } from "@/lib/types";
 import QuestionAttemptCard from "@/components/questions/QuestionAttemptCard";
 
-interface PaginatedQuestionAttemptsProps {
+type PaginatedQuestionAttemptsProps = {
   attempts: QuestionAttempt[];
   onBack: () => void;
-}
+};
 
-const PaginatedQuestionAttempts: React.FC<PaginatedQuestionAttemptsProps> = ({ attempts, onBack }) => {
+function PaginatedQuestionAttempts({ attempts, onBack }: PaginatedQuestionAttemptsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentAttempt = attempts[currentIndex];
 

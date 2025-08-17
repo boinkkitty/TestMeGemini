@@ -8,11 +8,11 @@ type ChapterSelectionProps = {
 };
 
 function ChapterSelection({
-                              chapters,
-                              selectedChapterId,
-                              setSelectedChapterId,
-                              handleStart,
-                          }: ChapterSelectionProps) {
+    chapters,
+    selectedChapterId,
+    setSelectedChapterId,
+    handleStart,
+}: ChapterSelectionProps) {
     return (
         <div className="flex flex-col justify-center items-center w-full h-full gap-4">
             <p className="text-md font-semibold">Come! Let's start practicing!</p>

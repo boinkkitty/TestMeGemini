@@ -8,9 +8,9 @@ import {submitChapterAttempt} from "@/utils/clientSide/submitChapterAttempt";
 type QuizComponentProps = {
     chapter?: Chapter | null;
     questions: Question[];
-}
+};
 
-const QuizComponent: React.FC<QuizComponentProps> = ({chapter, questions}) => {
+function QuizComponent({ chapter, questions }: QuizComponentProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     // Store selected choice IDs for each question
     const [answers, setAnswers] = useState<number[][]>([]);
@@ -25,7 +25,6 @@ const QuizComponent: React.FC<QuizComponentProps> = ({chapter, questions}) => {
     }, [questions]);
 
     const handleSelect = (questionIdx: number, choiceId: number) => {
-        console.log("Adding choice", choiceId, "for question", questionIdx)
         setAnswers((prev) => {
             const newAnswers = [...prev];
             const currQuestion: Question = questions[questionIdx];
@@ -36,17 +35,11 @@ const QuizComponent: React.FC<QuizComponentProps> = ({chapter, questions}) => {
             } else {
                 newAnswers[questionIdx] = [choiceId];
             }
-            console.log("Prev answers:", prev);
-            console.log("Updated answers:", newAnswers);
-
             return newAnswers;
         });
     };
 
-    useEffect(() => {
-        console.log(questions);
-        console.log(answers);
-    }, [questions, answers]);
+
 
     // Need to work on this
     const handleSubmit = async () => {
@@ -72,7 +65,6 @@ const QuizComponent: React.FC<QuizComponentProps> = ({chapter, questions}) => {
             })),
         };
 
-        console.log(data);
         const res = await submitChapterAttempt(data);
         if (res) {
             setSubmitted(true);

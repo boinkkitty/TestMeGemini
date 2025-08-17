@@ -6,11 +6,7 @@ type UploadComponentProps = {
   getRootProps: any;
 };
 
-function UploadComponent({
-  isDragActive,
-  getInputProps,
-  getRootProps,
-}: UploadComponentProps) {
+function UploadComponent({ isDragActive, getInputProps, getRootProps }: UploadComponentProps) {
   return (
     <div className="flex flex-col items-center gap-6">
       <div

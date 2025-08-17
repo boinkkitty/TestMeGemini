@@ -4,11 +4,11 @@ import React from "react";
 import { QuestionAttempt } from "@/lib/types";
 import AttemptChoices from "@/components/questions/AttemptChoices";
 
-type Props = {
+type QuestionAttemptCardProps = {
   attempt: QuestionAttempt;
-}
+};
 
-const QuestionAttemptCard: React.FC<Props> = ({ attempt }) => {
+function QuestionAttemptCard({ attempt }: QuestionAttemptCardProps) {
   const { question, selected_choices, score } = attempt;
   return (
     <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto relative">

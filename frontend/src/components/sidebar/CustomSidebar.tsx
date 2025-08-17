@@ -8,7 +8,7 @@ import { HiCheckCircle, HiOutlineCheckCircle } from "react-icons/hi";
 import { HiLogout, HiOutlineLogout } from "react-icons/hi";
 import Link from "next/link";
 import api from "@/utils/axiosInstance";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 export default function CustomSidebar() {
     const router = useRouter();

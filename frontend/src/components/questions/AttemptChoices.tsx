@@ -4,9 +4,9 @@ import { Choice } from "@/lib/types";
 type AttemptChoicesProps = {
   choices: Choice[];
   selected: number[];
-}
+};
 
-const AttemptChoices: React.FC<AttemptChoicesProps> = ({ choices, selected }) => {
+function AttemptChoices({ choices, selected }: AttemptChoicesProps) {
   return (
     <div className="flex flex-col gap-2 mt-2 justify-center">
       {choices.map((choice, idx) => {

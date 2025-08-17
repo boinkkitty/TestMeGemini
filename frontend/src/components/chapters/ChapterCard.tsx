@@ -1,4 +1,3 @@
-import React from "react";
 import { CHAPTER_COLORS } from "@/utils/chapterStyles";
 import { Chapter } from "@/lib/types";
 
@@ -8,7 +7,7 @@ type ChapterCardProps = {
     onClick?: () => void;
 };
 
-const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, index, onClick }) => {
+function ChapterCard({ chapter, index, onClick }: ChapterCardProps) {
     const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
     return (
         <div
@@ -19,6 +18,6 @@ const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, index, onClick }) =>
             <p className="line-clamp-3 overflow-hidden text-ellipsis">{chapter.description}</p>
         </div>
     );
-};
+}
 
 export default ChapterCard;

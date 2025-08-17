@@ -6,7 +6,7 @@ type ChapterAttemptCardProps = {
     onViewDetails: (attemptId: number) => void;
 };
 
-export const ChapterAttemptCard = ({ attempt, onViewDetails }: ChapterAttemptCardProps) => {
+export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCardProps) {
     // Format date as dd/mm/yy
     const formattedDate = new Date(attempt.completed_at).toLocaleDateString('en-GB');
     return (

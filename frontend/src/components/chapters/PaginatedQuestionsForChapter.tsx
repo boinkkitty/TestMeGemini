@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Question } from "@/lib/types";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
-interface Props {
+type PaginatedQuestionsForChapterProps = {
   questions: Question[];
-}
+};
 
-const PaginatedQuestionsForChapter: React.FC<Props> = ({ questions }) => {
+function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapterProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const currentQuestion = questions[currentIndex];

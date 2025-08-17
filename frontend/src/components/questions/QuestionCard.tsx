@@ -1,4 +1,3 @@
-import React from "react";
 import { Question } from "@/lib/types";
 
 type QuestionCardProps = {
@@ -8,14 +7,7 @@ type QuestionCardProps = {
     submitted: boolean;
 };
 
-const QuestionCard: React.FC<QuestionCardProps> = ({
-                                           question,
-                                           selected,
-                                           onSelect,
-                                           submitted,
-                                       }) => {
-    console.log("QuestionCard", question);
-
+function QuestionCard({ question, selected, onSelect, submitted }: QuestionCardProps) {
     return (
         <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">
@@ -35,7 +27,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         }
                     }
 
-                    console.log(choice.id, "Is this really undefined?");
 
 
                     return (
