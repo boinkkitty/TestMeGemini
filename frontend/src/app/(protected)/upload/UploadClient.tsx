@@ -77,80 +77,87 @@ export default function UploadClient() {
   };
 
   return (
-    <div className="p-6 max-w-xl h-full mx-auto flex flex-col gap-3 justify-center align-center">
-      <div className="mb-6">
-        <label htmlFor="chapter-title" className="block text-md font-semibold mb-2 text-gray-700">
-          Chapter Title
-        </label>
-        <input
-          id="chapter-title"
-          type="text"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="Enter chapter title..."
-          disabled={loading}
-        />
+    <div className="p-6 h-full w-full mx-auto flex flex-col gap-3 justify-center items-center">
+      <div className="flex justify-start items-center p-2 mb-4 w-full">
+        <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
+          Upload
+        </h1>
       </div>
-      <div className="mb-6">
-        <label htmlFor="chapter-category" className="block text-md font-semibold mb-2 text-gray-700">
-          Category
-        </label>
-        <input
-          id="chapter-category"
-          type="text"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="Enter category..."
-          disabled={loading}
+      <div className="flex-grow justify-between items-center max-w-xl">
+        <div className="mb-6">
+          <label htmlFor="chapter-title" className="block text-md font-semibold mb-2 text-gray-700">
+            Chapter Title
+          </label>
+          <input
+              id="chapter-title"
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Enter chapter title..."
+              disabled={loading}
+          />
+        </div>
+        <div className="mb-6">
+          <label htmlFor="chapter-category" className="block text-md font-semibold mb-2 text-gray-700">
+            Category
+          </label>
+          <input
+              id="chapter-category"
+              type="text"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Enter category..."
+              disabled={loading}
+          />
+        </div>
+        <UploadComponent
+            isDragActive={isDragActive}
+            getInputProps={getInputProps}
+            getRootProps={getRootProps}
         />
+        {files.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-md font-semibold mb-2 text-gray-700">Selected PDFs:</h4>
+              <ul className="flex flex-wrap gap-2">
+                {files.map((file) => (
+                    <li key={file.name} className="flex items-center bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-xs font-medium shadow-sm">
+                      <span className="truncate max-w-[120px]">{file.name}</span>
+                      <button
+                          type="button"
+                          onClick={() => removeFile(file.name)}
+                          className="ml-1 text-blue-400 hover:text-red-500 enabled:hover:cursor-pointer disabled:cursor-not-allowed"
+                          aria-label={`Remove ${file.name}`}
+                          disabled={false}
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    </li>
+                ))}
+              </ul>
+            </div>
+        )}
+        {fileRejections.length > 0 && (
+            <div className="mt-4 text-red-600">
+              File rejected: Only PDF files allowed.
+            </div>
+        )}
+        {error && (
+            <div className="mt-4 text-red-600 font-semibold">{error}</div>
+        )}
+        {success && (
+            <div className="mt-4 text-green-600 font-semibold">{success}</div>
+        )}
+        <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={loading}
+            className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed enabled:hover:cursor-pointer`}
+        >
+          {loading ? "Generating..." : "Generate"}
+        </button>
       </div>
-      <UploadComponent
-        isDragActive={isDragActive}
-        getInputProps={getInputProps}
-        getRootProps={getRootProps}
-      />
-      {files.length > 0 && (
-        <div className="mt-6">
-          <h4 className="text-md font-semibold mb-2 text-gray-700">Selected PDFs:</h4>
-          <ul className="space-y-2">
-            {files.map((file) => (
-              <li key={file.name} className="flex items-center justify-between bg-gray-100 rounded px-3 py-2">
-                <span className="truncate text-gray-800">{file.name}</span>
-                <button
-                  type="button"
-                  onClick={() => removeFile(file.name)}
-                  className="ml-2 text-gray-400 hover:text-red-500 enabled:hover:cursor-pointer disabled:cursor-not-allowed"
-                  aria-label={`Remove ${file.name}`}
-                  disabled={false}
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {fileRejections.length > 0 && (
-        <div className="mt-4 text-red-600">
-          File rejected: Only PDF files allowed.
-        </div>
-      )}
-      {error && (
-        <div className="mt-4 text-red-600 font-semibold">{error}</div>
-      )}
-      {success && (
-        <div className="mt-4 text-green-600 font-semibold">{success}</div>
-      )}
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={loading}
-        className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed enabled:hover:cursor-pointer`}
-      >
-        {loading ? "Generating..." : "Generate"}
-      </button>
     </div>
   );
 }

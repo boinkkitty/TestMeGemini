@@ -72,7 +72,7 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
     };
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl h-full flex flex-col items-center">
             {/* Score on top right */}
             {submitted && (
                 <div className="text-right font-bold text-lg mb-2">
@@ -89,7 +89,7 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
             />
 
             {/* Pagination */}
-            <div className="flex justify-between mt-4">
+            <div className="flex w-full justify-between mt-4">
                 {currentIndex > 0 ? (
                     <button
                         onClick={() => setCurrentIndex((prev) => prev - 1)}

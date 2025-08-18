@@ -14,7 +14,7 @@ type QuizClientProps = {
 export default function QuizClient({ chapters }: QuizClientProps)  {
     // const chapters = dummyChapters;
 
-    const [isStarted, setIsStarted] = useState(false);
+    const [isStarted, setIsStarted] = useState<boolean>(false);
     const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
 
@@ -32,8 +32,12 @@ export default function QuizClient({ chapters }: QuizClientProps)  {
     // 2. Retrieve
 
     return (
-        <div className="flex justify-center items-center w-full h-full">
-            {/*<PaginatedQuestions questions={dummyQuestions} onSubmit={() => {}}/>*/}
+        <div className="flex flex-col justify-between items-center w-full h-full p-6">
+            <div className="flex justify-start items-center p-2 mb-4 w-full">
+                <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
+                    {selectedChapter && isStarted ? `${selectedChapter.title}` : "Quiz"}
+                </h1>
+            </div>
             {!isStarted ? (
                 <ChapterSelection
                     chapters={chapters}
