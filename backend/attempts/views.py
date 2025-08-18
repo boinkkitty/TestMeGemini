@@ -12,7 +12,7 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return ChapterAttempt.objects.filter(user=self.request.user)
+        return ChapterAttempt.objects.filter(user=self.request.user).order_by('-completed_at')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
