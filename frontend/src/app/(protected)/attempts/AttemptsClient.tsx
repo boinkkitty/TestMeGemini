@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import {ChapterAttempt, dummyChapterAttempts, QuestionAttempt} from "@/lib/types";
+import {ChapterAttempt, QuestionAttempt} from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
 import getChapterAttempt from "@/utils/clientSide/getChapterAttempt";
@@ -57,7 +57,6 @@ function AttemptsClient({attempts}: AttemptsClientProps) {
                             (questionAttempts && questionAttempts.length > 0) ? (
                                 <PaginatedQuestionAttempts
                                     attempts={questionAttempts}
-                                    onBack={handleBack}
                                 />
                             ) : (
                                 <div className="text-gray-500 text-center">No question attempts found for this attempt.</div>

@@ -1,7 +1,7 @@
 'use client';
 
 import ChapterCard from "@/components/chapters/ChapterCard";
-import {Chapter, dummyChapters} from "@/lib/types";
+import {Chapter} from "@/lib/types";
 
 type DashboardClientProps = {
     chapters: Chapter[];

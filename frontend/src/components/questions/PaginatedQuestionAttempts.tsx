@@ -5,10 +5,9 @@ import QuestionAttemptCard from "@/components/questions/QuestionAttemptCard";
 
 type PaginatedQuestionAttemptsProps = {
   attempts: QuestionAttempt[];
-  onBack: () => void;
 };
 
-function PaginatedQuestionAttempts({ attempts, onBack }: PaginatedQuestionAttemptsProps) {
+function PaginatedQuestionAttempts({ attempts }: PaginatedQuestionAttemptsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentAttempt = attempts[currentIndex];
 

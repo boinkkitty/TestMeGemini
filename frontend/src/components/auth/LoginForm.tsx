@@ -5,6 +5,7 @@ import {useRouter} from "next/navigation";
 import { useState } from "react";
 import axios from "axios";
 import api from "@/utils/axiosInstance";
+import {handleError} from "@/utils/clientSide/handleError";
 
 type LoginFormProps = {
     formLabel: string;
@@ -41,9 +42,10 @@ function LoginForm({
             );
             // Cookies are set by backend, so just redirect
             router.push("/login");
-        } catch (err: any) {
+        } catch (err) {
             // Handle error (show message, etc.)
-            alert(err?.response?.data?.error || "Signup failed");
+            const errorMsg = `Sign up failed \n ${handleError(err)}`;
+            alert(errorMsg);
         }
     };
     const doLogin = async (data: Inputs) => {

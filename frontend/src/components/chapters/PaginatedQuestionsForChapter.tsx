@@ -32,7 +32,7 @@ function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapte
           {currentQuestion.question_text}
         </h3>
         <div className="flex flex-col gap-2 mt-2">
-          {currentQuestion.choices.map((choice, idx) => {
+          {currentQuestion.choices.map((choice) => {
             const isCorrect = choice.is_correct;
             return (
               <div

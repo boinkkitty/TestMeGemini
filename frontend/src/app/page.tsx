@@ -1,4 +1,3 @@
-import Image from "next/image";
 import CustomSidebar from "@/components/sidebar/CustomSidebar";
 
 export default function Home() {

@@ -11,15 +11,8 @@ export async function submitChapterAttempt(attempt: ChapterAttemptInput): Promis
         const res = await api.post("/api/attempts/", attempt);
         console.log("Chapter attempt submitted successfully:", res.data); // optional success log
         return res.data;
-    } catch (error: any) {
+    } catch (error) {
         console.error("Failed to submit chapter attempt:", error);
-
-        // Optional: log response data if using Axios
-        if (error.response) {
-            console.error("Response data:", error.response.data);
-            console.error("Response status:", error.response.status);
-        }
-
         throw error; // re-throw so the caller can handle it
     }
 }

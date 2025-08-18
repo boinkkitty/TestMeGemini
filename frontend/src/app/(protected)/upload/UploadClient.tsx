@@ -5,6 +5,7 @@ import UploadComponent from "../../../components/UploadComponent";
 import { useDropzone } from "react-dropzone";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import api from "@/utils/axiosInstance";
+import {handleError} from "@/utils/clientSide/handleError";
 
 export default function UploadClient() {
   const [files, setFiles] = useState<File[]>([]);
@@ -68,8 +69,7 @@ export default function UploadClient() {
     } catch (error) {
       console.log(error);
       // Get error message from Axios error response if possible
-      const errMsg =
-          error.response?.data?.error || "Failed to generate chapter and questions.";
+      const errMsg = handleError(error) || "Failed to generate chapter and questions.";
       setError(errMsg);
     } finally {
       setLoading(false);

@@ -9,7 +9,7 @@ type AttemptChoicesProps = {
 function AttemptChoices({ choices, selected }: AttemptChoicesProps) {
   return (
     <div className="flex flex-col gap-2 mt-2 justify-center">
-      {choices.map((choice, idx) => {
+      {choices.map((choice) => {
         const isSelected = selected.includes(choice.id);
         const isCorrect = choice.is_correct;
         let indicator = null;

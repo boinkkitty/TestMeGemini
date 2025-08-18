@@ -1,7 +1,6 @@
 // middleware.ts at root
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers'
 
 const protectedRoutes = ['/dashboard']

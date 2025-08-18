@@ -1,5 +1,3 @@
-import {useState} from "react";
-
 export type Chapter = {
     id: number;
     title: string;
@@ -129,21 +127,21 @@ export const dummyQuestionAttempts: QuestionAttempt[] = [
         score: 1,
         chapter_attempt: 1,
         selected_choices: [1],
-        question: dummyQuestions[0],
+        question_detail: dummyQuestions[0],
     },
     {
         id: 2,
         score: 2,
         chapter_attempt: 1,
         selected_choices: [5, 6, 8],
-        question: dummyQuestions[1],
+        question_detail: dummyQuestions[1],
     },
     {
         id: 3,
         score: 1,
         chapter_attempt: 2,
         selected_choices: [10],
-        question: dummyQuestions[2],
+        question_detail: dummyQuestions[2],
     },
 ];
 

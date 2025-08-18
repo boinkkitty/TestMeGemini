@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import {Chapter, ChapterAttempt, ChapterAttemptInput, Question} from "@/lib/types";
+import {Chapter, ChapterAttemptInput, Question} from "@/lib/types";
 import QuestionCard from "@/components/questions/QuestionCard";
 import {submitChapterAttempt} from "@/utils/clientSide/submitChapterAttempt";
 
@@ -39,23 +39,8 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
         });
     };
 
-
-
     // Need to work on this
     const handleSubmit = async () => {
-        let newScore = 0;
-        questions.forEach((q, idx) => {
-            const correctIdxs = q.choices
-                .map((c, i) => (c.is_correct ? i : null))
-                .filter((i) => i !== null) as number[];
-
-            const userChoices = answers[idx].sort();
-            const isCorrect =
-                JSON.stringify(userChoices) === JSON.stringify(correctIdxs.sort());
-            if (isCorrect) newScore++;
-        });
-        setScore(newScore);
-
         const data: ChapterAttemptInput = {
             chapter_id: chapter!.id,
             order: questions.map(question => question.id),
@@ -68,6 +53,7 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
         const res = await submitChapterAttempt(data);
         if (res) {
             setSubmitted(true);
+            setScore(res.score);
         }
     };
 

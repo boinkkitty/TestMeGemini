@@ -15,7 +15,7 @@ function ChapterSelection({
 }: ChapterSelectionProps) {
     return (
         <div className="flex flex-col justify-center items-center w-full h-full gap-4">
-            <p className="text-md font-semibold">Come! Let's start practicing!</p>
+            <p className="text-md font-semibold">{`Come! Let's start practicing!`}</p>
 
             <select
                 value={selectedChapterId ?? ""}

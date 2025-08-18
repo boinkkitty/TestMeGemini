@@ -1,7 +1,6 @@
 'use client';
 
-import {Chapter, dummyChapters, dummyQuestions, Question} from "@/lib/types";
-import PaginatedQuestions from "@/components/questions/PaginatedQuestions";
+import {Chapter, Question} from "@/lib/types";
 import QuizComponent from "@/components/questions/QuizComponent";
 import {useState} from "react";
 import ChapterSelection from "@/components/chapters/ChapterSelection";

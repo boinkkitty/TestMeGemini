@@ -1,6 +1,5 @@
 import "@/app/globals.css";
-import { SidebarComponent } from "@/components/sidebar/SidebarComponent";
-import CustomSidebar from "@/components/sidebar/CustomSidebar"; // import styles if needed
+import CustomSidebar from "@/components/sidebar/CustomSidebar";
 
 export default function ProtectedLayout({
                                             children,
