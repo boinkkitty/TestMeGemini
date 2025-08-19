@@ -2,7 +2,7 @@
 
 import {Chapter, Question} from "@/lib/types";
 import QuizComponent from "@/components/questions/QuizComponent";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import ChapterSelection from "@/components/chapters/ChapterSelection";
 import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
 
@@ -10,8 +10,13 @@ type QuizClientProps = {
     chapters: Chapter[];
 }
 
-export default function QuizClient({ chapters }: QuizClientProps)  {
+export default function QuizClient()  {
     // const chapters = dummyChapters;
+    useEffect(() => {
+
+    }, []);
+
+    const [chapters, setChapters] = useState<Chapter[]>([]);
 
     const [isStarted, setIsStarted] = useState<boolean>(false);
     const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);

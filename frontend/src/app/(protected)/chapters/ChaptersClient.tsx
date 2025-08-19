@@ -2,15 +2,35 @@
 
 import ChapterCard from "@/components/chapters/ChapterCard";
 import {Chapter, Question} from "@/lib/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
+import {useRouter} from "next/navigation";
+import getUserChapters from "@/utils/clientSide/getUserChapters";
 
 type ChaptersClientProps = {
     chapters: Chapter[];
 }
 
-export default function ChaptersClient({chapters}: ChaptersClientProps) {
+export default function ChaptersClient() {
+    const [chapters, setChapters] = useState<Chapter[]>([]);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchChapters = async () => {
+            try {
+                const res = await getUserChapters();
+                setChapters(res); // update state
+            } catch (err) {
+                console.error(err);
+                // Redirect to login if fetching fails
+                router.push("/login");
+            }
+        };
+
+        fetchChapters();
+    }, [router]);
+
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(false);

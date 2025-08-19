@@ -1,16 +1,37 @@
-"use client"
+'use client';
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {ChapterAttempt, QuestionAttempt} from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
 import getChapterAttempt from "@/utils/clientSide/getChapterAttempt";
+import getUserChapterAttempts from "@/utils/clientSide/getUserChapterAttempts";
+import getUserChapters from "@/utils/clientSide/getUserChapters";
+import {useRouter} from "next/navigation";
 
 type AttemptsClientProps = {
     attempts: ChapterAttempt[];
 }
 
-function AttemptsClient({attempts}: AttemptsClientProps) {
+function AttemptsClient() {
+    const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchChapters = async () => {
+            try {
+                const res = await getUserChapterAttempts();
+                setAttempts(res); // update state
+            } catch (err) {
+                console.error(err);
+                // Redirect to login if fetching fails
+                router.push("/login");
+            }
+        };
+
+        fetchChapters();
+    }, [router]);
+
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
     const [loading, setLoading] = useState(false);
