@@ -14,22 +14,12 @@ type ChaptersClientProps = {
 
 export default function ChaptersClient() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
-    const router = useRouter();
 
     useEffect(() => {
-        const fetchChapters = async () => {
-            try {
-                const res = await getUserChapters();
-                setChapters(res); // update state
-            } catch (err) {
-                console.error(err);
-                // Redirect to login if fetching fails
-                router.push("/login");
-            }
-        };
-
-        fetchChapters();
-    }, [router]);
+        getUserChapters().then(setChapters).catch((err) => {
+            console.error(err);
+        });
+    }, []);
 
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);

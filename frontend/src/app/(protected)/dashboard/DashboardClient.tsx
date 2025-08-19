@@ -4,7 +4,6 @@ import ChapterCard from "@/components/chapters/ChapterCard";
 import {Chapter} from "@/lib/types";
 import getUserChapters from "@/utils/clientSide/getUserChapters";
 import {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
 
 type DashboardClientProps = {
     chapters: Chapter[];
@@ -12,22 +11,12 @@ type DashboardClientProps = {
 
 export default function DashboardClient() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
-    const router = useRouter();
 
     useEffect(() => {
-        const fetchChapters = async () => {
-            try {
-                const res = await getUserChapters();
-                setChapters(res); // update state
-            } catch (err) {
-                console.error(err);
-                // Redirect to login if fetching fails
-                router.push("/login");
-            }
-        };
-
-        fetchChapters();
-    }, [router]);
+        getUserChapters().then(setChapters).catch((err) => {
+            console.error(err);
+        });
+    }, []);
 
     return (<div className="p-6">
             {/* Top container */}

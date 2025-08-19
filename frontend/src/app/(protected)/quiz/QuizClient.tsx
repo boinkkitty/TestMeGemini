@@ -5,6 +5,7 @@ import QuizComponent from "@/components/questions/QuizComponent";
 import {useEffect, useState} from "react";
 import ChapterSelection from "@/components/chapters/ChapterSelection";
 import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
+import getUserChapters from "@/utils/clientSide/getUserChapters";
 
 type QuizClientProps = {
     chapters: Chapter[];
@@ -13,7 +14,9 @@ type QuizClientProps = {
 export default function QuizClient()  {
     // const chapters = dummyChapters;
     useEffect(() => {
-
+        getUserChapters().then(setChapters).catch((err) => {
+            console.error(err);
+        });
     }, []);
 
     const [chapters, setChapters] = useState<Chapter[]>([]);

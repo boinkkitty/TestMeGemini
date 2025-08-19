@@ -6,7 +6,6 @@ import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
 import getChapterAttempt from "@/utils/clientSide/getChapterAttempt";
 import getUserChapterAttempts from "@/utils/clientSide/getUserChapterAttempts";
-import getUserChapters from "@/utils/clientSide/getUserChapters";
 import {useRouter} from "next/navigation";
 
 type AttemptsClientProps = {
@@ -18,19 +17,10 @@ function AttemptsClient() {
     const router = useRouter();
 
     useEffect(() => {
-        const fetchChapters = async () => {
-            try {
-                const res = await getUserChapterAttempts();
-                setAttempts(res); // update state
-            } catch (err) {
-                console.error(err);
-                // Redirect to login if fetching fails
-                router.push("/login");
-            }
-        };
-
-        fetchChapters();
-    }, [router]);
+        getUserChapterAttempts().then(setAttempts).catch((err) => {
+            console.error(err);
+        });
+    }, []);
 
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
