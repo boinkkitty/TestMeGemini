@@ -1,5 +1,78 @@
-import ChaptersClient from "@/app/(protected)/chapters/ChaptersClient";
+'use client';
+
+import {useCallback, useEffect, useState} from "react";
+import UploadComponent from "../../../components/UploadComponent";
+import { useDropzone } from "react-dropzone";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import api from "@/utils/axiosInstance";
+import {Chapter, Question} from "@/lib/types";
+import getUserChapters from "@/utils/clientSide/getUserChapters";
+import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
+import ChapterCard from "@/components/chapters/ChapterCard";
 
 export default function Chapters() {
-    return <ChaptersClient />
+    const [chapters, setChapters] = useState<Chapter[]>([]);
+    const [loadingChapters, setLoadingChapters] = useState(true);
+
+    useEffect(() => {
+        getUserChapters()
+            .then((data) => setChapters(data))
+            .catch((err) => {
+                console.error(err);
+            })
+            .finally(() => setLoadingChapters(false));
+    }, []);
+
+    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const handleSelectChapter = async (chapterId: number) => {
+        setLoading(true);
+        const chapter = chapters.find(ch => ch.id === chapterId) || null;
+        const chapterQuestions = await getChapterQuestions(chapter!.id);
+        setQuestions(chapterQuestions);
+        setSelectedChapterId(chapterId);
+        setLoading(false);
+    };
+    const handleBack = () => {
+        setSelectedChapterId(null);
+        setQuestions([]);
+    }
+
+    const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
+
+    if (loadingChapters) return <LoadingSpinner message="Loading chapters..." />;
+
+    return (
+        <div className="flex flex-col p-6">
+            <div className="flex justify-start items-center p-2 mb-4">
+                <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
+                    {selectedChapter ? `${selectedChapter.title}` : "Chapters"}
+                </h1>
+            </div>
+            {selectedChapter && (
+                <div className="mb-4 flex justify-start">
+                    <button onClick={handleBack} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold">Back</button>
+                </div>
+            )}
+            <div className={selectedChapterId && selectedChapter ? "p-2 flex justify-center items-center min-h-[60vh]" : "p-2"}>
+                {loading ? (
+                    <LoadingSpinner message="Loading questions..." />
+                ) : selectedChapterId && selectedChapter ? (
+                    <PaginatedQuestionsForChapter questions={questions} />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                        {chapters.map((chapter, index) => (
+                            <div key={chapter.id} className="h-full" onClick={() => handleSelectChapter(chapter.id)}>
+                                <ChapterCard key={chapter.id} chapter={chapter} index={index} onClick={() => handleSelectChapter(chapter.id)} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }

@@ -11,7 +11,7 @@ function UploadComponent({ isDragActive, getInputProps, getRootProps }: UploadCo
     <div className="flex flex-col items-center gap-6">
       <div
         {...getRootProps()}
-        className={`w-full max-w-xl h-48 flex items-center justify-center border-2 rounded-xl cursor-pointer transition-all duration-150
+        className={`w-full max-w-2xl h-48 flex items-center justify-center border-2 rounded-xl cursor-pointer transition-all duration-150
         ${isDragActive ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-dashed border-gray-300 bg-gray-50 shadow'}`}
       >
         <input {...getInputProps()} accept="application/pdf" />

@@ -11,11 +11,11 @@ export default async function middleware(request: NextRequest) {
     const isProtectedRoute = protectedRoutes.includes(path);
     const isPublicRoute = publicRoutes.includes(path);
 
-    const token = (await cookies()).get('access_token')?.value
+    const token = (await cookies()).get('refresh_token')?.value
 
     // Prevent login or sign up again
     if (token && isPublicRoute) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     // Protect protected routes
