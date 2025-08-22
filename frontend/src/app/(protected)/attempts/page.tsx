@@ -13,15 +13,16 @@ export default function Attempts() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
-    const [chapterNameFilter, setChapterNameFilter] = useState<string>("");
+    const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
 
     const filteredAttempts = attempts.filter(attempt =>
-        attempt.title.toLowerCase().includes(chapterNameFilter) &&
+        attempt.title.toLowerCase().includes(chapterTitleFilter) &&
         (categoryFilter === "" || attempt.category === categoryFilter)
     );
     const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
-
+    const categoryOptions: string[] = Array.from(new Set(attempts.map(a => a.category)));
+    
     useEffect(() => {
         getUserChapterAttempts()
             .then((data) => setAttempts(data))
@@ -45,16 +46,14 @@ export default function Attempts() {
         setQuestionAttempts([]);
     };
 
-    const handleSetChapterNameFilter = (filter: string) => {
-        setChapterNameFilter(filter.toLowerCase());
+    const handleSetChapterTitleFilter = (filter: string) => {
+        setChapterTitleFilter(filter.toLowerCase());
     }
 
     const handleSetCategoryFilter = (filter: string) => {
         setCategoryFilter(filter);
     }
-
-    const categoryOptions: string[] = Array.from(new Set(attempts.map(a => a.category)));
-
+    
     useEffect(() => {
         console.log(attempts);
     }, [attempts]);
@@ -68,8 +67,8 @@ export default function Attempts() {
                     {selectedAttempt ? `${selectedAttempt.title}` : "Chapter Attempts"}
                 </h1>
             </div>
-            <div className="flex flex-start gap-6 items-center p-2">
-                <SearchBar placeholder={"Search chapter..."} value={chapterNameFilter} onChange={handleSetChapterNameFilter}/>
+            <div className="flex flex-start gap-6 items-center p-2 mb-2">
+                <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
                 <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter}/>
             </div>
             {selectedAttempt ? (
