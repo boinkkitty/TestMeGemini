@@ -1,3 +1,4 @@
+from datetime import timedelta, date
 from api.utils.score import get_score
 from attempts.serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
 from questions.models import Question
@@ -12,7 +13,16 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return ChapterAttempt.objects.filter(user=self.request.user).order_by('-completed_at')
+        qs = ChapterAttempt.objects.filter(user=self.request.user).order_by('-completed_at')
+        limit = self.request.query_params.get('limit')
+        if limit:
+            try:
+                limit = int(limit)
+                if limit > 0:
+                    return qs[:limit]
+            except (ValueError, TypeError):
+                pass
+        return qs
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -53,3 +63,35 @@ class ChapterAttemptRetrieveAPIView(RetrieveAPIView):
 
     def get_queryset(self):
         return ChapterAttempt.objects.filter(user=self.request.user)
+
+# User activity for last N days
+class ActivityLastDaysView(RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        days = int(request.GET.get('days', 7))
+        today = date.today()
+        activity = []
+        for i in range(days):
+            day = today - timedelta(days=days - i - 1)
+            attempted = ChapterAttempt.objects.filter(user=request.user, completed_at__date=day).exists()
+            activity.append({"date": str(day), "attempted": attempted})
+        return Response(activity)
+
+# Weekly stats
+class WeeklyStatsView(RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        today = date.today()
+        week_ago = today - timedelta(days=6)
+        attempts = ChapterAttempt.objects.filter(user=request.user, completed_at__date__gte=week_ago)
+        scores = [a.score for a in attempts if a.score is not None]
+        average_score = sum(scores) / len(scores) if scores else 0
+        highest_score = max(scores) if scores else 0
+        attempt_count = attempts.count()
+        return Response({
+            "average_score": average_score,
+            "highest_score": highest_score,
+            "attempt_count": attempt_count,
+        })

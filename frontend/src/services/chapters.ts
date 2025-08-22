@@ -10,3 +10,11 @@ export async function getUserChapters(): Promise<Chapter[]> {
         return [];
     }
 }
+export async function getLatestChapters(limit: number): Promise<Chapter[]> {
+    const res = await api.get(`/api/chapters/`, {
+        params: {
+            limit,
+        }
+    });
+    return res.data;
+}
