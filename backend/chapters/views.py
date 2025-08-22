@@ -16,7 +16,16 @@ class ChapterListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Chapter.objects.filter(user=self.request.user)
+        qs = Chapter.objects.filter(user=self.request.user).order_by('-created_at')
+        limit = self.request.query_params.get('limit')
+        if limit:
+            try:
+                limit = int(limit)
+                if limit > 0:
+                    return qs[:limit]
+            except (ValueError, TypeError):
+                pass
+        return qs
 
     def get_serializer_class(self):
         if self.request.method == "GET":
