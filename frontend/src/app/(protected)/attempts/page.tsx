@@ -4,8 +4,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChapterAttempt, QuestionAttempt } from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
-import getChapterAttempt from "@/utils/clientSide/getChapterAttempt";
-import getUserChapterAttempts from "@/utils/clientSide/getUserChapterAttempts";
+import {getChapterAttempt, getUserChapterAttempts} from "@/services/attempts";
 
 export default function Attempts() {
     const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);

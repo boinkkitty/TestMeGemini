@@ -1,7 +1,7 @@
 import {Chapter} from "@/lib/types";
 import api from "@/utils/axiosInstance";
 
-export default async function getUserChapters(): Promise<Chapter[]> {
+export async function getUserChapters(): Promise<Chapter[]> {
     try {
         const res = await api.get(`/api/chapters/`);
         return res.data;

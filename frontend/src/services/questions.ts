@@ -8,10 +8,10 @@ import api from "@/utils/axiosInstance";
  * @param chapterId - The ID of the chapter to fetch questions for.
  * @returns A promise that resolves to an array of questions.
  */
-async function getChapterQuestions(chapterId: number): Promise<Question[]> {
+export async function getChapterQuestions(chapterId: number): Promise<Question[]> {
     try {
         const res = await api.get(`/api/chapters/${chapterId}/questions/`, {
-            withCredentials: true, 
+            withCredentials: true,
         });
         return res.data;
     } catch (error) {
@@ -19,5 +19,3 @@ async function getChapterQuestions(chapterId: number): Promise<Question[]> {
         throw new Error("Failed to fetch chapters");
     }
 }
-
-export default getChapterQuestions;

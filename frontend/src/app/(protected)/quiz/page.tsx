@@ -1,11 +1,12 @@
 "use client";
+
 import { Chapter, Question } from "@/lib/types";
 import QuizComponent from "@/components/questions/QuizComponent";
 import { useEffect, useState } from "react";
 import ChapterSelection from "@/components/chapters/ChapterSelection";
-import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
-import getUserChapters from "@/utils/clientSide/getUserChapters";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import {getUserChapters} from "@/services/chapters";
+import {getChapterQuestions} from "@/services/questions";
 
 export default function Quiz()  {
     const [chapters, setChapters] = useState<Chapter[]>([]);

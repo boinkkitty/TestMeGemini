@@ -7,7 +7,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import api from "@/utils/axiosInstance";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
-import {handleError} from "@/utils/clientSide/handleError";
+import {handleError} from "../../../utils/handleError";
 
 export default function UploadClient() {
   const [files, setFiles] = useState<File[]>([]);

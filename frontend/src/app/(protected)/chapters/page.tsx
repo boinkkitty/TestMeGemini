@@ -1,16 +1,12 @@
 'use client';
 
-import {useCallback, useEffect, useState} from "react";
-import UploadComponent from "../../../components/UploadComponent";
-import { useDropzone } from "react-dropzone";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import api from "@/utils/axiosInstance";
+import {useEffect, useState} from "react";
 import {Chapter, Question} from "@/lib/types";
-import getUserChapters from "@/utils/clientSide/getUserChapters";
-import getChapterQuestions from "@/utils/clientSide/getChapterQuestions";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 import ChapterCard from "@/components/chapters/ChapterCard";
+import {getUserChapters} from "@/services/chapters";
+import {getChapterQuestions} from "@/services/questions";
 
 export default function Chapters() {
     const [chapters, setChapters] = useState<Chapter[]>([]);

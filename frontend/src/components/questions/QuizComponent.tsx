@@ -3,7 +3,7 @@
 import {useEffect, useState} from "react";
 import {Chapter, ChapterAttemptInput, Question} from "@/lib/types";
 import QuestionCard from "@/components/questions/QuestionCard";
-import {submitChapterAttempt} from "@/utils/clientSide/submitChapterAttempt";
+import {submitChapterAttempt} from "@/services/attempts";
 
 type QuizComponentProps = {
     chapter?: Chapter | null;

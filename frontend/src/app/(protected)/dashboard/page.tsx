@@ -1,9 +1,9 @@
 "use client";
 import ChapterCard from "@/components/chapters/ChapterCard";
 import { Chapter } from "@/lib/types";
-import getUserChapters from "@/utils/clientSide/getUserChapters";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import {getUserChapters} from "@/services/chapters";
 
 export default function Dashboard() {
     const [chapters, setChapters] = useState<Chapter[]>([]);

@@ -5,7 +5,7 @@ import {useRouter} from "next/navigation";
 import { useState } from "react";
 import axios from "axios";
 import api from "@/utils/axiosInstance";
-import {handleError} from "@/utils/clientSide/handleError";
+import {handleError} from "../../utils/handleError";
 
 type LoginFormProps = {
     formLabel: string;
