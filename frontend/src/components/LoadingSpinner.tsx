@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function LoadingSpinner({ message = "Loading..." }) {
+function LoadingSpinner({ message = "Loading..." }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "2rem" }}>
       <div className="spinner" style={{
@@ -21,3 +21,5 @@ export default function LoadingSpinner({ message = "Loading..." }) {
     </div>
   );
 }
+
+export default LoadingSpinner;
