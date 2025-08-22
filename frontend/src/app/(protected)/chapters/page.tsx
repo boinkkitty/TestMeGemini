@@ -10,7 +10,12 @@ import {getChapterQuestions} from "@/services/questions";
 
 export default function Chapters() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
-    const [loadingChapters, setLoadingChapters] = useState(true);
+    const [isLoadingChapters, setIsLoadingChapters] = useState<boolean>(true);
+    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
 
     useEffect(() => {
         getUserChapters()
@@ -18,29 +23,24 @@ export default function Chapters() {
             .catch((err) => {
                 console.error(err);
             })
-            .finally(() => setLoadingChapters(false));
+            .finally(() => setIsLoadingChapters(false));
     }, []);
 
-    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [loading, setLoading] = useState(false);
-
     const handleSelectChapter = async (chapterId: number) => {
-        setLoading(true);
+        setIsLoading(true);
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         const chapterQuestions = await getChapterQuestions(chapter!.id);
         setQuestions(chapterQuestions);
         setSelectedChapterId(chapterId);
-        setLoading(false);
+        setIsLoading(false);
     };
+
     const handleBack = () => {
         setSelectedChapterId(null);
         setQuestions([]);
     }
 
-    const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
-
-    if (loadingChapters) return <LoadingSpinner message="Loading chapters..." />;
+    if (isLoadingChapters) return <LoadingSpinner message="Loading chapters..." />;
 
     return (
         <div className="flex flex-col p-6">
@@ -55,7 +55,7 @@ export default function Chapters() {
                 </div>
             )}
             <div className={selectedChapterId && selectedChapter ? "p-2 flex justify-center items-center min-h-[60vh]" : "p-2"}>
-                {loading ? (
+                {isLoading ? (
                     <LoadingSpinner message="Loading questions..." />
                 ) : selectedChapterId && selectedChapter ? (
                     <PaginatedQuestionsForChapter questions={questions} />

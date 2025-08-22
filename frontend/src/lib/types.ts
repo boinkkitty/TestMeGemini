@@ -1,3 +1,9 @@
+export type UserInfo = {
+    id: number,
+    username: string,
+    email: string,
+}
+
 export type Chapter = {
     id: number;
     title: string;

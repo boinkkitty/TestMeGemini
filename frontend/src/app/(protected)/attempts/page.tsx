@@ -8,26 +8,28 @@ import {getChapterAttempt, getUserChapterAttempts} from "@/services/attempts";
 
 export default function Attempts() {
     const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
+    const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
+
+    const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
+
     useEffect(() => {
         getUserChapterAttempts()
             .then((data) => setAttempts(data))
             .catch((err) => {
                 console.error(err);
             })
-            .finally(() => setLoading(false));
+            .finally(() => setIsLoading(false));
     }, []);
 
-    const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
-    const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
-
     const handleSelectAttempt = async (attemptId: number) => {
-        setLoading(true);
+        setIsLoading(true);
         setSelectedAttemptId(attemptId);
         const attempt = attempts.find((attempt) => attempt.id === attemptId);
         const attemptDetails = await getChapterAttempt(attempt!.id);
         setQuestionAttempts(attemptDetails.question_attempts ?? []);
-        setLoading(false);
+        setIsLoading(false);
     };
 
     const handleBack = () => {
@@ -35,9 +37,7 @@ export default function Attempts() {
         setQuestionAttempts([]);
     };
 
-    const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
-
-    if (loading) return <LoadingSpinner message="Loading attempts..." />;
+    if (isLoading) return <LoadingSpinner message="Loading attempts..." />;
 
     return (
         <div className="flex flex-col p-6">

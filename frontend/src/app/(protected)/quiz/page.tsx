@@ -10,7 +10,10 @@ import {getChapterQuestions} from "@/services/questions";
 
 export default function Quiz()  {
     const [chapters, setChapters] = useState<Chapter[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isStarted, setIsStarted] = useState<boolean>(false);
+    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+    const [questions, setQuestions] = useState<Question[]>([]);
 
     useEffect(() => {
         getUserChapters()
@@ -18,12 +21,8 @@ export default function Quiz()  {
             .catch((err) => {
                 console.error(err);
             })
-            .finally(() => setLoading(false));
+            .finally(() => setIsLoading(false));
     }, []);
-
-    const [isStarted, setIsStarted] = useState<boolean>(false);
-    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
-    const [questions, setQuestions] = useState<Question[]>([]);
 
     const handleSelectedChapter = async (chapterId: number) => {
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
@@ -32,7 +31,7 @@ export default function Quiz()  {
         setQuestions(chapterQuestions);
     };
 
-    if (loading) return <LoadingSpinner message="Loading chapters..." />;
+    if (isLoading) return <LoadingSpinner message="Loading chapters..." />;
 
     return (
         <div className="flex flex-col justify-between items-center w-full h-full p-6">
