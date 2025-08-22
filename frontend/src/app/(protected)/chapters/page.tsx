@@ -24,7 +24,9 @@ export default function Chapters() {
         (categoryFilter === "" || chapter.category === categoryFilter)
     );
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
-    const categoryOptions: string[] = Array.from(new Set(chapters.map(a => a.category)));
+    const categoryOptions = Array.from(new Set(chapters.map(a => a.category)))
+        .filter(Boolean)
+        .map((cat) => ({ value: cat, label: cat }));
 
     useEffect(() => {
         getUserChapters()
@@ -68,7 +70,7 @@ export default function Chapters() {
             </div>
             <div className="flex flex-start gap-6 items-center p-2 mb-4">
                 <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
-                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter}/>
+                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
             </div>
             {selectedChapter && (
                 <div className="mb-4 flex justify-start">

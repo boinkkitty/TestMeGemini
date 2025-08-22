@@ -2,12 +2,18 @@
 
 type DropDownSelectionProps = {
     label: string;
-    options: string[];
+    options: DropDownOption[];
     value: string;
     onChange: (value: string) => void;
+    showBlankOption?: boolean;
 }
 
-function DropDownSelection({ label, value, options, onChange }: DropDownSelectionProps) {
+type DropDownOption = {
+    value: string;
+    label: string;
+}
+
+function DropDownSelection({ label, value, options, onChange, showBlankOption = true }: DropDownSelectionProps) {
     return (
         <div className="flex items-center gap-4 min-w-[180px]">
             <label className="font-semibold text-gray-700 mb-1 pl-1">{label}</label>
@@ -16,10 +22,10 @@ function DropDownSelection({ label, value, options, onChange }: DropDownSelectio
                 value={value}
                 onChange={e => onChange(e.target.value)}
             >
-                <option value="">All</option>
+                {showBlankOption && <option value="">Select</option>}
                 {options.map((option) => (
-                    <option key={option} value={option}>
-                        {option}
+                    <option key={option.value} value={option.value}>
+                        {option.label}
                     </option>
                 ))}
             </select>

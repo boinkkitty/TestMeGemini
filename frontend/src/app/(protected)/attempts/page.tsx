@@ -8,6 +8,9 @@ import {getChapterAttempt, getUserChapterAttempts} from "@/services/attempts";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
 
+
+type SortType = "latest" | "oldest" | "highest" | "lowest";
+
 export default function Attempts() {
     const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -15,13 +18,43 @@ export default function Attempts() {
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
+    const [sortBy, setSortBy] = useState<SortType>("latest");
 
-    const filteredAttempts = attempts.filter(attempt =>
+    // Sorting options
+    const SORT_OPTIONS = [
+        { value: "latest", label: "Latest" },
+        { value: "oldest", label: "Oldest" },
+        { value: "highest", label: "Highest Score" },
+        { value: "lowest", label: "Lowest Score" },
+    ];
+
+    // Filtered and sorted attempts
+    let filteredAttempts = attempts.filter(attempt =>
         attempt.title.toLowerCase().includes(chapterTitleFilter) &&
         (categoryFilter === "" || attempt.category === categoryFilter)
     );
+
+    // Sorting logic using switch
+    switch (sortBy) {
+        case "latest":
+            filteredAttempts = filteredAttempts.slice().sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime());
+            break;
+        case "oldest":
+            filteredAttempts = filteredAttempts.slice().sort((a, b) => new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime());
+            break;
+        case "highest":
+            filteredAttempts = filteredAttempts.slice().sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+            break;
+        case "lowest":
+            filteredAttempts = filteredAttempts.slice().sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+            break;
+        default:
+            break;
+    }
     const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
-    const categoryOptions: string[] = Array.from(new Set(attempts.map(a => a.category)));
+    const categoryOptions = Array.from(new Set(attempts.map(a => a.category)))
+        .filter(Boolean)
+        .map((cat) => ({ value: cat, label: cat }));
     
     useEffect(() => {
         getUserChapterAttempts()
@@ -53,6 +86,10 @@ export default function Attempts() {
     const handleSetCategoryFilter = (filter: string) => {
         setCategoryFilter(filter);
     }
+
+    const handleSortBy = (sortValue: string) => {
+        setSortBy(sortValue as SortType);
+    }
     
     useEffect(() => {
         console.log(attempts);
@@ -69,7 +106,8 @@ export default function Attempts() {
             </div>
             <div className="flex flex-start gap-6 items-center p-2 mb-2">
                 <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
-                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter}/>
+                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
+                <DropDownSelection label={"Sort By"} options={SORT_OPTIONS} value={sortBy} onChange={handleSortBy} showBlankOption={false}/>
             </div>
             {selectedAttempt ? (
                 <>
