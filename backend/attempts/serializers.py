@@ -28,9 +28,13 @@ class QuestionAttemptSerializer(serializers.ModelSerializer):
 class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
 
     title = serializers.SerializerMethodField(read_only=True)
+    category = serializers.SerializerMethodField(read_only=True)
 
     def get_title(self, obj):
         return obj.chapter.title if obj.chapter else None
+    
+    def get_category(self, obj):
+        return obj.chapter.category if obj.chapter else None
 
     chapter_id = serializers.PrimaryKeyRelatedField(
         source='chapter',
@@ -44,8 +48,8 @@ class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChapterAttempt
-        fields = ['id', 'chapter_id', 'title', 'user', 'score', 'completed_at', 'order']
-        read_only_fields = ['id', 'completed_at', 'title']
+        fields = ['id', 'chapter_id', 'title', 'category', 'user', 'score', 'completed_at', 'order']
+        read_only_fields = ['id', 'completed_at', 'title', 'category']
 
 class ChapterAttemptSerializer(ChapterAttemptBaseSerializer):
     pass
