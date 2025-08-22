@@ -30,6 +30,7 @@ export type Question = {
 export type ChapterAttempt = {
     id: number;
     title: string;
+    category: string;
     score: number;
     completed_at: string;
     chapter_id: number;
@@ -156,6 +157,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         id: 1,
         title: "Test 1",
         score: 2,
+        category: "HEHE",
         completed_at: "2025-08-16T10:00:00Z",
         chapter_id: 1,
         order: [1, 2],
@@ -165,6 +167,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         id: 2,
         title: "Test 2",
         score: 1,
+        category: "HEHE",
         completed_at: "2025-08-16T11:00:00Z",
         chapter_id: 2,
         order: [3],

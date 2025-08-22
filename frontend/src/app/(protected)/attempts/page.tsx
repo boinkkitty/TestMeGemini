@@ -5,13 +5,21 @@ import { ChapterAttempt, QuestionAttempt } from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
 import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
 import {getChapterAttempt, getUserChapterAttempts} from "@/services/attempts";
+import SearchBar from "@/components/ui/SearchBar";
+import DropDownSelection from "@/components/ui/DropDownSelection";
 
 export default function Attempts() {
     const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
+    const [chapterNameFilter, setChapterNameFilter] = useState<string>("");
+    const [categoryFilter, setCategoryFilter] = useState<string>("");
 
+    const filteredAttempts = attempts.filter(attempt =>
+        attempt.title.toLowerCase().includes(chapterNameFilter) &&
+        (categoryFilter === "" || attempt.category === categoryFilter)
+    );
     const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
 
     useEffect(() => {
@@ -37,6 +45,20 @@ export default function Attempts() {
         setQuestionAttempts([]);
     };
 
+    const handleSetChapterNameFilter = (filter: string) => {
+        setChapterNameFilter(filter.toLowerCase());
+    }
+
+    const handleSetCategoryFilter = (filter: string) => {
+        setCategoryFilter(filter);
+    }
+
+    const categoryOptions: string[] = Array.from(new Set(attempts.map(a => a.category)));
+
+    useEffect(() => {
+        console.log(attempts);
+    }, [attempts]);
+
     if (isLoading) return <LoadingSpinner message="Loading attempts..." />;
 
     return (
@@ -45,11 +67,10 @@ export default function Attempts() {
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
                     {selectedAttempt ? `${selectedAttempt.title}` : "Chapter Attempts"}
                 </h1>
-                {/*
-                    To add
-                    1. SearchBar filter
-                    2. Category filter
-                */}
+            </div>
+            <div className="flex flex-start gap-6 items-center p-2">
+                <SearchBar placeholder={"Search chapter..."} value={chapterNameFilter} onChange={handleSetChapterNameFilter}/>
+                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter}/>
             </div>
             {selectedAttempt ? (
                 <>
@@ -66,7 +87,7 @@ export default function Attempts() {
                 </>
             ) : (
                 <div className="p-2 flex flex-col gap-2">
-                    {attempts.map((attempt) => (
+                    {filteredAttempts.map((attempt) => (
                         <ChapterAttemptCard
                             key={attempt.id}
                             attempt={attempt}

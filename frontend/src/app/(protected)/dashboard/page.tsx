@@ -32,7 +32,7 @@ export default function Dashboard() {
                 <h1 className="text-2xl font-bold">
                     {`Welcome back ${userInfo?.username ?? ""}!`}
                 </h1>
-                <p className="text-gray-600">Here’s what’s going on...</p>
+                <p className="text-gray-600">Here’s what you been up to recently...</p>
             </div>
             {/* 5-column grid for chapters */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
