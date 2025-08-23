@@ -1,32 +1,29 @@
 // middleware.ts at root
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers'
 
 const protectedRoutes = ['/dashboard']
 const publicRoutes = ['/login', '/signup']
 
 export default async function middleware(request: NextRequest) {
-    /*
     const path = request.nextUrl.pathname;
     const isProtectedRoute = protectedRoutes.includes(path);
     const isPublicRoute = publicRoutes.includes(path);
 
-    const token = (await cookies()).get('token')?.value
-    // const token = request.cookies.get('token')?.value
+    const token = (await cookies()).get('refresh_token')?.value
 
-    if (isProtectedRoute && !token) {
+    // Prevent login or sign up again
+    if (token && isPublicRoute) {
+         return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    // Protect protected routes
+    if (!token && isProtectedRoute) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    try {
-        jwt.verify(token, process.env.JWT_SECRET!);
-        return NextResponse.next();
-    } catch {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-    */
+    return NextResponse.next();
 }
 
 export const config = {

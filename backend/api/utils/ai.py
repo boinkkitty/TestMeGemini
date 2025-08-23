@@ -1,63 +1,115 @@
-import json, re
+import json
 from openai import OpenAI
-client = OpenAI() # Need to get key from .env
+from google import genai
+from django.conf import settings
+from typing import List, Literal
+from pydantic import BaseModel
 
-BASE_INSTRUCTIONS = """You are a helpful assistant that creates quiz questions based on the given chapter content.  
-Generate questions only of these three types:  
-- MCQ (Multiple Choice Question) with exactly one correct choice  
-- MRQ (Multi Response Question) with one or more correct choices  
-- TF (True/False) with two choices: True and False, only one correct  
+# Models for the AI response
+class Choice(BaseModel):
+    text: str
+    is_correct: bool
 
-Output the result as a JSON object with this structure:
+class Question(BaseModel):
+    question_text: str
+    question_type: Literal["MCQ", "MRQ", "TF"]
+    choices: List[Choice]
 
-{
-  "chapter": {
-    "title": "<chapter title>",
-    "content": "<chapter content>"
-  },
-  "questions": [
-    {
-      "question_text": "<question text>",
-      "question_type": "<MCQ|MRQ|TF>",
-      "choices": [
-        {"text": "<choice text>", "is_correct": <true|false>},
-        ...
-      ]
-    },
-    ...
-  ]
-}
+class ChapterContent(BaseModel):
+    title: str
+    description: str
 
-Make sure:  
-- For MCQ, exactly one choice is marked correct.  
-- For MRQ, one or more choices are marked correct.  
-- For TF, only two choices: "True" and "False".  
-- The JSON must be valid and well-formed.
+class ChapterSchema(BaseModel):
+    chapter: ChapterContent
+    questions: List[Question]
+
+BASE_INSTRUCTIONS = """
+You are an expert quiz generator and a helpful assistant that creates questions from lecture or textbook content.
+
+Your tasks:
+1. Write a concise **summary of the chapter content** (3–5 sentences), highlighting the most important definitions, formulas, concepts, processes, and examples.
+2. Generate **exactly 20–25 quiz questions** strictly based on the core learning material in the chapter. Cover all key points, ensuring that each major topic has at least one question.
+
+Question Types & Rules:
+- **MCQ (Multiple Choice Question)**: 3–4 options, exactly one correct answer.
+- **MRQ (Multi Response Question)**: 3–4 options, one or more correct answers.
+- **TF (True/False)**: Only two options (True, False), exactly one correct answer.
+- Ensure **diversity**: approximately 50% MCQs, 25% MRQs, 25% TFs.
+- Choices must be **plausible** and non-trivial;
+
+Content Coverage:
+- Focus **only** on lecture or textbook content.
+- Include definitions, formulas, key concepts, processes, examples, and comparisons.
+- Absolutely do NOT create questions about:
+  - The course itself (course codes, course policies, exam dates, office hours, instructors)
+  - Administrative instructions or announcements
+  - AI usage policies, grading policies, or assignments not related to core content
+  - Learning objectives, course motivations, or external references
 """
 
 def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
-    return f"""{BASE_INSTRUCTIONS}
+    """
+    Build content to send to the AI model
+    """
 
-<chapter_title>
-{chapter_title}
-</chapter_title>
+    return f"""
+      <chapter_title>
+      {chapter_title}
+      </chapter_title>
 
-<chapter_content>
-{chapter_content}
-</chapter_content>
-Return ONLY the JSON object described."""
+      <chapter_content>
+      {chapter_content}
+      </chapter_content>
+      """
     
-def call_model(chapter_title: str, chapter_content: str) -> dict:
+def call_gpt_model(chapter_title: str, chapter_content: str) -> dict:
     prompt = build_user_prompt(chapter_title, chapter_content)
-    resp = client.chat.completions.create(
+    client = OpenAI(api_key = settings.OPENAI_API_KEY)
+    response = client.chat.completions.parse(
         model="gpt-4o-mini",
-        messages=[{"role":"user","content":prompt}],
-        temperature=0.2
+        messages=[
+            {"role": "system", "content": BASE_INSTRUCTIONS},
+            {"role": "user", "content": prompt}
+        ],
+        response_format=ChapterSchema,
     )
-    raw = resp.choices[0].message.content
-    # Extract JSON
-    match = re.search(r'\{.*\}\s*$', raw, re.DOTALL)
-    if not match:
-        raise ValueError("No JSON found")
-    data = json.loads(match.group(0))
+    return response.choices[0].message.parsed.dict()
+
+def call_gemini_model(chapter_title: str, chapter_content: str) -> dict:
+    prompt = build_user_prompt(chapter_title, chapter_content)
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": ChapterSchema
+        },
+    )
+    print(response)
+    generated_text = response.candidates[0].content.parts[0].text
+    print("Generated text:", generated_text)
+    data = json.loads(generated_text)
     return data
+
+
+PROMPT_2 = """
+You are an expert quiz generator and a helpful assistant that creates questions from lecture or textbook content.
+
+Your tasks:
+1. Write a concise **summary of the chapter content** (3–5 sentences), highlighting the most important definitions, formulas, concepts, processes, and examples.
+2. Generate **exactly 20–25 quiz questions** strictly based on the core learning material in the chapter. Cover all key points, ensuring that each major topic has at least one question.
+
+Question Types & Rules:
+- **MCQ (Multiple Choice Question)**: 3–4 options, exactly one correct answer.
+- **MRQ (Multi Response Question)**: 3–4 options, one or more correct answers.
+- **TF (True/False)**: Only two options (True, False), exactly one correct answer.
+- Ensure **diversity**: approximately 50% MCQs, 25% MRQs, 25% TFs, unless the content is unsuitable.
+- Choices must be **plausible** and non-trivial; avoid obviously wrong answers or jokes.
+
+Content Coverage:
+- Focus **only** on lecture or textbook content.
+- Include definitions, formulas, key concepts, processes, examples, and comparisons.
+- Ignore: administrative info (exam dates, office hours, announcements), section dividers (e.g., "Summary", "Questions?"), references, citations, URLs, and image captions without context.
+- Ignore course descriptions, motivations, or learning objectives.
+"""

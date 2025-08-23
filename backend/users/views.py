@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .serializers import CustomUserSerializer, LoginUserSerializer, RegisterUserSerializer
 from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
@@ -18,9 +18,14 @@ class UserInfoView(RetrieveUpdateAPIView):
         return self.request.user
     
 class UserRegistrationView(CreateAPIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [] # Only for testing
     serializer_class = RegisterUserSerializer
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [] # Only for testing
+
     def post(self, request):
         serializer = LoginUserSerializer(data=request.data)
 
