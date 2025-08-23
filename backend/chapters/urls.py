@@ -1,7 +1,7 @@
-from django.urls import path
-from .views import UserChaptersAPIView, ChapterWithQuestionsCreateView
+from django.urls import path, include
+from .views import ChapterListCreateAPIView
 
 urlpatterns = [
-    # path('create-with-questions/', ChapterWithQuestionsCreateView.as_view(), name='chapter-create-with-questions'),
-    path('my-chapters/', UserChaptersAPIView.as_view(), name='user-chapters'),
+    path('', ChapterListCreateAPIView.as_view(), name='chapters_list_create'),
+    path('<int:chapter_id>/', include('questions.urls')),
 ]
