@@ -14,7 +14,6 @@ class ChapterAttempt(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     score = models.FloatField(default=0.0)
     completed_at = models.DateTimeField(auto_now_add=True)
-    order = models.JSONField(default=list)
 
 class QuestionAttempt(models.Model):
     """Model representing an attempt to answer a question."""

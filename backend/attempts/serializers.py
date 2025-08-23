@@ -1,7 +1,7 @@
 from attempts.models import ChapterAttempt, QuestionAttempt
 from chapters.models import Chapter
 from questions.models import Choice
-from questions.serializers import ChoiceSerializer, QuestionSerializer
+from questions.serializers import QuestionSerializer
 from questions.models import Question
 from rest_framework import serializers
 
@@ -45,17 +45,25 @@ class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
         allow_empty=True
     )
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    max_score = serializers.SerializerMethodField(read_only=True)
+
+    def get_max_score(self, obj):
+        return obj.question_attempts.count() if hasattr(obj, 'question_attempts') else 0
 
     class Meta:
         model = ChapterAttempt
-        fields = ['id', 'chapter_id', 'title', 'category', 'user', 'score', 'completed_at', 'order']
-        read_only_fields = ['id', 'completed_at', 'title', 'category']
+        fields = ['id', 'chapter_id', 'title', 'category', 'user', 'score', 'completed_at', 'max_score']
+        read_only_fields = ['id', 'completed_at', 'title', 'category', 'max_score']
 
 class ChapterAttemptSerializer(ChapterAttemptBaseSerializer):
     pass
 
 class ChapterAttemptDetailSerializer(ChapterAttemptBaseSerializer):
-    question_attempts = QuestionAttemptSerializer(many=True, read_only=True)
+    question_attempts = serializers.SerializerMethodField(read_only=True)
+
+    def get_question_attempts(self, obj):
+        attempts = obj.question_attempts.order_by('attempted_at')
+        return QuestionAttemptSerializer(attempts, many=True).data
 
     class Meta(ChapterAttemptBaseSerializer.Meta):
         fields = ChapterAttemptBaseSerializer.Meta.fields + ['question_attempts']

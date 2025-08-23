@@ -18,7 +18,7 @@ export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCar
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Score:</div>
-                    <div className="text-sm">{attempt.score} / {attempt.order.length}</div>
+                    <div className="text-sm">{attempt.score.toFixed(2)} / {attempt.max_score}</div>
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Attempted On:</div>

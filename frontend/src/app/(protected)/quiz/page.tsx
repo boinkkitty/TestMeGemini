@@ -27,9 +27,15 @@ export default function Quiz()  {
     const handleSelectedChapter = async (chapterId: number) => {
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         setSelectedChapter(chapter);
-        const chapterQuestions = await getChapterQuestions(chapter!.id);
-        setQuestions(chapterQuestions);
     };
+
+    const handleStartQuiz = async () => {
+        await getChapterQuestions(selectedChapter!.id)
+            .then((questions) => setQuestions(questions))
+            .finally(() => {
+                setIsStarted(true);
+            });
+    }
 
     if (isLoading) return <LoadingSpinner message="Loading chapters..." />;
 
@@ -45,7 +51,7 @@ export default function Quiz()  {
                     chapters={chapters}
                     selectedChapterId={selectedChapter?.id}
                     setSelectedChapterId={handleSelectedChapter}
-                    handleStart={() => setIsStarted(true)}
+                    handleStart={handleStartQuiz}
                 />
             ) : (
                 <QuizComponent questions={questions} chapter={selectedChapter} />

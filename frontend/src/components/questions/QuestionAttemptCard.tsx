@@ -19,7 +19,7 @@ function QuestionAttemptCard({ attempt }: QuestionAttemptCardProps) {
         <h3 className="text-lg font-semibold text-gray-800 flex-1">
           {question_detail.question_text}
         </h3>
-        <span className="ml-4 px-3 py-1 bg-green-100 text-green-700 font-bold text-sm rounded-full whitespace-nowrap">{score} / 1</span>
+        <span className="ml-4 px-3 py-1 bg-green-100 text-green-700 font-bold text-sm rounded-full whitespace-nowrap">{score.toFixed(2)} / 1</span>
       </div>
       <div className={`flex flex-col flex-1 justify-center ${gapClass}`}>
         <AttemptChoices choices={question_detail.choices} selected={selected_choices} />

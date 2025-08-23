@@ -1,20 +1,16 @@
 import {Chapter} from "@/lib/types";
 import api from "@/utils/axiosInstance";
 
-export async function getUserChapters(): Promise<Chapter[]> {
+export type ChaptersParams = {
+    limit?: number;
+}
+
+export async function getUserChapters(params?: ChaptersParams): Promise<Chapter[]> {
     try {
-        const res = await api.get(`/api/chapters/`);
+        const res = await api.get(`/api/chapters/`, { params });
         return res.data;
     } catch (err) {
         console.error("Failed to fetch chapters:", err);
         return [];
     }
-}
-export async function getLatestChapters(limit: number): Promise<Chapter[]> {
-    const res = await api.get(`/api/chapters/`, {
-        params: {
-            limit,
-        }
-    });
-    return res.data;
 }

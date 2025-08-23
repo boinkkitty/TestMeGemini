@@ -1,30 +1,10 @@
 import {ChapterAttempt, ChapterAttemptInput} from "@/lib/types";
 import api from "@/utils/axiosInstance";
 
-export type ActivityDay = { date: string; attempted: boolean };
-export type WeeklyStats = { average_score: number; highest_score: number; attempt_count: number };
-
-export async function getUserActivity(days: number): Promise<ActivityDay[]> {
-    const res = await api.get(`/api/attempts/activity/`, {
-        params: {
-            days,
-        }
-    });
-    return res.data;
-}
-
-export async function getWeeklyStats(): Promise<WeeklyStats> {
-    const res = await api.get("/api/attempts/weekly-stats/");
-    return res.data;
-}
-
-export async function getRecentChapterAttempts(limit: number): Promise<ChapterAttempt[]> {
-    const res = await api.get(`/api/attempts/`, {
-        params: {
-            limit,
-        }
-    });
-    return res.data;
+export type ChapterAttemptsParams = {
+    limit?: number;
+    start_date?: string;
+    end_date?: string;
 }
 
 export async function getChapterAttempt(attemptId: number): Promise<ChapterAttempt> {
@@ -39,9 +19,9 @@ export async function getChapterAttempt(attemptId: number): Promise<ChapterAttem
     }
 }
 
-export async function getUserChapterAttempts(): Promise<ChapterAttempt[]> {
+export async function getUserChapterAttempts(params?: ChapterAttemptsParams): Promise<ChapterAttempt[]> {
     try {
-        const res = await api.get(`/api/attempts/`);
+        const res = await api.get(`/api/attempts/`, { params });
         return res.data;
     } catch (err) {
         console.error("Failed to fetch attempts:", err);

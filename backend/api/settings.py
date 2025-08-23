@@ -156,6 +156,9 @@ from decouple import config
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 GEMINI_API_KEY = config('GEMINI_API_KEY')
 
+TIME_ZONE = 'Asia/Singapore'
+USE_TZ = True
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

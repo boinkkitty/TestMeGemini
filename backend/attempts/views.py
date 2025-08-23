@@ -1,27 +1,32 @@
-from datetime import timedelta, date
+from django.db.models import Q
 from api.utils.score import get_score
-from attempts.serializers import ChapterAttemptSerializer, QuestionAttemptSerializer
 from questions.models import Question
 from rest_framework import permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from .models import ChapterAttempt
-from .serializers import ChapterAttemptDetailSerializer, ChapterAttemptSerializer, QuestionAttemptSerializer
+from .serializers import ChapterAttemptSerializer, QuestionAttemptSerializer, ChapterAttemptDetailSerializer
 
 class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     serializer_class = ChapterAttemptSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = ChapterAttempt.objects.filter(user=self.request.user).order_by('-completed_at')
-        limit = self.request.query_params.get('limit')
+        user = self.request.user
+        params = self.request.query_params
+        limit = params.get('limit')
+        start_date = params.get('start_date')
+        end_date = params.get('end_date')
+
+        query = Q(user=user)
+        if start_date:
+            query &= Q(completed_at__date__gte=start_date)
+        if end_date:
+            query &= Q(completed_at__date__lte=end_date)
+
+        qs = ChapterAttempt.objects.filter(query).order_by('-completed_at')
         if limit:
-            try:
-                limit = int(limit)
-                if limit > 0:
-                    return qs[:limit]
-            except (ValueError, TypeError):
-                pass
+            return qs[:int(limit)] if limit.isdigit() and int(limit) > 0 else qs
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -63,35 +68,3 @@ class ChapterAttemptRetrieveAPIView(RetrieveAPIView):
 
     def get_queryset(self):
         return ChapterAttempt.objects.filter(user=self.request.user)
-
-# User activity for last N days
-class ActivityLastDaysView(RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        days = int(request.GET.get('days', 7))
-        today = date.today()
-        activity = []
-        for i in range(days):
-            day = today - timedelta(days=days - i - 1)
-            attempted = ChapterAttempt.objects.filter(user=request.user, completed_at__date=day).exists()
-            activity.append({"date": str(day), "attempted": attempted})
-        return Response(activity)
-
-# Weekly stats
-class WeeklyStatsView(RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        today = date.today()
-        week_ago = today - timedelta(days=6)
-        attempts = ChapterAttempt.objects.filter(user=request.user, completed_at__date__gte=week_ago)
-        scores = [a.score for a in attempts if a.score is not None]
-        average_score = sum(scores) / len(scores) if scores else 0
-        highest_score = max(scores) if scores else 0
-        attempt_count = attempts.count()
-        return Response({
-            "average_score": average_score,
-            "highest_score": highest_score,
-            "attempt_count": attempt_count,
-        })
