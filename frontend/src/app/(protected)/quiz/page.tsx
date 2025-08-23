@@ -12,9 +12,10 @@ export default function Quiz()  {
     const [chapters, setChapters] = useState<Chapter[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isStarted, setIsStarted] = useState<boolean>(false);
-    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
 
+    const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
     useEffect(() => {
         getUserChapters()
             .then((data) => setChapters(data))
@@ -23,11 +24,6 @@ export default function Quiz()  {
             })
             .finally(() => setIsLoading(false));
     }, []);
-
-    const handleSelectedChapter = async (chapterId: number) => {
-        const chapter = chapters.find(ch => ch.id === chapterId) || null;
-        setSelectedChapter(chapter);
-    };
 
     const handleStartQuiz = async () => {
         await getChapterQuestions(selectedChapter!.id)
@@ -50,7 +46,7 @@ export default function Quiz()  {
                 <ChapterSelection
                     chapters={chapters}
                     selectedChapterId={selectedChapter?.id}
-                    setSelectedChapterId={handleSelectedChapter}
+                    setSelectedChapterId={setSelectedChapterId}
                     handleStart={handleStartQuiz}
                 />
             ) : (

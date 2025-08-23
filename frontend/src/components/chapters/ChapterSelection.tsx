@@ -1,9 +1,10 @@
 import { Chapter } from "@/lib/types";
+import DropDownSelection from "@/components/ui/DropDownSelection";
 
 type ChapterSelectionProps = {
     chapters: Chapter[];
     selectedChapterId: number | null | undefined;
-    setSelectedChapterId: (chapterId: number) => void;
+    setSelectedChapterId: (chapterId: number | null) => void;
     handleStart: () => void;
 };
 
@@ -17,18 +18,20 @@ function ChapterSelection({
         <div className="flex flex-col justify-center items-center w-full h-full gap-4">
             <p className="text-md font-semibold">{`Come! Let's start practicing!`}</p>
 
-            <select
-                value={selectedChapterId ?? ""}
-                onChange={(e) => setSelectedChapterId(Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-                <option value="">Select a chapter</option>
-                {chapters.map((chapter) => (
-                    <option key={chapter.id} value={chapter.id}>
-                        {chapter.title}
-                    </option>
-                ))}
-            </select>
+            <DropDownSelection
+                options={chapters.map((chapter) => ({
+                    value: chapter.id.toString(),
+                    label: chapter.title
+                }))}
+                value={selectedChapterId != null ? selectedChapterId.toString() : ""}
+                onChange={(val) => {
+                  if (val === "") {
+                    setSelectedChapterId(null);
+                  } else {
+                    setSelectedChapterId(Number(val));
+                  }
+                }}
+            />
 
             <button
                 onClick={handleStart}

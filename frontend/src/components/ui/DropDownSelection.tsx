@@ -10,15 +10,15 @@ import {
 } from "@/components/ui/select";
 
 type DropDownSelectionProps = {
-  label: string;
+  label?: string;
   options: DropDownOption[];
-  value: string;
+  value: any;
   onChange: (value: string) => void;
   showBlankOption?: boolean;
 };
 
 type DropDownOption = {
-  value: string;
+  value: any;
   label: string;
 };
 
@@ -34,7 +34,7 @@ function DropDownSelection({ label, value, options, onChange, showBlankOption = 
 
   return (
     <div className="flex items-center gap-4 min-w-[180px]">
-      <label className="font-semibold text-gray-700 mb-1 pl-1">{label}</label>
+      {label && <label className="font-semibold text-gray-700 mb-1 pl-1">{label}</label>}
       <Select value={value === "" ? "null" : value} onValueChange={handleValueChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={showBlankOption ? "Select" : options[0]?.label || "Select"} />

@@ -16,10 +16,10 @@ function RecentQuizStatus({lastWeekAttempts}: RecentQuizStatusProps) {
         return { date: dateStr, attempted };
     });
 
-    return (<div className="flex flex-grow gap-2 w-full justify-center gap-6">
+    return (<div className="flex flex-grow gap-2 w-full justify-center gap-4">
         {activity.map(day => (
-            <div key={day.date} className={`rounded-full w-12 h-10 flex items-center justify-center ${day.attempted ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"}`}>
-                {new Date(day.date).toLocaleDateString(undefined, { weekday: "short" }).slice(0, 2)}
+            <div key={day.date} className={`rounded-full w-14 h-10 flex items-center justify-center ${day.attempted ? "bg-[#f59e42] text-white" : "bg-gray-200 text-gray-500"}`}>
+                {new Date(day.date).toLocaleDateString(undefined, { weekday: "short" }).slice(0, 3)}
             </div>
         ))}
     </div>)

@@ -69,9 +69,9 @@ export default function Attempts() {
         setIsLoading(true);
         setSelectedAttemptId(attemptId);
         const attempt = attempts.find((attempt) => attempt.id === attemptId);
-        const attemptDetails = await getChapterAttempt(attempt!.id);
-        setQuestionAttempts(attemptDetails.question_attempts ?? []);
-        setIsLoading(false);
+        await getChapterAttempt(attempt!.id).then((data) => {
+            setQuestionAttempts(data.question_attempts ?? []);
+        }).finally(() => setIsLoading(false));
     };
 
     const handleBack = () => {
@@ -104,11 +104,13 @@ export default function Attempts() {
                     {selectedAttempt ? `${selectedAttempt.title}` : "Chapter Attempts"}
                 </h1>
             </div>
-            <div className="flex flex-start gap-6 items-center p-2 mb-2">
-                <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
-                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
-                <DropDownSelection label={"Sort By"} options={SORT_OPTIONS} value={sortBy} onChange={handleSortBy} showBlankOption={false}/>
-            </div>
+            {!selectedAttempt && (
+                <div className="flex flex-start gap-6 items-center p-2 mb-2">
+                    <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
+                    <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
+                    <DropDownSelection label={"Sort By"} options={SORT_OPTIONS} value={sortBy} onChange={handleSortBy} showBlankOption={false}/>
+                </div>
+            )}
             {selectedAttempt ? (
                 <>
                     <div className="mb-4 flex justify-start">

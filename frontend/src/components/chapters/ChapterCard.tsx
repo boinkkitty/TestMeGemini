@@ -11,11 +11,12 @@ function ChapterCard({ chapter, index, onClick }: ChapterCardProps) {
     const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
     return (
         <div
-            className={`rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-100 ${colorClass} text-white cursor-pointer min-h-[180px] flex flex-col justify-between`}
+            className={`rounded-lg shadow hover:shadow-lg transition p-6 border border-gray-100 ${colorClass} text-white ${onClick ? "cursor-pointer" : ""} min-h-[200px] h-full flex flex-col justify-between`}
+            style={{ maxHeight: 240 }}
             onClick={onClick}
         >
-            <h3 className="text-lg font-semibold mb-2">{chapter.title}</h3>
-            <p className="line-clamp-3 overflow-hidden text-ellipsis flex-1">{chapter.description}</p>
+            <h3 className="text-lg font-semibold mb-2 truncate" title={chapter.title}>{chapter.title}</h3>
+            <p className="line-clamp-3 overflow-hidden text-ellipsis text-sm flex-1" title={chapter.description}>{chapter.description}</p>
         </div>
     );
 }

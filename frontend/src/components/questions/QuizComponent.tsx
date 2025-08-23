@@ -58,7 +58,7 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
     };
 
     return (
-        <div className="max-w-2xl h-full flex flex-col items-center">
+        <div className="max-w-2xl h-full flex flex-col items-center justify-center">
             {/* Score on top right */}
             {submitted && (
                 <div className="text-right font-bold text-lg mb-2">

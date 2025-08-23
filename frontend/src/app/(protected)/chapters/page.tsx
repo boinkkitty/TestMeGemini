@@ -39,11 +39,11 @@ export default function Chapters() {
 
     const handleSelectChapter = async (chapterId: number) => {
         setIsLoading(true);
-        const chapter = chapters.find(ch => ch.id === chapterId) || null;
-        const chapterQuestions = await getChapterQuestions(chapter!.id);
-        setQuestions(chapterQuestions);
         setSelectedChapterId(chapterId);
-        setIsLoading(false);
+        const chapter = chapters.find(ch => ch.id === chapterId) || null;
+        await getChapterQuestions(chapter!.id).then((data) => {
+            setQuestions(data);
+        }).finally(() => setIsLoading(false));
     };
 
     const handleBack = () => {
@@ -68,10 +68,10 @@ export default function Chapters() {
                     {selectedChapter ? `${selectedChapter.title}` : "Chapters"}
                 </h1>
             </div>
-            <div className="flex flex-start gap-6 items-center p-2 mb-4">
+            {!selectedChapter && (<div className="flex flex-start gap-6 items-center p-2 mb-4">
                 <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
                 <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
-            </div>
+            </div>)}
             {selectedChapter && (
                 <div className="mb-4 flex justify-start">
                     <button onClick={handleBack} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold">Back</button>
