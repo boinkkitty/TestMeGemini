@@ -20,58 +20,73 @@ import {
 
 export const description = "A bar chart"
 
-const chartData = [
-    { month: "January", desktop: 186 },
-    { month: "February", desktop: 305 },
-    { month: "March", desktop: 237 },
-    { month: "April", desktop: 73 },
-    { month: "May", desktop: 209 },
-    { month: "June", desktop: 214 },
-]
 
 const chartConfig = {
-    desktop: {
-        label: "Desktop",
+    value: {
+        label: "% Score",
         color: "var(--chart-1)",
     },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-export function BarChartComponent() {
+type DataRecord = {
+    axisKey: string;
+    value: number;
+    title?: string;
+    date?: string;
+    score?: number;
+    max_score?: number;
+};
+
+type BarChartComponentProps = {
+    label: string;
+    description: string;
+    data: DataRecord[];
+    barColor?: string;
+};
+
+import { YAxis } from "recharts";
+
+export function BarChartComponent({ label, description, data, barColor = "#f59e42" }: BarChartComponentProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Bar Chart</CardTitle>
-                <CardDescription>January - June 2024</CardDescription>
+                <CardTitle>{label}</CardTitle>
+                <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig}>
-                    <BarChart accessibilityLayer data={chartData}>
+                    <BarChart accessibilityLayer data={data}>
                         <CartesianGrid vertical={false} />
                         <XAxis
-                            dataKey="month"
+                            dataKey="axisKey"
                             tickLine={false}
                             tickMargin={10}
                             axisLine={false}
-                            tickFormatter={(value) => value.slice(0, 3)}
                         />
+                        <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length > 0) {
+                                    const d = payload[0].payload;
+                                    return (
+                                        <div className="bg-white p-2 rounded shadow text-xs">
+                                            <div><b>{d.title}</b></div>
+                                            <div>Date: {d.date}</div>
+                                            <div>Score: {d.score.toFixed(2)} / {d.max_score}</div>
+                                            <div>Percent: {d.value.toFixed(2)}%</div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
                         />
-                        <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
+                        <Bar dataKey="value" fill={barColor} radius={8} />
                     </BarChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-                <div className="flex gap-2 leading-none font-medium">
-                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-                </div>
-                <div className="text-muted-foreground leading-none">
-                    Showing total visitors for the last 6 months
-                </div>
-            </CardFooter>
         </Card>
-    )
+    );
 }
 
 export default BarChartComponent;

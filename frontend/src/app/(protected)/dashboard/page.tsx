@@ -76,8 +76,10 @@ export default function Dashboard() {
                         </h1>
                     </div>
                     <div className="flex flex-col p-2 mb-2 gap-8 w-full">
-                        <div className="font-semibold text-gray-700">7-Day Activity</div>
-                        <RecentQuizStatus lastWeekAttempts={lastWeekAttempts} />
+                        <div className="flex justify-between items-center ">
+                            <div className="font-semibold text-gray-700 w-full">7-Day Activity</div>
+                            <RecentQuizStatus lastWeekAttempts={lastWeekAttempts} />
+                        </div>
                         <div className="flex justify-between w-full gap-6">
                             <div className="border-2 border-blue-400 rounded-lg bg-white shadow-md transition-colors p-6 flex-1 text-left">
                                 <div className="text-md font-bold text-gray-700 mb-2">Average Score</div>
@@ -94,16 +96,19 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div>
-                        <div className="font-semibold mb-2">Last 10 Attempts</div>
-                        <div className="flex gap-2">
-                            {lastTenAttempts.map(a => (
-                                <div key={a.id} className="flex flex-col items-center">
-                                    <span className="text-xs text-gray-500">{new Date(a.completed_at).toLocaleDateString()}</span>
-                                    <span className="font-bold">{a.score.toFixed(2) ?? "-"}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <BarChartComponent/>
+                        <BarChartComponent
+                            data={lastTenAttempts.slice().reverse().map(a => ({
+                                axisKey: a.title.length > 12 ? a.title.slice(0, 12) + '…' : a.title,
+                                value: a.max_score && a.max_score > 0 ? (a.score / a.max_score) * 100 : 0,
+                                title: a.title,
+                                date: new Date(a.completed_at).toLocaleDateString(),
+                                score: a.score,
+                                max_score: a.max_score
+                            }))}
+                            label="Recent Attempts"
+                            description="% Score for your last 10 attempts"
+                            barColor="#f59e42"
+                        />
                     </div>
 
                 </div>
