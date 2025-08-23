@@ -8,7 +8,7 @@ export default function LoginPage() {
         <div className="flex flex-col h-screen w-screen justify-center items-center border gap-2">
             <div className="flex flex-col justify-center items-center gap-2">
                 <div className="flex item-center justify-center gap-2">
-                    <Image src="/public/file.svg" width={30} height={30} alt="" />
+                    <Image src="/logo.png" width={30} height={30} alt="Image" />
                     <h1 className="flex text-4xl font-bold items-center justify-center">
                         TestMeGemini
                     </h1>
