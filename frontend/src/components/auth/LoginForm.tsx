@@ -3,7 +3,6 @@
 import {SubmitHandler, useForm} from "react-hook-form";
 import {useRouter} from "next/navigation";
 import { useState } from "react";
-import axios from "axios";
 import api from "@/utils/axiosInstance";
 import {handleError} from "../../utils/handleError";
 

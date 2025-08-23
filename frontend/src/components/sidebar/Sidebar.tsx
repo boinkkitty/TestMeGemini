@@ -10,7 +10,7 @@ import Link from "next/link";
 import api from "@/utils/axiosInstance";
 import { useRouter } from 'next/navigation';
 
-export default function CustomSidebar() {
+export default function Sidebar() {
     const router = useRouter();
 
     const topItems = [

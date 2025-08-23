@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import {Chapter, ChapterAttemptInput, Question} from "@/lib/types";
 import QuestionCard from "@/components/questions/QuestionCard";
 import {submitChapterAttempt} from "@/services/attempts";
+import {formatScore} from "@/utils/score";
 
 type QuizComponentProps = {
     chapter?: Chapter | null;
@@ -62,7 +63,7 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
             {/* Score on top right */}
             {submitted && (
                 <div className="text-right font-bold text-lg mb-2">
-                    Score: {score} / {questions.length}
+                    Score: {formatScore(score)} / {questions.length}
                 </div>
             )}
 

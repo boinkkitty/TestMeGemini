@@ -1,5 +1,5 @@
 import "@/app/globals.css";
-import CustomSidebar from "@/components/sidebar/CustomSidebar";
+import Sidebar from "@/components/sidebar/Sidebar";
 
 export default function ProtectedLayout({
                                             children,
@@ -8,7 +8,7 @@ export default function ProtectedLayout({
 }>) {
     return (
         <div className="flex min-h-screen">
-            <CustomSidebar/>
+            <Sidebar/>
             <main className="flex-1 p-4">{children}</main>
         </div>
     );

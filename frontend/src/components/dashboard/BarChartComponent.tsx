@@ -1,13 +1,11 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -15,11 +13,7 @@ import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
-    ChartTooltipContent,
 } from "@/components/ui/chart"
-
-export const description = "A bar chart"
-
 
 const chartConfig = {
     value: {
@@ -42,11 +36,14 @@ type BarChartComponentProps = {
     description: string;
     data: DataRecord[];
     barColor?: string;
+    height?: number;
 };
 
 import { YAxis } from "recharts";
+import {formatScore} from "@/utils/score";
 
-export function BarChartComponent({ label, description, data, barColor = "#f59e42" }: BarChartComponentProps) {
+export function BarChartComponent({ label, description, data, barColor = "#f59e42", height }: BarChartComponentProps) {
+
     return (
         <Card>
             <CardHeader>
@@ -54,8 +51,8 @@ export function BarChartComponent({ label, description, data, barColor = "#f59e4
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig}>
-                    <BarChart accessibilityLayer data={data}>
+                <ChartContainer config={chartConfig} height={height}>
+                    <BarChart accessibilityLayer data={data} height={height}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="axisKey"
@@ -73,8 +70,8 @@ export function BarChartComponent({ label, description, data, barColor = "#f59e4
                                         <div className="bg-white p-2 rounded shadow text-xs">
                                             <div><b>{d.title}</b></div>
                                             <div>Date: {d.date}</div>
-                                            <div>Score: {d.score.toFixed(2)} / {d.max_score}</div>
-                                            <div>Percent: {d.value.toFixed(2)}%</div>
+                                            <div>Score: {formatScore(d.score)} / {d.max_score}</div>
+                                            <div>Percent: {formatScore(d.value)}%</div>
                                         </div>
                                     );
                                 }

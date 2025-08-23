@@ -1,5 +1,6 @@
 "use client"
 import { ChapterAttempt } from "@/lib/types";
+import {formatScore} from "@/utils/score";
 
 type ChapterAttemptCardProps = {
     attempt: ChapterAttempt;
@@ -18,7 +19,7 @@ export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCar
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Score:</div>
-                    <div className="text-sm">{attempt.score.toFixed(2)} / {attempt.max_score}</div>
+                    <div className="text-sm">{formatScore(attempt.score)} / {attempt.max_score}</div>
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Attempted On:</div>

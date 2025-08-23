@@ -59,7 +59,7 @@ export default function Dashboard() {
 
             <div className="flex flex-col md:flex-row gap-8 p-4">
                 {/* Recent Chapters Box */}
-                <div className="flex flex-col border-2 border-blue-400 rounded-2xl bg-white shadow-md px-6 py-4 max-w-3/8 w-full md:w-1/2">
+                <div className="flex flex-col border-2 rounded-2xl bg-white shadow-md px-6 py-4 max-w-3/8 w-full md:w-1/2">
                     <div className="flex justify-start items-center p-2 mb-4 w-full">
                         <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
                             Recent Chapters
