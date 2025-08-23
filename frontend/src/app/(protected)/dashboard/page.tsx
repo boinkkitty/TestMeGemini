@@ -8,6 +8,7 @@ import { getUserChapterAttempts } from "@/services/attempts";
 import { formatDateYYYYMMDD, getNDaysAgo } from "@/utils/date";
 import { getUserChapters } from "@/services/chapters";
 import RecentQuizStatus from "@/components/dashboard/RecentQuizStatus";
+import BarChartComponent from "@/components/dashboard/BarChartComponent";
 
 export default function Dashboard() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -102,6 +103,7 @@ export default function Dashboard() {
                                 </div>
                             ))}
                         </div>
+                        <BarChartComponent/>
                     </div>
 
                 </div>
