@@ -4,7 +4,7 @@ import {useCallback, useState} from "react";
 import UploadComponent from "../../../components/UploadComponent";
 import { useDropzone } from "react-dropzone";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import api from "@/utils/axiosInstance";
+import { createChaptersAndQuestions } from "@/services/chapters";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import {handleError} from "../../../utils/handleError";
@@ -56,15 +56,11 @@ export default function UploadClient() {
     }
     setIsGenerating(true);
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("category", category);
-      for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]); // note plural "files" if your backend expects that
-      }
-      const res = await api.post("/api/chapters/", formData);
-      console.log(res);
-      // Axios response data is in res.data
+      await createChaptersAndQuestions({
+        title,
+        category,
+        files,
+      });
       setSuccess("Chapter and questions generated successfully!");
       setFiles([]);
       setTitle("");

@@ -54,7 +54,8 @@ export default function Attempts() {
     const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
     const categoryOptions = Array.from(new Set(attempts.map(a => a.category)))
         .filter(Boolean)
-        .map((cat) => ({ value: cat, label: cat }));
+        .map((cat) => ({ value: cat, label: cat }))
+        .sort((a, b) => a.label.localeCompare(b.label));
     
     useEffect(() => {
         getUserChapterAttempts()

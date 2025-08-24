@@ -9,9 +9,9 @@ from rest_framework.permissions import IsAuthenticated
 class ChapterQuestionsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, chapter_id):
+    def get(self, request, id):
         limit = request.query_params.get('limit')
-        questions_qs = Question.objects.filter(chapter_id=chapter_id, chapter__user=request.user)
+        questions_qs = Question.objects.filter(chapter_id=id, chapter__user=request.user)
         if limit:
             try:
                 limit = int(limit)

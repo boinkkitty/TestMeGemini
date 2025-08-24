@@ -32,13 +32,13 @@ class ChapterAttemptBaseSerializer(serializers.ModelSerializer):
 
     def get_title(self, obj):
         return obj.chapter.title if obj.chapter else None
-    
+
     def get_category(self, obj):
         return obj.chapter.category if obj.chapter else None
 
     chapter_id = serializers.PrimaryKeyRelatedField(
         source='chapter',
-        queryset=Chapter.objects.all()
+        queryset=Chapter.objects.all(),
     )
     order = serializers.ListField(
         child=serializers.IntegerField(),

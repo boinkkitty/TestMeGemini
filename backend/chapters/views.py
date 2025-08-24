@@ -1,7 +1,8 @@
 
+from codecs import lookup
 import logging
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +17,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Chapter.objects.filter(user=self.request.user).order_by('-created_at')
+        qs = Chapter.objects.filter(user=self.request.user, is_deleted=False).order_by('-created_at')
         limit = self.request.query_params.get('limit')
         if limit:
             try:
@@ -74,3 +75,25 @@ class ChapterListCreateAPIView(ListCreateAPIView):
             logger.error("[ChapterCreate] Exception: %s", str(e), exc_info=True)
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)
+    
+class ChapterRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChapterSerializer
+    queryset = Chapter.objects.all()
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return Chapter.objects.filter(user=self.request.user, is_deleted=False)
+    
+    def update(self, request, *args, **kwargs):
+        # Only allow soft update of is_deleted
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        is_deleted = request.data.get('is_deleted', None)
+        if is_deleted is not None:
+            instance.is_deleted = is_deleted
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        # Otherwise, do normal update
+        return super().update(request, *args, **kwargs)
