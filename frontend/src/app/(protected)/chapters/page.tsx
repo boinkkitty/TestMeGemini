@@ -5,10 +5,12 @@ import {Chapter, Question} from "@/lib/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 import ChapterCard from "@/components/chapters/ChapterCard";
+import {deleteChapter, softDeleteChapter} from "@/services/chapters";
 import {getUserChapters} from "@/services/chapters";
 import {getChapterQuestions} from "@/services/questions";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
+import DeleteChapterModal from "@/components/chapters/DeleteChapterModal";
 
 export default function Chapters() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -18,6 +20,12 @@ export default function Chapters() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
+
+    // Delete modals
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+    const [deleteChapterId, setDeleteChapterId] = useState<number | null>(null);
+    const [deleteChapterTitle, setDeleteChapterTitle] = useState<string>("");
+    const [isPermanentDelete, setIsPermanentDelete] = useState<boolean>(false);
 
     const filteredChapters = chapters.filter(chapter =>
         chapter.title.toLowerCase().includes(chapterTitleFilter) &&
@@ -37,13 +45,38 @@ export default function Chapters() {
             .finally(() => setIsLoadingChapters(false));
     }, []);
 
+    // Right-click on delete icon handler
+    const handleDeleteIconClick = (chapter: Chapter) => {
+        setDeleteChapterId(chapter.id);
+        setDeleteChapterTitle(chapter.title);
+        setIsPermanentDelete(false);
+        setShowDeleteModal(true);
+    };
+
+    // Confirm delete
+    const handleConfirmDelete = async () => {
+        if (deleteChapterId == null) return;
+
+        const deleteCall = isPermanentDelete
+            ? deleteChapter(deleteChapterId)
+            : softDeleteChapter(deleteChapterId);
+
+        deleteCall
+            .then(() => getUserChapters().then((data) => setChapters(data)))
+            .catch((err) => console.error("Delete failed:", err))
+            .finally(() => {
+                setShowDeleteModal(false);
+                setIsPermanentDelete(false);
+            });
+    };
+
     const handleSelectChapter = async (chapterId: number) => {
         setIsLoading(true);
         setSelectedChapterId(chapterId);
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
-        await getChapterQuestions(chapter!.id).then((data) => {
-            setQuestions(data);
-        }).finally(() => setIsLoading(false));
+        await getChapterQuestions(chapter!.id)
+            .then((data) => {setQuestions(data);})
+            .finally(() => setIsLoading(false));
     };
 
     const handleBack = () => {
@@ -83,13 +116,28 @@ export default function Chapters() {
                 ) : selectedChapterId && selectedChapter ? (
                     <PaginatedQuestionsForChapter questions={questions} />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-                        {filteredChapters.map((chapter, index) => (
-                            <div key={chapter.id} className="h-full" onClick={() => handleSelectChapter(chapter.id)}>
-                                <ChapterCard key={chapter.id} chapter={chapter} index={index} onClick={() => handleSelectChapter(chapter.id)} />
-                            </div>
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                            {filteredChapters.map((chapter, index) => (
+                                <div key={chapter.id} className="h-full" onClick={() => handleSelectChapter(chapter.id)}>
+                                    <ChapterCard
+                                        chapter={chapter}
+                                        index={index}
+                                        onClick={() => handleSelectChapter(chapter.id)}
+                                        onDeleteIconClick={handleDeleteIconClick}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <DeleteChapterModal
+                            open={showDeleteModal}
+                            onClose={() => setShowDeleteModal(false)}
+                            onConfirm={handleConfirmDelete}
+                            chapterTitle={deleteChapterTitle}
+                            deleteAttempts={isPermanentDelete}
+                            setDeleteAttempts={setIsPermanentDelete}
+                        />
+                    </>
                 )}
             </div>
         </div>

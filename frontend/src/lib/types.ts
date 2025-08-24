@@ -1,8 +1,9 @@
+
 export type UserInfo = {
-    id: number,
-    username: string,
-    email: string,
-}
+    id: number;
+    username: string;
+    email: string;
+};
 
 export type Chapter = {
     id: number;
@@ -10,7 +11,7 @@ export type Chapter = {
     description: string;
     category: string;
     questions?: Question[];
-}
+};
 
 export type Choice = {
     id: number;
@@ -34,10 +35,11 @@ export type ChapterAttempt = {
     score: number;
     max_score: number;
     completed_at: string;
-    chapter_id: number;
+    chapter: number; // Foreign key to Chapter
+    chapter_id?: number; // For compatibility with dummy data and backend write
     order?: Array<number>;
     question_attempts?: QuestionAttempt[];
-}
+};
 
 export type QuestionAttempt = {
     id: number;
@@ -51,7 +53,7 @@ export type ChapterAttemptInput = {
     chapter_id: number;
     order: number[];
     questions: QuestionAttemptInput[];
-}
+};
 
 export type QuestionAttemptInput = {
     question_id: number;
@@ -161,6 +163,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         max_score: 2,
         category: "HEHE",
         completed_at: "2025-08-16T10:00:00Z",
+        chapter: 1,
         chapter_id: 1,
         order: [1, 2],
         question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 1),
@@ -172,6 +175,7 @@ export const dummyChapterAttempts: ChapterAttempt[] = [
         max_score: 1,
         category: "HEHE",
         completed_at: "2025-08-16T11:00:00Z",
+        chapter: 2,
         chapter_id: 2,
         order: [3],
         question_attempts: dummyQuestionAttempts.filter((qa) => qa.chapter_attempt === 2),

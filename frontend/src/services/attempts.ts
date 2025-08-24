@@ -1,7 +1,7 @@
 import {ChapterAttempt, ChapterAttemptInput} from "@/lib/types";
 import api from "@/utils/axiosInstance";
 
-export type ChapterAttemptsParams = {
+export type GetChapterAttemptsParams = {
     limit?: number;
     start_date?: string;
     end_date?: string;
@@ -19,7 +19,7 @@ export async function getChapterAttempt(attemptId: number): Promise<ChapterAttem
     }
 }
 
-export async function getUserChapterAttempts(params?: ChapterAttemptsParams): Promise<ChapterAttempt[]> {
+export async function getUserChapterAttempts(params?: GetChapterAttemptsParams): Promise<ChapterAttempt[]> {
     try {
         const res = await api.get(`/api/attempts/`, { params });
         return res.data;
