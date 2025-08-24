@@ -31,30 +31,48 @@ Turn your notes into interactive quizzes and track your learning progress.
 
 ## Screenshots
 
-## Installation
+## Installation & Local Development
 
 ### Environment Variables
 
-- Backend: Set `GEMINI_API_KEY` to your Gemini API Key
-- Frontend: Set `NEXT_PUBLIC_API_URL` to your API Key
+- Backend: Create .env under backend/ and set `GEMINI_API_KEY` to your Gemini API Key
+- Frontend: Create .env under frontend/ and set `NEXT_PUBLIC_API_URL` to your API URL (backend)
 
-### Backend (Django)
+### Using the Makefile (Recommended)
+
+All common setup and run commands are available via the Makefile at the project root. Run these from the project root directory:
+
+#### For full list of commands
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+make help
 ```
 
-### Frontend (Next.js)
+#### 1. Install dependencies (backend & frontend)
 
 ```bash
-cd frontend
-npm install
-npm run dev
+make backend-install
+make frontend-install
+```
+
+#### 2. Run migrations (auto-detects model changes)
+
+```bash
+make backend-migrate
+```
+
+#### 3. Start the development servers (in separate terminals)
+
+```bash
+make backend-run
+make frontend-run-dev
+```
+
+#### 4. Build for production
+
+```bash
+make frontend-build
+make frontend-run-prod
 ```
 
 ## Architecture Overview
