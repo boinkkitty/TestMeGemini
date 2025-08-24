@@ -34,7 +34,8 @@ export default function Chapters() {
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
     const categoryOptions = Array.from(new Set(chapters.map(a => a.category)))
         .filter(Boolean)
-        .map((cat) => ({ value: cat, label: cat }));
+        .map((cat) => ({ value: cat, label: cat }))
+        .sort((a, b) => a.label.localeCompare(b.label));
 
     useEffect(() => {
         getUserChapters()
@@ -57,17 +58,21 @@ export default function Chapters() {
     const handleConfirmDelete = async () => {
         if (deleteChapterId == null) return;
 
-        const deleteCall = isPermanentDelete
-            ? deleteChapter(deleteChapterId)
-            : softDeleteChapter(deleteChapterId);
-
-        deleteCall
-            .then(() => getUserChapters().then((data) => setChapters(data)))
-            .catch((err) => console.error("Delete failed:", err))
-            .finally(() => {
-                setShowDeleteModal(false);
-                setIsPermanentDelete(false);
-            });
+        try {
+            if (isPermanentDelete) {
+                await deleteChapter(deleteChapterId);
+            } else {
+                await softDeleteChapter(deleteChapterId);
+            }
+            // Only fetch chapters after delete is done
+            const data = await getUserChapters();
+            setChapters(data);
+        } catch (err) {
+            console.error("Delete failed:", err);
+        } finally {
+            setShowDeleteModal(false);
+            setIsPermanentDelete(false);
+        }
     };
 
     const handleSelectChapter = async (chapterId: number) => {
@@ -75,7 +80,10 @@ export default function Chapters() {
         setSelectedChapterId(chapterId);
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         await getChapterQuestions(chapter!.id)
-            .then((data) => {setQuestions(data);})
+            .then((data) => {
+                console.log(data);
+                setQuestions(data);
+            })
             .finally(() => setIsLoading(false));
     };
 

@@ -34,17 +34,14 @@ Question Types & Rules:
 - **MCQ (Multiple Choice Question)**: 3–4 options, exactly one correct answer.
 - **MRQ (Multi Response Question)**: 3–4 options, one or more correct answers.
 - **TF (True/False)**: Only two options (True, False), exactly one correct answer.
-- Ensure **diversity**: approximately 50% MCQs, 25% MRQs, 25% TFs.
-- Choices must be **plausible** and non-trivial;
+- Ensure **diversity**: approximately 50% MCQs, 25% MRQs, 25% TFs, unless the content is unsuitable.
+- Choices must be **plausible** and non-trivial; avoid obviously wrong answers or jokes.
 
 Content Coverage:
 - Focus **only** on lecture or textbook content.
 - Include definitions, formulas, key concepts, processes, examples, and comparisons.
-- Absolutely do NOT create questions about:
-  - The course itself (course codes, course policies, exam dates, office hours, instructors)
-  - Administrative instructions or announcements
-  - AI usage policies, grading policies, or assignments not related to core content
-  - Learning objectives, course motivations, or external references
+- Ignore: administrative info (exam dates, office hours, announcements), section dividers (e.g., "Summary", "Questions?"), references, citations, URLs, and image captions without context.
+- Ignore course descriptions, motivations, or learning objectives.
 """
 
 def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
@@ -91,25 +88,3 @@ def call_gemini_model(chapter_title: str, chapter_content: str) -> dict:
     print("Generated text:", generated_text)
     data = json.loads(generated_text)
     return data
-
-
-PROMPT_2 = """
-You are an expert quiz generator and a helpful assistant that creates questions from lecture or textbook content.
-
-Your tasks:
-1. Write a concise **summary of the chapter content** (3–5 sentences), highlighting the most important definitions, formulas, concepts, processes, and examples.
-2. Generate **exactly 20–25 quiz questions** strictly based on the core learning material in the chapter. Cover all key points, ensuring that each major topic has at least one question.
-
-Question Types & Rules:
-- **MCQ (Multiple Choice Question)**: 3–4 options, exactly one correct answer.
-- **MRQ (Multi Response Question)**: 3–4 options, one or more correct answers.
-- **TF (True/False)**: Only two options (True, False), exactly one correct answer.
-- Ensure **diversity**: approximately 50% MCQs, 25% MRQs, 25% TFs, unless the content is unsuitable.
-- Choices must be **plausible** and non-trivial; avoid obviously wrong answers or jokes.
-
-Content Coverage:
-- Focus **only** on lecture or textbook content.
-- Include definitions, formulas, key concepts, processes, examples, and comparisons.
-- Ignore: administrative info (exam dates, office hours, announcements), section dividers (e.g., "Summary", "Questions?"), references, citations, URLs, and image captions without context.
-- Ignore course descriptions, motivations, or learning objectives.
-"""
