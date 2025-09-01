@@ -66,7 +66,7 @@ class LogoutView(APIView):
                 refresh = RefreshToken(refresh_token)
                 refresh.blacklist()
             except Exception as e:
-                return Response({"error": "Error invalidating token:" +str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                pass
             
         response = Response({"message": "Successfully logged out!"}, status=status.HTTP_200_OK)
         response.delete_cookie("access_token")
