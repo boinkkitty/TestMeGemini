@@ -2,7 +2,14 @@
 
 import axios from "axios";
 import Router from "next/router";
+
 const api = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+    withCredentials: true,
+});
+
+// Second instance to avoid interceptor loop
+const refreshApi = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "",
     withCredentials: true,
 });
@@ -16,7 +23,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                await api.post("/api/users/refresh/");
+                await refreshApi.post("/api/users/refresh/");
                 // Retry original request
                 return api(originalRequest);
             } catch (refreshError) {

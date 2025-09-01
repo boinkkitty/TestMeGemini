@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 from .serializers import CustomUserSerializer, LoginUserSerializer, RegisterUserSerializer
 from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
@@ -43,13 +44,15 @@ class LoginView(APIView):
                                 value=access_token,  
                                 httponly=True,
                                 secure=True,
-                                samesite="None")
+                                samesite="None",
+                                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
             
             response.set_cookie(key="refresh_token", 
                                 value=str(refresh),
                                 httponly=True,
                                 secure=True,
-                                samesite="None")
+                                samesite="None",
+                                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
             
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
