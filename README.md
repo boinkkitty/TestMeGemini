@@ -25,9 +25,10 @@ Turn your notes into interactive quizzes and track your learning progress.
 
 ## Upcoming Features
 
-- Support for deleting chapters, including both hard and soft delete options.
+- Support Category creation
 - An Analytics page for detailed insights and reporting.
 - Asynchronous chapter and question generation powered by Celery for improved performance.
+- Notes summary generator
 
 ## Screenshots
 
