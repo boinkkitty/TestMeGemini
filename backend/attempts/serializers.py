@@ -90,9 +90,18 @@ class ChapterAttemptSerializer(ChapterAttemptBaseSerializer):
     pass
 
 class ChapterAttemptDetailSerializer(ChapterAttemptBaseSerializer):
+    """
+    Serializer for displaying detailed chapter attempt information, including all related question attempts.
+
+    Fields:
+        question_attempts: List of serialized question attempts for this chapter attempt.
+    """
     question_attempts = serializers.SerializerMethodField(read_only=True)
 
     def get_question_attempts(self, obj):
+        """
+        Get all question attempts for this chapter attempt, ordered by attempted_at.
+        """
         attempts = obj.question_attempts.order_by('attempted_at')
         return QuestionAttemptSerializer(attempts, many=True).data
 
