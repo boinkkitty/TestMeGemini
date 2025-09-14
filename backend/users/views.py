@@ -1,3 +1,8 @@
+"""
+API views for the users app.
+Provides endpoints for user info, registration, login, logout, and token refresh.
+"""
+
 from django.conf import settings
 from django.shortcuts import render
 from .serializers import CustomUserSerializer, LoginUserSerializer, RegisterUserSerializer
@@ -12,6 +17,9 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 
 # Create your views here.
 class UserInfoView(RetrieveUpdateAPIView):
+    """
+    API endpoint for retrieving and updating the authenticated user's info.
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = CustomUserSerializer
 
@@ -19,15 +27,24 @@ class UserInfoView(RetrieveUpdateAPIView):
         return self.request.user
     
 class UserRegistrationView(CreateAPIView):
+    """
+    API endpoint for registering a new user.
+    """
     permission_classes = [AllowAny]
     authentication_classes = [] # Only for testing
     serializer_class = RegisterUserSerializer
 
 class LoginView(APIView):
+    """
+    API endpoint for user login. Sets JWT tokens in cookies on success.
+    """
     permission_classes = [AllowAny]
     authentication_classes = [] # Only for testing
 
     def post(self, request):
+        """
+        Handle user login, validate credentials, and set JWT cookies.
+        """
         serializer = LoginUserSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -58,6 +75,9 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
+    """
+    API endpoint for user logout. Clears authentication cookies.
+    """
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
 

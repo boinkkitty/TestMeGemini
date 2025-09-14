@@ -123,6 +123,7 @@ export default function Dashboard() {
                                 axisKey: a.title.length > 12 ? a.title.slice(0, 12) + '…' : a.title,
                                 value: a.max_score && a.max_score > 0 ? (a.score / a.max_score) * 100 : 0,
                                 title: a.title,
+                                category: a.category,
                                 date: new Date(a.completed_at).toLocaleDateString(),
                                 score: a.score,
                                 max_score: a.max_score

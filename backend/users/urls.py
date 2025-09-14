@@ -1,3 +1,8 @@
+"""
+URL routing for the users app.
+Defines endpoints for user info, registration, login, logout, and token refresh.
+"""
+
 from django.urls import path
 from .views import UserInfoView, UserRegistrationView, LoginView, LogoutView, CookieTokenRefreshView
 

@@ -1,3 +1,7 @@
+"""
+API views for the chapters app.
+Provides endpoints for listing, creating, retrieving, updating, and deleting chapters.
+"""
 
 from codecs import lookup
 import logging
@@ -14,9 +18,17 @@ from api.utils.pdf import extract_text
 logger = logging.getLogger(__name__)
 
 class ChapterListCreateAPIView(ListCreateAPIView):
+    """
+    API endpoint for listing and creating chapters for the authenticated user.
+    GET: Returns a list of chapters (optionally limited).
+    POST: Creates a new chapter with uploaded files and category, using AI to generate questions.
+    """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Returns queryset of chapters for the current user, optionally limited by 'limit' query param.
+        """
         qs = Chapter.objects.filter(user=self.request.user, is_deleted=False).order_by('-created_at')
         limit = self.request.query_params.get('limit')
         if limit:
@@ -29,11 +41,17 @@ class ChapterListCreateAPIView(ListCreateAPIView):
         return qs
 
     def get_serializer_class(self):
+        """
+        Returns the serializer class based on request method.
+        """
         if self.request.method == "GET":
             return ChapterListSerializer
         return ChapterSerializer
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles chapter creation with file upload, text extraction, and AI question generation.
+        """
         logger.info("[ChapterCreate] Incoming request from user: %s", request.user)
         files = request.FILES.getlist("files")
         title = request.data.get("title")
@@ -77,15 +95,24 @@ class ChapterListCreateAPIView(ListCreateAPIView):
         return Response(result, status=status.HTTP_201_CREATED)
     
 class ChapterRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint for retrieving, updating, and deleting a chapter.
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = ChapterSerializer
     queryset = Chapter.objects.all()
     lookup_field = "id"
 
     def get_queryset(self):
+        """
+        Returns queryset of chapters for the current user.
+        """
         return Chapter.objects.filter(user=self.request.user, is_deleted=False)
     
     def update(self, request, *args, **kwargs):
+        """
+        Handles updating a chapter. Only soft update of is_deleted is allowed.
+        """
         # Only allow soft update of is_deleted
         partial = kwargs.pop('partial', False)
         instance = self.get_object()

@@ -1,3 +1,8 @@
+"""
+API views for the attempts app.
+Provides endpoints for creating/listing chapter attempts and retrieving attempt details.
+"""
+
 from django.db.models import Q
 from api.utils.score import get_score
 from questions.models import Question
@@ -8,10 +13,18 @@ from .models import ChapterAttempt
 from .serializers import ChapterAttemptSerializer, QuestionAttemptSerializer, ChapterAttemptDetailSerializer
 
 class ChapterAttemptCreateListAPIView(ListCreateAPIView):
+    """
+    API endpoint for listing and creating chapter attempts for the authenticated user.
+    GET: Returns a list of chapter attempts, optionally filtered by date and limit.
+    POST: Creates a new chapter attempt, calculates score, and creates related question attempts.
+    """
     serializer_class = ChapterAttemptSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Returns queryset of chapter attempts for the current user, filtered by query params.
+        """
         user = self.request.user
         params = self.request.query_params
         limit = params.get('limit')
@@ -30,6 +43,13 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
         return qs
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles creation of a chapter attempt, calculates total score, and creates question attempts.
+        Args:
+            request (Request): The HTTP request containing attempt and questions data.
+        Returns:
+            Response: HTTP 201 with created attempt data.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         chapter_attempt = serializer.save(user=request.user)
@@ -62,9 +82,15 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ChapterAttemptRetrieveAPIView(RetrieveAPIView):
+    """
+    API endpoint for retrieving details of a single chapter attempt for the authenticated user.
+    """
     serializer_class = ChapterAttemptDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = ChapterAttempt.objects.all()
 
     def get_queryset(self):
+        """
+        Returns queryset of chapter attempts for the current user.
+        """
         return ChapterAttempt.objects.filter(user=self.request.user)

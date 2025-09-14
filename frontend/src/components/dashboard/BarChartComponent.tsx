@@ -26,6 +26,7 @@ type DataRecord = {
     axisKey: string;
     value: number;
     title?: string;
+    category?: string;
     date?: string;
     score?: number;
     max_score?: number;
@@ -68,6 +69,7 @@ export function BarChartComponent({ label, description, data, barColor = "#f59e4
                                     const d = payload[0].payload;
                                     return (
                                         <div className="bg-white p-2 rounded shadow text-xs">
+                                            <div><b>{d.category}</b></div>
                                             <div><b>{d.title}</b></div>
                                             <div>Date: {d.date}</div>
                                             <div>Score: {formatScore(d.score)} / {d.max_score}</div>

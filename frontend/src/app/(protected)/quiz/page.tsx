@@ -56,7 +56,7 @@ export default function Quiz()  {
         <div className="flex flex-col justify-between items-center w-full h-full p-6">
             <div className="flex justify-start items-center p-2 mb-4 w-full">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedChapter && isStarted ? `${selectedChapter.title}` : "Quiz"}
+                    {selectedChapter && isStarted ? `${selectedChapter.category}: ${selectedChapter.title}` : "Quiz"}
                 </h1>
             </div>
             {!isStarted ? (

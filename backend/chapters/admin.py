@@ -1,3 +1,9 @@
-from django.contrib import admin
+"""
+Admin configuration for the chapters app.
+Registers the Chapter model with the Django admin site.
+"""
 
-# Register your models here.
+from django.contrib import admin
+from .models import Chapter
+
+admin.site.register(Chapter)

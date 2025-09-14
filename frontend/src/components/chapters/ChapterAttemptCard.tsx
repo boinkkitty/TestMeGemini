@@ -26,6 +26,10 @@ export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCar
                     <div className="text-sm">{attempt.title}</div>
                 </div>
                 <div className="flex-1">
+                    <div className="font-bold text-[11px] text-gray-700">Category:</div>
+                    <div className="text-sm">{attempt.category}</div>
+                </div>
+                <div className="flex-1">
                     <div className="font-bold text-[11px] text-gray-700">Score:</div>
                     <div className="text-sm">{formatScore(attempt.score)} / {attempt.max_score}</div>
                 </div>

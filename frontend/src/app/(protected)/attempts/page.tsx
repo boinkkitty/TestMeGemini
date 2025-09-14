@@ -135,7 +135,7 @@ export default function Attempts() {
         <div className="flex flex-col p-6">
             <div className="flex justify-between items-center p-2 mb-4">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedAttempt ? `${selectedAttempt.title}` : "Chapter Attempts"}
+                    {selectedAttempt ? `${selectedAttempt.category}: ${selectedAttempt.title}` : "Chapter Attempts"}
                 </h1>
             </div>
             {!selectedAttempt && (
