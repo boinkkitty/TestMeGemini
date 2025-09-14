@@ -52,7 +52,7 @@ function ChapterCard({ chapter, index, onClick, onDeleteIconClick }: ChapterCard
                 {chapter.title}
             </h3>
 
-            <p className="line-clamp-4 overflow-hidden text-ellipsis text-sm flex-1" title={chapter.description}>{chapter.description}</p>
+            <p className="line-clamp-5 overflow-hidden text-ellipsis text-sm flex-1" title={chapter.description}>{chapter.description}</p>
         </div>
     );
 }

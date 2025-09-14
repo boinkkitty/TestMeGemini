@@ -181,7 +181,7 @@ export default function Chapters() {
                             onClose={() => setShowDeleteModal(false)}
                             onConfirm={handleConfirmDelete}
                             chapterTitle={deleteChapterTitle}
-                            deleteAttempts={isPermanentDelete}
+                            isDeleteAttempts={isPermanentDelete}
                             setDeleteAttempts={setIsPermanentDelete}
                         />
                     </>

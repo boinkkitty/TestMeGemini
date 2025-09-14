@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { QuestionAttempt } from "@/lib/types";
-import QuestionAttemptCard from "@/components/questions/QuestionAttemptCard";
+import QuestionAttemptCard from "@/components/attempts/QuestionAttemptCard";
 
 type PaginatedQuestionAttemptsProps = {
   attempts: QuestionAttempt[];

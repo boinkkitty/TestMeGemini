@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChapterAttempt, QuestionAttempt } from "@/lib/types";
-import { ChapterAttemptCard } from "@/components/chapters/ChapterAttemptCard";
-import PaginatedQuestionAttempts from "@/components/questions/PaginatedQuestionAttempts";
+import { ChapterAttemptCard } from "@/components/attempts/ChapterAttemptCard";
+import PaginatedQuestionAttempts from "@/components/attempts/PaginatedQuestionAttempts";
 import {getChapterAttempt, getUserChapterAttempts} from "@/services/attempts";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";

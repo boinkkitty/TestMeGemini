@@ -2,13 +2,12 @@
 
 import React from "react";
 import { QuestionAttempt } from "@/lib/types";
-import AttemptChoices from "@/components/questions/AttemptChoices";
+import AttemptChoices from "@/components/attempts/AttemptChoices";
 import {formatScore} from "@/utils/score";
 
 type QuestionAttemptCardProps = {
   attempt: QuestionAttempt;
 };
-
 
 function QuestionAttemptCard({ attempt }: QuestionAttemptCardProps) {
   const { question_detail, selected_choices, score } = attempt;
