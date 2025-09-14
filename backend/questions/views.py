@@ -20,13 +20,8 @@ class ChapterQuestionsAPIView(APIView):
 
     def get(self, request, id):
         limit = request.query_params.get('limit')
-        questions_qs = Question.objects.filter(chapter_id=id, chapter__user=request.user)
+        questions_qs = Question.objects.for_chapter(id).for_user(request.user)
         if limit:
-            try:
-                limit = int(limit)
-                if limit > 0:
-                    questions_qs = questions_qs.order_by('?')[:limit]
-            except ValueError:
-                return Response({'detail': 'limit must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+            questions_qs = questions_qs.random_ordered().limit_by(limit)
         serializer = QuestionSerializer(questions_qs, many=True)
         return Response(serializer.data)

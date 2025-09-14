@@ -57,6 +57,7 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK)
 
+            # Set HttpOnly cookies for access and refresh tokens
             response.set_cookie(key="access_token", 
                                 value=access_token,  
                                 httponly=True,
@@ -81,6 +82,7 @@ class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
 
+        # Blacklist the refresh token if it exists
         if refresh_token:
             try:
                 refresh = RefreshToken(refresh_token)
@@ -97,12 +99,14 @@ class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
         
+        # If no refresh token cookie, return error
         if not refresh_token:
             return Response({"error": "Refresh token not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
 
+            # Set new access token in HttpOnly cookie
             response = Response({"message": "Access token refreshed successfully"}, status=status.HTTP_200_OK)
             response.set_cookie(key="access_token",
                                 value=access_token,

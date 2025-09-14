@@ -5,6 +5,7 @@ Defines models for questions and choices associated with chapters.
 
 from django.db import models
 from chapters.models import Chapter
+from .managers import QuestionQuerySet
 
 class Question(models.Model):
     """
@@ -25,6 +26,8 @@ class Question(models.Model):
     question_text = models.TextField()
     question_type = models.CharField(max_length=3, choices=QuestionType.choices)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = QuestionQuerySet.as_manager()
 
 class Choice(models.Model):
     """

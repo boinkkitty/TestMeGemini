@@ -8,6 +8,7 @@ from django.db import models
 from chapters.models import Chapter
 from questions.models import Choice, Question
 from users.models import CustomUser
+from .managers import ChapterAttemptQuerySet
 
 class ChapterAttempt(models.Model):
     """
@@ -23,6 +24,8 @@ class ChapterAttempt(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     score = models.FloatField(default=0.0)
     completed_at = models.DateTimeField(auto_now_add=True)
+
+    objects = ChapterAttemptQuerySet.as_manager()
 
 class QuestionAttempt(models.Model):
     """

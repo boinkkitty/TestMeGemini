@@ -9,6 +9,8 @@ from google import genai
 from django.conf import settings
 from typing import List, Literal
 from pydantic import BaseModel
+import logging
+from time import sleep
 
 # Models for the AI response
 class Choice(BaseModel):
@@ -58,7 +60,7 @@ You are an expert quiz generator and a helpful assistant that creates questions 
 
 Your tasks:
 1. Write a concise **summary of the chapter content** (3–5 sentences), highlighting the most important definitions, formulas, concepts, processes, and examples.
-2. Generate **exactly 20–25 quiz questions** strictly based on the core learning material in the chapter. Cover all key points, ensuring that each major topic has at least one question.
+2. Generate **exactly 10-15 quiz questions** strictly based on the core learning material in the chapter. Cover all key points, ensuring that each major topic has at least one question.
 
 Question Types & Rules:
 - **MCQ (Multiple Choice Question)**: 3–4 options, exactly one correct answer.
@@ -73,6 +75,16 @@ Content Coverage:
 - Ignore: administrative info (exam dates, office hours, announcements), section dividers (e.g., "Summary", "Questions?"), references, citations, URLs, and image captions without context.
 - Ignore course descriptions, motivations, or learning objectives.
 """
+
+logger = logging.getLogger(__name__)
+
+# Priorty order for trying Gemini models
+MODEL_CHAIN = [
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+]
+OVERLOAD_MARKERS = ("unavailable", "overloaded", "503")
 
 def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
     """
@@ -119,29 +131,39 @@ def call_gpt_model(chapter_title: str, chapter_content: str) -> dict:
     )
     return response.choices[0].message.parsed.dict()
 
-def call_gemini_model(chapter_title: str, chapter_content: str) -> dict:
-    """
-    Call the Google Gemini model to generate quiz questions and chapter summary.
-
-    Args:
-        chapter_title (str): The title of the chapter.
-        chapter_content (str): The full text content of the chapter.
-
-    Returns:
-        dict: The parsed AI model response as a dictionary.
-    """
+def call_gemini_model(chapter_title: str, chapter_content: str, *, max_retries_per_model: int = 2, base_backoff: float = 0.75) -> dict:
+    """Try Gemini models in order with retry/fallback. Returns parsed JSON."""
     prompt = build_user_prompt(chapter_title, chapter_content)
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": ChapterSchema
-        },
-    )
-    print(response)
-    generated_text = response.candidates[0].content.parts[0].text
-    print("Generated text:", generated_text)
-    data = json.loads(generated_text)
-    return data
+
+    last_err = None
+    for model in MODEL_CHAIN:
+        for attempt in range(max_retries_per_model):
+            try:
+                logger.info("[Gemini] %s attempt %d", model, attempt + 1)
+                resp = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": ChapterSchema,
+                    },
+                )
+                txt = resp.candidates[0].content.parts[0].text
+                data = json.loads(txt)
+                data["_model_used"] = model
+                return data
+            except Exception as e:  # keep broad; upstream lib raises custom errors
+                msg = str(e)
+                is_overload = any(m in msg.lower() for m in OVERLOAD_MARKERS)
+                logger.warning("[Gemini] %s failed (overload=%s): %s", model, is_overload, msg)
+                last_err = e
+                if is_overload and attempt < max_retries_per_model - 1:
+                    sleep(base_backoff * (2 ** attempt))
+                    continue  # retry same model
+                if is_overload:  # move to next model
+                    break
+                # Non-overload error: bubble up immediately
+                raise
+        # next model
+    raise RuntimeError(f"Gemini models unavailable: {last_err}")
