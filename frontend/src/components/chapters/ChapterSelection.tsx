@@ -8,6 +8,15 @@ type ChapterSelectionProps = {
     handleStart: () => void;
 };
 
+/**
+ * ChapterSelection component allows users to select a chapter from a dropdown and start a quiz.
+ *
+ * @component
+ * @param {Chapter[]} chapters - Array of chapters to select from.
+ * @param {number | null | undefined} selectedChapterId - The currently selected chapter ID.
+ * @param {(chapterId: number | null) => void} setSelectedChapterId - Handler to set the selected chapter ID.
+ * @param {() => void} handleStart - Handler to start the quiz.
+ */
 function ChapterSelection({
     chapters,
     selectedChapterId,
@@ -45,5 +54,14 @@ function ChapterSelection({
         </div>
     );
 }
+
+/**
+ * Props for ChapterSelection component.
+ * @typedef {Object} ChapterSelectionProps
+ * @property {Chapter[]} chapters - Array of chapters to select from.
+ * @property {number | null | undefined} selectedChapterId - The currently selected chapter ID.
+ * @property {(chapterId: number | null) => void} setSelectedChapterId - Handler to set the selected chapter ID.
+ * @property {() => void} handleStart - Handler to start the quiz.
+ */
 
 export default ChapterSelection;

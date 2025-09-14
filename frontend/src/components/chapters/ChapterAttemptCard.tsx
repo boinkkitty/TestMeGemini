@@ -7,6 +7,14 @@ type ChapterAttemptCardProps = {
     onViewDetails: (attemptId: number) => void;
 };
 
+/**
+ * ChapterAttemptCard component displays a summary of a user's chapter attempt.
+ * Shows title, score, date, and a button to view details.
+ *
+ * @component
+ * @param {ChapterAttempt} attempt - The attempt data to display.
+ * @param {(attemptId: number) => void} onViewDetails - Handler for viewing attempt details.
+ */
 export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCardProps) {
     // Format date as dd/mm/yy
     const formattedDate = new Date(attempt.completed_at).toLocaleDateString('en-GB');

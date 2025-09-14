@@ -8,18 +8,35 @@ type PaginatedQuestionsForChapterProps = {
   questions: Question[];
 };
 
+/**
+ * PaginatedQuestionsForChapter component displays a list of questions for a chapter,
+ * allowing users to navigate through questions one at a time and toggle answer visibility.
+ *
+ * @component
+ * @param {Question[]} questions - Array of questions to display and paginate through.
+ */
 function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapterProps) {
+  // State for the current question index
   const [currentIndex, setCurrentIndex] = useState(0);
+  // State to toggle answer visibility
   const [showAnswer, setShowAnswer] = useState(false);
+  // The currently displayed question
   const currentQuestion = questions[currentIndex];
 
+  // Whether the current question is the first or last in the list
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === questions.length - 1;
 
+  /**
+   * Navigate to the previous question and hide the answer.
+   */
   const goLeft = () => {
     if (!isFirst) setCurrentIndex(currentIndex - 1);
     setShowAnswer(false);
   };
+  /**
+   * Navigate to the next question and hide the answer.
+   */
   const goRight = () => {
     if (!isLast) setCurrentIndex(currentIndex + 1);
     setShowAnswer(false);
@@ -90,5 +107,11 @@ function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapte
     </div>
   );
 };
+
+/**
+ * Props for PaginatedQuestionsForChapter component.
+ * @typedef {Object} PaginatedQuestionsForChapterProps
+ * @property {Question[]} questions - Array of questions to display.
+ */
 
 export default PaginatedQuestionsForChapter;

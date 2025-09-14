@@ -10,6 +10,16 @@ type ChapterCardProps = {
     onDeleteIconClick?: (chapter: Chapter) => void;
 };
 
+/**
+ * ChapterCard component displays a chapter's summary in a styled card.
+ * Shows category, title, description, and a delete icon if provided.
+ *
+ * @component
+ * @param {Chapter} chapter - The chapter data to display.
+ * @param {number} index - The index of the chapter (for color selection).
+ * @param {() => void} [onClick] - Optional handler for card click.
+ * @param {(chapter: Chapter) => void} [onDeleteIconClick] - Optional handler for delete icon click.
+ */
 function ChapterCard({ chapter, index, onClick, onDeleteIconClick }: ChapterCardProps) {
     const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
     return (
