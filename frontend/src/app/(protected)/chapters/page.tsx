@@ -12,31 +12,50 @@ import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
 import DeleteChapterModal from "@/components/chapters/DeleteChapterModal";
 
+
+/**
+ * Chapters Page
+ * Displays a list of chapters with filtering, category selection, and question viewing.
+ * Allows soft and permanent deletion of chapters.
+ *
+ * @returns {JSX.Element} The Chapters page UI
+ */
 export default function Chapters() {
+    // State for all chapters
     const [chapters, setChapters] = useState<Chapter[]>([]);
+    // Loading state for chapters
     const [isLoadingChapters, setIsLoadingChapters] = useState<boolean>(true);
+    // Currently selected chapter ID
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    // Questions for the selected chapter
     const [questions, setQuestions] = useState<Question[]>([]);
+    // Loading state for questions
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    // Filter for chapter title
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
+    // Filter for category
     const [categoryFilter, setCategoryFilter] = useState<string>("");
 
-    // Delete modals
+    // Delete modal state
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [deleteChapterId, setDeleteChapterId] = useState<number | null>(null);
     const [deleteChapterTitle, setDeleteChapterTitle] = useState<string>("");
     const [isPermanentDelete, setIsPermanentDelete] = useState<boolean>(false);
 
+    // Filter chapters by title and category
     const filteredChapters = chapters.filter(chapter =>
         chapter.title.toLowerCase().includes(chapterTitleFilter) &&
         (categoryFilter === "" || chapter.category === categoryFilter)
     );
+    // Currently selected chapter object
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
+    // Category options for dropdown
     const categoryOptions = Array.from(new Set(chapters.map(a => a.category)))
         .filter(Boolean)
         .map((cat) => ({ value: cat, label: cat }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
+    // Fetch chapters on mount
     useEffect(() => {
         getUserChapters()
             .then((data) => setChapters(data))
@@ -46,7 +65,11 @@ export default function Chapters() {
             .finally(() => setIsLoadingChapters(false));
     }, []);
 
-    // Right-click on delete icon handler
+    /**
+     * Handles click on the delete icon for a chapter.
+     * Opens the delete modal.
+     * @param chapter - The chapter to delete
+     */
     const handleDeleteIconClick = (chapter: Chapter) => {
         setDeleteChapterId(chapter.id);
         setDeleteChapterTitle(chapter.title);
@@ -54,10 +77,11 @@ export default function Chapters() {
         setShowDeleteModal(true);
     };
 
-    // Confirm delete
+    /**
+     * Handles confirming the deletion of a chapter (soft or permanent).
+     */
     const handleConfirmDelete = async () => {
         if (deleteChapterId == null) return;
-
         try {
             if (isPermanentDelete) {
                 await deleteChapter(deleteChapterId);
@@ -75,6 +99,10 @@ export default function Chapters() {
         }
     };
 
+    /**
+     * Handles selecting a chapter and fetching its questions.
+     * @param chapterId - The ID of the chapter to select
+     */
     const handleSelectChapter = async (chapterId: number) => {
         setIsLoading(true);
         setSelectedChapterId(chapterId);
@@ -87,15 +115,26 @@ export default function Chapters() {
             .finally(() => setIsLoading(false));
     };
 
+    /**
+     * Handles going back to the chapters list from the detail view.
+     */
     const handleBack = () => {
         setSelectedChapterId(null);
         setQuestions([]);
     }
 
+    /**
+     * Sets the chapter title filter (case-insensitive).
+     * @param filter - The filter string
+     */
     const handleSetChapterTitleFilter = (filter: string) => {
         setChapterTitleFilter(filter.toLowerCase());
     }
 
+    /**
+     * Sets the category filter (case-insensitive).
+     * @param filter - The filter string
+     */
     const handleSetCategoryFilter = (filter: string) => {
         setCategoryFilter(filter);
     }
@@ -125,7 +164,7 @@ export default function Chapters() {
                     <PaginatedQuestionsForChapter questions={questions} />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                             {filteredChapters.map((chapter, index) => (
                                 <div key={chapter.id} className="h-full" onClick={() => handleSelectChapter(chapter.id)}>
                                     <ChapterCard

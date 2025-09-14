@@ -21,7 +21,7 @@ function ChapterSelection({
             <DropDownSelection
                 options={chapters.map((chapter) => ({
                     value: chapter.id.toString(),
-                    label: chapter.title
+                    label: `${chapter.category}: ${chapter.title}`,
                 }))}
                 value={selectedChapterId != null ? selectedChapterId.toString() : ""}
                 onChange={(val) => {

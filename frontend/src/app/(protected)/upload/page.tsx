@@ -5,18 +5,35 @@ import UploadComponent from "../../../components/UploadComponent";
 import { useDropzone } from "react-dropzone";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { createChaptersAndQuestions } from "@/services/chapters";
-
 import LoadingSpinner from "@/components/LoadingSpinner";
 import {handleError} from "../../../utils/handleError";
 
+/**
+ * Upload Page
+ * Allows users to upload PDF files, enter a chapter title and category, and generate chapters and questions.
+ * Displays a list of selected files and handles file removal, error/success messages, and form submission.
+ *
+ * @returns {JSX.Element} The Upload page UI
+ */
 export default function UploadClient() {
+  // State for selected files
   const [files, setFiles] = useState<File[]>([]);
+  // Error message
   const [error, setError] = useState<string>("");
+  // Loading state for generation
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  // Chapter title input
   const [title, setTitle] = useState<string>("");
+  // Category input
   const [category, setCategory] = useState<string>("");
+  // Success message
   const [success, setSuccess] = useState<string>("");
 
+  /**
+   * Handles file drop event from react-dropzone.
+   * Adds new files to the files state, avoiding duplicates.
+   * @param acceptedFiles - Array of dropped File objects
+   */
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prev) => {
       const existingNames = prev.map((f) => f.name);
@@ -25,10 +42,15 @@ export default function UploadClient() {
     });
   }, []);
 
+  /**
+   * Removes a file from the files state by name.
+   * @param name - The name of the file to remove
+   */
   const removeFile = (name: string) => {
     setFiles((prev) => prev.filter((f) => f.name !== name));
   };
 
+  // Set up react-dropzone for PDF uploads
   const { isDragActive, getInputProps, getRootProps, fileRejections } = useDropzone({
     onDrop,
     accept: {
@@ -39,6 +61,10 @@ export default function UploadClient() {
     noKeyboard: false,
   });
 
+  /**
+   * Handles the form submission to generate a chapter and questions.
+   * Validates input, calls the API, and manages loading/error/success state.
+   */
   const handleGenerate = async () => {
     setError("");
     setSuccess("");
