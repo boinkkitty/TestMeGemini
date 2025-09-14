@@ -32,6 +32,34 @@ Turn your notes into interactive quizzes and track your learning progress.
 
 ## Screenshots
 
+**Login**
+
+![Login](docs/login.png)
+
+**HomePage / Dashboard**
+
+![Dashboard](docs/dashboard.png)
+
+**Upload PDFs**
+
+![Upload](docs/upload.png)
+
+**Chapters List**
+
+![Chapters](docs/chapters.png)
+
+**Chapter Attempts**
+
+![Chapter Attempts](docs/attempts.png)
+
+**In Attempt (Question View)**
+
+![In Attempt](docs/inattempt.png)
+
+**In Quiz (Answering)**
+
+![In Quiz](docs/inquiz.png)
+
 ## Installation & Local Development
 
 ### Environment Variables
@@ -86,20 +114,37 @@ make frontend-run-prod
 
 ## Model Choice & Cost Comparison
 
-This project currently uses **Google Gemini 2.5 Flash** (`gemini-2.5-flash`) for question and quiz generation.
-I also considered **OpenAI GPT-4o Mini** (`gpt-4o-mini`) as an alternative. Here’s a quick comparison:
+The application uses a Gemini fallback chain for AI generation:
 
-| Model            | Input Token Price\* | Output Token Price\* | Max Context | Speed     | Notes                     |
-| ---------------- | ------------------- | -------------------- | ----------- | --------- | ------------------------- |
-| gemini-2.5-flash | ~$0.35 / 1M         | ~$1.05 / 1M          | 1M tokens   | Very fast | Lower cost, good for bulk |
-| gpt-4o-mini      | $0.50 / 1M          | $1.50 / 1M           | 128k tokens | Fast      | Slightly higher quality   |
+1. Try gemini-2.5-pro first for best reasoning and summary quality.
+2. If it returns transient overload / 503 after limited retries, fall back to gemini-2.5-flash.
+3. If Flash also overloads, fall back to gemini-2.5-flash-lite (fastest / cheapest) to still return something.
+4. If all three fail, a clear error is returned.
 
-\*Prices as of August 2025. See [OpenAI Pricing](https://openai.com/pricing) and [Gemini Pricing](https://ai.google.dev/pricing).
+Only text input/output is currently used (no image/video/audio responses stored), but full multimodal support is available in all three Gemini 2.5 models.
 
-- **Gemini 2.5 Flash** is currently used for its lower cost and high speed, making it ideal for generating many questions quickly.
-- **GPT-4o Mini** offers slightly higher quality and more context, but at a higher price per token.
+### Text Pricing (USD per 1M tokens, August 2025)
 
-You can easily switch between models in `backend/api/utils/ai.py` by calling either `call_gemini_model` or `call_gpt_model`.
+(Shows standard vs batch where relevant; Flash Lite & Flash have same rate ≤ / > 200K for text.)
+
+| Model                 | Input ≤200K | Input >200K | Output Text (≤200K→>200K) | Batch Input ≤200K | Batch Input >200K | Batch Output (≤200K→>200K) | Max Input Tokens | Max Output Tokens | Notes                            |
+| --------------------- | ----------- | ----------- | ------------------------- | ----------------- | ----------------- | -------------------------- | ---------------- | ----------------- | -------------------------------- |
+| gemini-2.5-pro        | $1.25       | $2.50       | $10 → $15                 | $0.625            | $1.25             | $5.00 → $7.50              | 1,048,576        | 65,535            | Highest quality / deep reasoning |
+| gemini-2.5-flash      | $0.30       | $0.30       | $2.50 (flat)              | $0.15             | $0.15             | $1.25 (flat)               | 1,048,576        | 65,535            | Balanced cost/speed              |
+| gemini-2.5-flash-lite | $0.10       | $0.10       | $0.40 (flat)              | $0.05             | $0.05             | $0.20 (flat)               | 1,048,576        | 65,536            | Lowest cost / fallback & bulk    |
+| gpt-4o-mini (ref)     | $0.50       | $0.50       | $1.50                     | –                 | –                 | –                          | 128,000          | ~16,000+          | Alternative; polish tradeoff     |
+
+### Rationale
+
+- Pro delivers best structured summaries & nuanced distractors for MCQ/MRQ.
+- Flash handles the majority of volume cheaply when Pro is temporarily busy.
+- Flash Lite ensures resilience under sustained platform load (keeps user flow unblocked).
+- Gemini chosen for this personal project because of a generous free usage tier → near-zero iteration cost while prototyping; GPT kept as an easy swap path.
+
+### Observability
+
+- The service adds an internal `_model_used` field for downstream logging/analytics.
+- Fallback & retry logic lives in `backend/api/utils/ai.py` (`call_gemini_model`). Adjust order via `MODEL_CHAIN`.
 
 ## License
 

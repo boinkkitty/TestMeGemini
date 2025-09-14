@@ -10,30 +10,48 @@ import { getUserChapters } from "@/services/chapters";
 import RecentQuizStatus from "@/components/dashboard/RecentQuizStatus";
 import BarChartComponent from "@/components/dashboard/BarChartComponent";
 
+/**
+ * Dashboard Page
+ * Shows recent chapters, latest attempts, user info, and statistics for the user.
+ * Includes 7-day activity, average/highest score, and a bar chart of recent attempts.
+ *
+ * @returns {JSX.Element} The dashboard UI
+ */
 export default function Dashboard() {
+    // State for recent chapters
     const [chapters, setChapters] = useState<Chapter[]>([]);
+    // Loading state
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    // User info
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    // Attempts in the last week
     const [lastWeekAttempts, setLastWeekAttempts] = useState<ChapterAttempt[]>([]);
+    // Last 10 attempts
     const [lastTenAttempts, setLastTenAttempts] = useState<ChapterAttempt[]>([]);
 
+    // Calculate percentages for last week attempts
     const percentages = lastWeekAttempts
         .filter(a => a.max_score && a.max_score > 0)
         .map(a => (a.score / a.max_score) * 100);
 
+    // Highest percentage score in last week
     const highestPercentage = percentages.length > 0 ? Math.max(...percentages) : 0;
+    // Average percentage score in last week
     const averagePercentage =
         percentages.length > 0
             ? Math.round((percentages.reduce((sum, p) => sum + p, 0) / percentages.length) * 10) / 10
             : 0;
 
+    /**
+     * Fetches user info, chapters, and attempts on mount.
+     */
     useEffect(() => {
         setIsLoading(true);
         const startDate: string = formatDateYYYYMMDD(getNDaysAgo(6));
 
         Promise.all([
             getUserInfo().catch(() => null),
-            getUserChapters({ limit: 6 }).catch(() => []),
+            getUserChapters({ limit: 3 }).catch(() => []),
             getUserChapterAttempts({ start_date: startDate }).catch(() => []),
             getUserChapterAttempts({ limit: 10 })
         ]).then(([userInfoData, chaptersData, lastWeekAttemptsData, lastTenAttemptsData]) => {
@@ -65,7 +83,7 @@ export default function Dashboard() {
                             Recent Chapters
                         </h1>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-8 w-full">
                         {chapters.map((chapter, index) => (
                             <ChapterCard key={chapter.id} chapter={chapter} index={index} />
                         ))}
@@ -105,6 +123,7 @@ export default function Dashboard() {
                                 axisKey: a.title.length > 12 ? a.title.slice(0, 12) + '…' : a.title,
                                 value: a.max_score && a.max_score > 0 ? (a.score / a.max_score) * 100 : 0,
                                 title: a.title,
+                                category: a.category,
                                 date: new Date(a.completed_at).toLocaleDateString(),
                                 score: a.score,
                                 max_score: a.max_score

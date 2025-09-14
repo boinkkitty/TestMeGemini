@@ -1,5 +1,4 @@
 "use client";
-
 import { Chapter, Question } from "@/lib/types";
 import QuizComponent from "@/components/questions/QuizComponent";
 import { useEffect, useState } from "react";
@@ -8,14 +7,29 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import {getUserChapters} from "@/services/chapters";
 import {getChapterQuestions} from "@/services/questions";
 
+/**
+ * Quiz Page
+ * Allows the user to select a chapter and take a quiz on its questions.
+ * Displays a chapter selection screen, then the quiz interface.
+ *
+ * @returns {JSX.Element} The Quiz page UI
+ */
 export default function Quiz()  {
+    // State for all chapters
     const [chapters, setChapters] = useState<Chapter[]>([]);
+    // Loading state
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    // Whether the quiz has started
     const [isStarted, setIsStarted] = useState<boolean>(false);
+    // Currently selected chapter ID
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    // Questions for the selected chapter
     const [questions, setQuestions] = useState<Question[]>([]);
 
+    // The selected chapter object
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
+
+    // Fetch chapters on mount
     useEffect(() => {
         getUserChapters()
             .then((data) => setChapters(data))
@@ -25,6 +39,9 @@ export default function Quiz()  {
             .finally(() => setIsLoading(false));
     }, []);
 
+    /**
+     * Handles starting the quiz by fetching questions for the selected chapter.
+     */
     const handleStartQuiz = async () => {
         await getChapterQuestions(selectedChapter!.id)
             .then((questions) => setQuestions(questions))
@@ -39,7 +56,7 @@ export default function Quiz()  {
         <div className="flex flex-col justify-between items-center w-full h-full p-6">
             <div className="flex justify-start items-center p-2 mb-4 w-full">
                 <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedChapter && isStarted ? `${selectedChapter.title}` : "Quiz"}
+                    {selectedChapter && isStarted ? `${selectedChapter.category}: ${selectedChapter.title}` : "Quiz"}
                 </h1>
             </div>
             {!isStarted ? (

@@ -1,3 +1,8 @@
+"""
+URL routing for the chapters app.
+Defines endpoints for listing, creating, retrieving, and managing chapters and their questions.
+"""
+
 from django.urls import path, include
 from .views import ChapterListCreateAPIView, ChapterRetrieveUpdateDestroyAPIView
 

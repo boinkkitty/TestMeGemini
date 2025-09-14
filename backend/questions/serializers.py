@@ -1,3 +1,8 @@
+"""
+Serializers for the questions app.
+Includes serializers for questions and choices, with validation for question types and choices.
+"""
+
 from rest_framework import serializers
 from .models import Question, Choice
 from chapters.models import Chapter
@@ -14,7 +19,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Question model.
+    Serializer for the Question model, including nested choices and validation.
     """
     choices = ChoiceSerializer(many=True)
 

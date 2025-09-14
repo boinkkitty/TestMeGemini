@@ -1,91 +1,102 @@
+"""
+API views for the chapters app.
+Provides endpoints for listing, creating, retrieving, updating, and deleting chapters.
+"""
 
-from codecs import lookup
 import logging
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from .models import Chapter
 from .serializers import ChapterSerializer, ChapterListSerializer
 from api.utils.ai import call_gemini_model
 from api.utils.pdf import extract_text
+from .services import create_chapter_and_questions_atomic
 
 logger = logging.getLogger(__name__)
 
 class ChapterListCreateAPIView(ListCreateAPIView):
+    """
+    API endpoint for listing and creating chapters for the authenticated user.
+    GET: Returns a list of chapters (optionally limited).
+    POST: Creates a new chapter with uploaded files and category, using AI to generate questions.
+    """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Chapter.objects.filter(user=self.request.user, is_deleted=False).order_by('-created_at')
+        """Return chapters belonging to current user with optional limit."""
+        qs = (Chapter.objects
+              .for_user(self.request.user)
+              .not_deleted()
+              .ordered_by_created())
         limit = self.request.query_params.get('limit')
         if limit:
             try:
-                limit = int(limit)
-                if limit > 0:
-                    return qs[:limit]
+                limit_val = int(limit)
+                if limit_val > 0:
+                    return qs[:limit_val]
             except (ValueError, TypeError):
                 pass
         return qs
 
     def get_serializer_class(self):
+        """
+        Returns the serializer class based on request method.
+        """
         if self.request.method == "GET":
             return ChapterListSerializer
         return ChapterSerializer
 
     def create(self, request, *args, **kwargs):
-        logger.info("[ChapterCreate] Incoming request from user: %s", request.user)
+        """
+        Handles chapter creation with file upload, text extraction, and AI question generation.
+        Creates both the chapter and all related questions/choices in one atomic operation.
+        """
         files = request.FILES.getlist("files")
         title = request.data.get("title")
         category = request.data.get("category")
-        logger.info("[ChapterCreate] Received files: %s", [f.name for f in files])
-        logger.info("[ChapterCreate] Title: %s, Category: %s", title, category)
-        if not files:
-            logger.warning("[ChapterCreate] No files provided.")
-            return Response({"error": "file required"}, status=status.HTTP_400_BAD_REQUEST)
-        if not title:
-            logger.warning("[ChapterCreate] No title provided.")
-            return Response({"error": "title required"}, status=status.HTTP_400_BAD_REQUEST)
-        if not category:
-            logger.warning("[ChapterCreate] No category provided.")
-            return Response({"error": "category required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            logger.info("[ChapterCreate] Extracting text from files...")
-            chapter_content = extract_text(files)
-            logger.info("[ChapterCreate] Extracted text length: %d", len(chapter_content) if chapter_content else 0)
-            logger.info("[ChapterCreate] Calling Gemini model...")
-            data = call_gemini_model(title, chapter_content)
-            logger.info("[ChapterCreate] Gemini model response length: %s", len(str(data)))
-            logger.info("[ChapterCreate] Gemini model response: %s", str(data)[:500])
-            payload = {
-                # user will be set by serializer.save(user=request.user)
-                "title": title,
-                "description": data["chapter"]["description"] or "",
-                "category": category,
-                "questions": data["questions"]
-            }
-            logger.info("[ChapterCreate] Payload for serializer: %s", payload)
-            serializer = self.get_serializer(data=payload)
-            serializer.is_valid(raise_exception=True)
-            chapter = serializer.save(user=request.user)
-            question_ids = list(chapter.questions.values_list("id", flat=True))
-            result = {"chapter_id": chapter.id, "question_ids": question_ids}
-            logger.info("[ChapterCreate] Chapter created with ID: %s, Questions: %s", chapter.id, question_ids)
-        except Exception as e:
-            logger.error("[ChapterCreate] Exception: %s", str(e), exc_info=True)
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(result, status=status.HTTP_201_CREATED)
+        if not files or not title or not category:
+            return Response(
+                {"error": "Missing required fields: files, title, category."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Extract text and call AI model
+        chapter_content = extract_text(files)
+        data = call_gemini_model(title, chapter_content)
+        payload = {
+            "title": title,
+            "description": data["chapter"]["description"] or "",
+            "category": category,
+            "questions": data["questions"]
+        }
+        result, status_code = create_chapter_and_questions_atomic(
+            user=request.user,
+            payload=payload,
+            request=request
+        )
+        return Response(result, status=status_code)
     
 class ChapterRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint for retrieving, updating, and deleting a chapter.
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = ChapterSerializer
     queryset = Chapter.objects.all()
     lookup_field = "id"
 
     def get_queryset(self):
+        """
+        Returns queryset of chapters for the current user.
+        """
         return Chapter.objects.filter(user=self.request.user, is_deleted=False)
     
     def update(self, request, *args, **kwargs):
+        """
+        Handles updating a chapter. Only soft update of is_deleted is allowed.
+        """
         # Only allow soft update of is_deleted
         partial = kwargs.pop('partial', False)
         instance = self.get_object()

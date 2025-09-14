@@ -1,10 +1,21 @@
-// Modal component for confirmation
-function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle, deleteAttempts, setDeleteAttempts }: {
+/**
+ * DeleteChapterModal component displays a confirmation modal for deleting a chapter.
+ * Allows the user to confirm deletion and optionally delete related attempts.
+ *
+ * @component
+ * @param {boolean} open - Whether the modal is open.
+ * @param {() => void} onClose - Handler to close the modal.
+ * @param {() => void} onConfirm - Handler to confirm deletion.
+ * @param {string} chapterTitle - The title of the chapter to delete.
+ * @param {boolean} isDeleteAttempts - Whether to delete related attempts.
+ * @param {(v: boolean) => void} setDeleteAttempts - Handler to set isDeleteAttempts state.
+ */
+function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle, isDeleteAttempts, setDeleteAttempts }: {
     open: boolean;
     onClose: () => void;
     onConfirm: () => void;
     chapterTitle: string;
-    deleteAttempts: boolean;
+    isDeleteAttempts: boolean;
     setDeleteAttempts: (v: boolean) => void;
 }) {
     if (!open) return null;
@@ -17,7 +28,7 @@ function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle, deleteAtte
                     <input
                         id="delete-attempts"
                         type="checkbox"
-                        checked={deleteAttempts}
+                        checked={isDeleteAttempts}
                         onChange={e => setDeleteAttempts(e.target.checked)}
                         className="mr-2"
                     />

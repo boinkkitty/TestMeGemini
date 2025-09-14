@@ -1,6 +1,22 @@
+"""
+Scoring utility functions for quiz attempts.
+Includes logic for scoring MRQ, MCQ, and TF questions.
+"""
+
 from questions.models import Question
 
 def get_score(question, selected_choice_ids, correct_choices) -> float:
+    """
+    Calculate the score for a question attempt based on selected and correct choices.
+    
+    Args:
+        question (Question): The question instance.
+        selected_choice_ids (set): The set of selected choice IDs.
+        correct_choices (set): The set of correct choice IDs.
+        
+    Returns:
+        float: The calculated score (partial for MRQ, 1/0 for MCQ/TF).
+    """
     # MRQ: partial credit for each correct choice selected, no penalty for extra
     if question.question_type == Question.QuestionType.MRQ:
         selected_set = set(selected_choice_ids)

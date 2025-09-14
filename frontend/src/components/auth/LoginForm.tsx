@@ -12,22 +12,46 @@ type LoginFormProps = {
     children?: React.ReactNode;
 }
 
+/**
+ * Inputs for LoginForm form fields.
+ * @typedef {Object} Inputs
+ * @property {string} username - The user's username (signup only).
+ * @property {string} email - The user's email address.
+ * @property {string} password - The user's password.
+ */
 type Inputs = {
     username: string;
     email: string;
     password: string;
 }
 
+/**
+ * LoginForm component for user authentication (login/signup).
+ * Handles form state, submission, and error display for both login and signup flows.
+ *
+ * @component
+ * @param {string} formLabel - The label for the submit button (e.g., 'Login' or 'Sign Up').
+ * @param {boolean} isSignup - If true, renders signup fields and logic; otherwise, login.
+ * @param {React.ReactNode} [children] - Optional children to render inside the form (e.g., extra buttons).
+ */
 function LoginForm({
     formLabel,
     isSignup,
     children,
    }: LoginFormProps) {
+    // Next.js router for navigation after login/signup
     const router = useRouter();
+    // React Hook Form for form state management
     const {register, handleSubmit} = useForm<Inputs>();
 
+    // State to toggle password visibility
     const [showPassword, setShowPassword] = useState(false);
 
+    /**
+     * Handles user signup by sending registration data to the backend.
+     * On success, redirects to the login page. On error, shows an alert.
+     * @param {Inputs} data - The form data (username, email, password)
+     */
     const doSignup = async (data: Inputs) => {
         try {
             const res = await api.post(
@@ -47,6 +71,11 @@ function LoginForm({
             alert(errorMsg);
         }
     };
+    /**
+     * Handles user login by sending credentials to the backend.
+     * On success, redirects to the dashboard. On error, shows an alert.
+     * @param {Inputs} data - The form data (email, password)
+     */
     const doLogin = async (data: Inputs) => {
         try {
             const res = await api.post(
@@ -65,6 +94,10 @@ function LoginForm({
         }
     };
 
+    /**
+     * Handles form submission, dispatching to login or signup logic.
+     * @param {Inputs} data - The form data
+     */
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         if (isSignup) {
             await doSignup(data);

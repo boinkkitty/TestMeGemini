@@ -30,12 +30,13 @@ export default function Sidebar() {
             activeIcon: <HiLogout size={24} />,
             href: "/login",
             onClick: async () => {
-                try {
-                    await api.post("/api/users/logout/");
-                    router.push("/login");
-                } catch (error) {
+                await api.post("/api/users/logout/")
+                .catch((error) => {
                     console.error("Logout failed", error);
-                }
+                })
+                .finally(() => {
+                    router.push("/login");
+                });
             },
         },
     ];
