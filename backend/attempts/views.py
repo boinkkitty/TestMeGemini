@@ -42,17 +42,29 @@ class ChapterAttemptCreateListAPIView(ListCreateAPIView):
         return qs
 
     def create(self, request, *args, **kwargs):
-        """
-        Handles creation of a chapter attempt, calculates total score, and creates question attempts.
-        Args:
-            request (Request): The HTTP request containing attempt and questions data.
-        Returns:
-            Response: HTTP 201 with created attempt data.
-        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         chapter_attempt = serializer.save(user=request.user)
+
         questions_data = request.data.get('questions', [])
+
+        # Verify all submitted question IDs belong to the attempt's chapter and user
+        submitted_qids = {q['question_id'] for q in questions_data}
+        valid_qids = set(
+            Question.objects.filter(
+                id__in=submitted_qids,
+                chapter=chapter_attempt.chapter,
+                chapter__user=request.user,
+            ).values_list('id', flat=True)
+        )
+        invalid_qids = submitted_qids - valid_qids
+        if invalid_qids:
+            chapter_attempt.delete()
+            return Response(
+                {"error": f"Questions {invalid_qids} do not belong to this chapter."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         total_score = process_question_attempts(chapter_attempt=chapter_attempt, questions_data=questions_data)
         chapter_attempt.score = total_score
         chapter_attempt.save()

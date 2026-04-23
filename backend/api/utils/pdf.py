@@ -1,31 +1,24 @@
-"""
-PDF utility functions for text extraction.
-Includes functions to extract text from PDF files for further processing.
-"""
-
 import pdfplumber
-from typing import List
+from typing import List, Optional
+import logging
 
-def extract_text(files: List) -> str:
-    """
-    Extract text from a list of PDF files.
-    Returns the combined text from all pages of all files.
-    Args:
-        files (List): List of PDF file objects.
-    Returns:
-        str: Combined text from all PDFs.
-    Raises:
-        ValueError: If no files are provided.
-        Exception: If there is an error reading the PDF files.
-    """
+logger = logging.getLogger(__name__)
+
+
+def extract_text(files: List, *, max_pages: Optional[int] = None) -> str:
     texts = []
+    total_pages = 0
     for file in files:
         with pdfplumber.open(file) as pdf:
             parts = []
             for page in pdf.pages:
+                if max_pages and total_pages >= max_pages:
+                    logger.warning("Page limit (%d) reached, truncating extraction", max_pages)
+                    break
                 txt = page.extract_text() or ""
                 if txt.strip():
                     parts.append(txt)
+                total_pages += 1
             texts.append("\n\n".join(parts))
 
     return "\n\n".join(texts)

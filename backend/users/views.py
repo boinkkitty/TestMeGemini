@@ -1,10 +1,4 @@
-"""
-API views for the users app.
-Provides endpoints for user info, registration, login, logout, and token refresh.
-"""
-
 from django.conf import settings
-from django.shortcuts import render
 from .serializers import CustomUserSerializer, LoginUserSerializer, RegisterUserSerializer
 from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -14,105 +8,94 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken
+import logging
 
-# Create your views here.
+logger = logging.getLogger(__name__)
+
+COOKIE_DEFAULTS = {
+    "httponly": True,
+    "secure": not settings.DEBUG,
+    "samesite": "Lax",
+}
+
+
+def _set_auth_cookies(response, access_token, refresh_token=None):
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
+        **COOKIE_DEFAULTS,
+    )
+    if refresh_token:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+            **COOKIE_DEFAULTS,
+        )
+
+
 class UserInfoView(RetrieveUpdateAPIView):
-    """
-    API endpoint for retrieving and updating the authenticated user's info.
-    """
     permission_classes = (IsAuthenticated,)
     serializer_class = CustomUserSerializer
 
     def get_object(self):
         return self.request.user
-    
+
+
 class UserRegistrationView(CreateAPIView):
-    """
-    API endpoint for registering a new user.
-    """
     permission_classes = [AllowAny]
-    authentication_classes = [] # Only for testing
+    authentication_classes = []
     serializer_class = RegisterUserSerializer
 
+
 class LoginView(APIView):
-    """
-    API endpoint for user login. Sets JWT tokens in cookies on success.
-    """
     permission_classes = [AllowAny]
-    authentication_classes = [] # Only for testing
+    authentication_classes = []
 
     def post(self, request):
-        """
-        Handle user login, validate credentials, and set JWT cookies.
-        """
         serializer = LoginUserSerializer(data=request.data)
 
         if serializer.is_valid():
             user = serializer.validated_data
             refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
 
-            response = Response({
-                "user": CustomUserSerializer(user).data
-            },
-            status=status.HTTP_200_OK)
-
-            # Set HttpOnly cookies for access and refresh tokens
-            response.set_cookie(key="access_token", 
-                                value=access_token,  
-                                httponly=True,
-                                secure=True,
-                                samesite="None",
-                                max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
-            
-            response.set_cookie(key="refresh_token", 
-                                value=str(refresh),
-                                httponly=True,
-                                secure=True,
-                                samesite="None",
-                                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
-            
+            response = Response(
+                {"user": CustomUserSerializer(user).data},
+                status=status.HTTP_200_OK,
+            )
+            _set_auth_cookies(response, str(refresh.access_token), str(refresh))
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class LogoutView(APIView):
-    """
-    API endpoint for user logout. Clears authentication cookies.
-    """
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
 
-        # Blacklist the refresh token if it exists
         if refresh_token:
             try:
                 refresh = RefreshToken(refresh_token)
                 refresh.blacklist()
-            except Exception as e:
-                pass
-            
+            except Exception:
+                logger.warning("Failed to blacklist refresh token during logout")
+
         response = Response({"message": "Successfully logged out!"}, status=status.HTTP_200_OK)
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
         return response
-    
+
+
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
-        
-        # If no refresh token cookie, return error
+
         if not refresh_token:
             return Response({"error": "Refresh token not provided"}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             refresh = RefreshToken(refresh_token)
-            access_token = str(refresh.access_token)
-
-            # Set new access token in HttpOnly cookie
             response = Response({"message": "Access token refreshed successfully"}, status=status.HTTP_200_OK)
-            response.set_cookie(key="access_token",
-                                value=access_token,
-                                httponly=True,
-                                secure=True,
-                                samesite="None")
+            _set_auth_cookies(response, str(refresh.access_token))
             return response
         except InvalidToken:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
