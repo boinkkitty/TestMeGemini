@@ -29,6 +29,10 @@ backend/**/migrations/*.py
 *.db
 *.db-journal
 
+# === Docker ===
+# docker-compose.override.yml is for local overrides, not committed
+docker-compose.override.yml
+
 # === OS/system files ===
 .DS_Store
 Thumbs.db
