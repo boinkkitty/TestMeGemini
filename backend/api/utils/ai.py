@@ -80,8 +80,8 @@ logger = logging.getLogger(__name__)
 
 # Priorty order for trying Gemini models
 MODEL_CHAIN = [
-    "gemini-2.5-pro",
     "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-2.5-flash-lite",
 ]
 OVERLOAD_MARKERS = ("unavailable", "overloaded", "503")
