@@ -1,75 +1,48 @@
 'use client';
 
-import {useEffect, useState} from "react";
-import {Chapter, Question} from "@/lib/types";
+import { useEffect, useState } from "react";
+import { Chapter, Question } from "@/lib/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 import ChapterCard from "@/components/chapters/ChapterCard";
-import {deleteChapter, softDeleteChapter} from "@/services/chapters";
-import {getUserChapters} from "@/services/chapters";
-import {getChapterQuestions} from "@/services/questions";
+import { deleteChapter, softDeleteChapter } from "@/services/chapters";
+import { getUserChapters } from "@/services/chapters";
+import { getChapterQuestions } from "@/services/questions";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
 import DeleteChapterModal from "@/components/chapters/DeleteChapterModal";
+import { getCategoryColor } from "@/utils/chapterStyles";
 
-
-/**
- * Chapters Page
- * Displays a list of chapters with filtering, category selection, and question viewing.
- * Allows soft and permanent deletion of chapters.
- *
- * @returns {JSX.Element} The Chapters page UI
- */
 export default function Chapters() {
-    // State for all chapters
     const [chapters, setChapters] = useState<Chapter[]>([]);
-    // Loading state for chapters
     const [isLoadingChapters, setIsLoadingChapters] = useState<boolean>(true);
-    // Currently selected chapter ID
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
-    // Questions for the selected chapter
     const [questions, setQuestions] = useState<Question[]>([]);
-    // Loading state for questions
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    // Filter for chapter title
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
-    // Filter for category
     const [categoryFilter, setCategoryFilter] = useState<string>("");
-
-    // Delete modal state
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [deleteChapterId, setDeleteChapterId] = useState<number | null>(null);
     const [deleteChapterTitle, setDeleteChapterTitle] = useState<string>("");
     const [isPermanentDelete, setIsPermanentDelete] = useState<boolean>(false);
 
-    // Filter chapters by title and category
     const filteredChapters = chapters.filter(chapter =>
         chapter.title.toLowerCase().includes(chapterTitleFilter) &&
         (categoryFilter === "" || chapter.category === categoryFilter)
     );
-    // Currently selected chapter object
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
-    // Category options for dropdown
     const categoryOptions = Array.from(new Set(chapters.map(a => a.category)))
         .filter(Boolean)
         .map((cat) => ({ value: cat, label: cat }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
-    // Fetch chapters on mount
     useEffect(() => {
         getUserChapters()
             .then((data) => setChapters(data))
-            .catch((err) => {
-                console.error(err);
-            })
+            .catch((err) => console.error(err))
             .finally(() => setIsLoadingChapters(false));
     }, []);
 
-    /**
-     * Handles click on the delete icon for a chapter.
-     * Opens the delete modal.
-     * @param chapter - The chapter to delete
-     */
     const handleDeleteIconClick = (chapter: Chapter) => {
         setDeleteChapterId(chapter.id);
         setDeleteChapterTitle(chapter.title);
@@ -77,9 +50,6 @@ export default function Chapters() {
         setShowDeleteModal(true);
     };
 
-    /**
-     * Handles confirming the deletion of a chapter (soft or permanent).
-     */
     const handleConfirmDelete = async () => {
         if (deleteChapterId == null) return;
         try {
@@ -88,7 +58,6 @@ export default function Chapters() {
             } else {
                 await softDeleteChapter(deleteChapterId);
             }
-            // Only fetch chapters after delete is done
             const data = await getUserChapters();
             setChapters(data);
         } catch (err) {
@@ -99,81 +68,85 @@ export default function Chapters() {
         }
     };
 
-    /**
-     * Handles selecting a chapter and fetching its questions.
-     * @param chapterId - The ID of the chapter to select
-     */
     const handleSelectChapter = async (chapterId: number) => {
         setIsLoading(true);
         setSelectedChapterId(chapterId);
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
         await getChapterQuestions(chapter!.id)
-            .then((data) => {
-                console.log(data);
-                setQuestions(data);
-            })
+            .then((data) => setQuestions(data))
             .finally(() => setIsLoading(false));
     };
 
-    /**
-     * Handles going back to the chapters list from the detail view.
-     */
     const handleBack = () => {
         setSelectedChapterId(null);
         setQuestions([]);
-    }
+    };
 
-    /**
-     * Sets the chapter title filter (case-insensitive).
-     * @param filter - The filter string
-     */
-    const handleSetChapterTitleFilter = (filter: string) => {
-        setChapterTitleFilter(filter.toLowerCase());
-    }
-
-    /**
-     * Sets the category filter (case-insensitive).
-     * @param filter - The filter string
-     */
-    const handleSetCategoryFilter = (filter: string) => {
-        setCategoryFilter(filter);
-    }
-
-    if (isLoadingChapters) return <LoadingSpinner message="Loading chapters..." />;
+    if (isLoadingChapters) return <LoadingSpinner message="Loading chapters…" />;
 
     return (
-        <div className="flex flex-col p-6">
-            <div className="flex justify-start items-center p-2 mb-4">
-                <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-                    {selectedChapter ? `${selectedChapter.category}: ${selectedChapter.title}` : "Chapters"}
-                </h1>
+        <div className="p-8 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    {selectedChapter ? (
+                        <>
+                            <div className="flex items-center gap-2 mb-1">
+                                {(() => {
+                                    const color = getCategoryColor(selectedChapter.category);
+                                    return (
+                                        <span
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                                            style={{ background: color.bg, color: color.text }}
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: color.dot }} />
+                                            {selectedChapter.category}
+                                        </span>
+                                    );
+                                })()}
+                            </div>
+                            <h1 className="text-2xl font-bold tracking-tight">{selectedChapter.title}</h1>
+                        </>
+                    ) : (
+                        <h1 className="text-2xl font-bold tracking-tight">Chapters</h1>
+                    )}
+                </div>
+                {selectedChapter && (
+                    <button
+                        onClick={handleBack}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-card border border-border rounded-md text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                    >
+                        ← Back
+                    </button>
+                )}
             </div>
-            {!selectedChapter && (<div className="flex flex-start gap-6 items-center p-2 mb-4">
-                <SearchBar placeholder={"Search title..."} value={chapterTitleFilter} onChange={handleSetChapterTitleFilter}/>
-                <DropDownSelection label={"Category"} options={categoryOptions} value={categoryFilter} onChange={handleSetCategoryFilter} showBlankOption={true}/>
-            </div>)}
-            {selectedChapter && (
-                <div className="mb-4 flex justify-start">
-                    <button onClick={handleBack} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold">Back</button>
+
+            {/* Filters (list view only) */}
+            {!selectedChapter && (
+                <div className="flex items-center gap-4">
+                    <SearchBar placeholder="Search title…" value={chapterTitleFilter} onChange={(v) => setChapterTitleFilter(v.toLowerCase())} />
+                    <DropDownSelection label="Category" options={categoryOptions} value={categoryFilter} onChange={setCategoryFilter} showBlankOption={true} />
                 </div>
             )}
-            <div className={selectedChapterId && selectedChapter ? "p-2 flex justify-center items-center min-h-[60vh]" : "p-2"}>
+
+            {/* Content */}
+            <div>
                 {isLoading ? (
-                    <LoadingSpinner message="Loading questions..." />
+                    <LoadingSpinner message="Loading questions…" />
                 ) : selectedChapterId && selectedChapter ? (
-                    <PaginatedQuestionsForChapter questions={questions} />
+                    <div className="flex justify-center">
+                        <PaginatedQuestionsForChapter questions={questions} />
+                    </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                            {filteredChapters.map((chapter, index) => (
-                                <div key={chapter.id} className="h-full" onClick={() => handleSelectChapter(chapter.id)}>
-                                    <ChapterCard
-                                        chapter={chapter}
-                                        index={index}
-                                        onClick={() => handleSelectChapter(chapter.id)}
-                                        onDeleteIconClick={handleDeleteIconClick}
-                                    />
-                                </div>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+                            {filteredChapters.map((chapter) => (
+                                <ChapterCard
+                                    key={chapter.id}
+                                    chapter={chapter}
+                                    onClick={() => handleSelectChapter(chapter.id)}
+                                    onDeleteIconClick={handleDeleteIconClick}
+                                />
                             ))}
                         </div>
                         <DeleteChapterModal

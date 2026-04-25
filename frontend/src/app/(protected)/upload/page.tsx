@@ -1,39 +1,21 @@
 'use client';
 
-import {useCallback, useState} from "react";
+import { useCallback, useState } from "react";
 import UploadComponent from "../../../components/UploadComponent";
 import { useDropzone } from "react-dropzone";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { X } from "lucide-react";
 import { createChaptersAndQuestions } from "@/services/chapters";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import {handleError} from "../../../utils/handleError";
+import { handleError } from "../../../utils/handleError";
 
-/**
- * Upload Page
- * Allows users to upload PDF files, enter a chapter title and category, and generate chapters and questions.
- * Displays a list of selected files and handles file removal, error/success messages, and form submission.
- *
- * @returns {JSX.Element} The Upload page UI
- */
 export default function UploadClient() {
-  // State for selected files
   const [files, setFiles] = useState<File[]>([]);
-  // Error message
   const [error, setError] = useState<string>("");
-  // Loading state for generation
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  // Chapter title input
   const [title, setTitle] = useState<string>("");
-  // Category input
   const [category, setCategory] = useState<string>("");
-  // Success message
   const [success, setSuccess] = useState<string>("");
 
-  /**
-   * Handles file drop event from react-dropzone.
-   * Adds new files to the files state, avoiding duplicates.
-   * @param acceptedFiles - Array of dropped File objects
-   */
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prev) => {
       const existingNames = prev.map((f) => f.name);
@@ -42,145 +24,126 @@ export default function UploadClient() {
     });
   }, []);
 
-  /**
-   * Removes a file from the files state by name.
-   * @param name - The name of the file to remove
-   */
   const removeFile = (name: string) => {
     setFiles((prev) => prev.filter((f) => f.name !== name));
   };
 
-  // Set up react-dropzone for PDF uploads
   const { isDragActive, getInputProps, getRootProps, fileRejections } = useDropzone({
     onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-    },
+    accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
     noClick: false,
     noKeyboard: false,
   });
 
-  /**
-   * Handles the form submission to generate a chapter and questions.
-   * Validates input, calls the API, and manages loading/error/success state.
-   */
   const handleGenerate = async () => {
     setError("");
     setSuccess("");
-    if (!title.trim()) {
-      setError("Please enter a chapter title.");
-      return;
-    }
-    if (!category.trim()) {
-      setError("Please enter a category.");
-      return;
-    }
-    if (files.length === 0) {
-      setError("Please upload at least one PDF file.");
-      return;
-    }
+    if (!title.trim()) { setError("Please enter a chapter title."); return; }
+    if (!category.trim()) { setError("Please enter a category."); return; }
+    if (files.length === 0) { setError("Please upload at least one PDF file."); return; }
     setIsGenerating(true);
     try {
-      await createChaptersAndQuestions({
-        title,
-        category,
-        files,
-      });
+      await createChaptersAndQuestions({ title, category, files });
       setSuccess("Chapter and questions generated successfully!");
       setFiles([]);
       setTitle("");
       setCategory("");
     } catch (error) {
-      console.log(error);
-      // Get error message from Axios error response if possible
-      const errMsg = handleError(error) || "Failed to generate chapter and questions.";
-      setError(errMsg);
+      setError(handleError(error) || "Failed to generate chapter and questions.");
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <div className="p-6 h-full w-full mx-auto flex flex-col gap-3 justify-center items-center">
-      <div className="flex justify-start items-center p-2 mb-4 w-full">
-        <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight underline underline-offset-4 decoration-blue-300 drop-shadow-sm">
-          Upload
-        </h1>
-      </div>
-      <div className="flex-grow justify-between items-center w-2xl">
-        <div className="mb-6">
-          <label htmlFor="chapter-title" className="block text-md font-semibold mb-2 text-gray-700">
-            Chapter Title
-          </label>
-          <input
-              id="chapter-title"
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold tracking-tight">Upload Notes</h1>
+
+      <div className="max-w-2xl bg-card border border-border rounded-xl p-6 space-y-5">
+
+        {/* Title + Category row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+              Chapter Title
+            </label>
+            <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter chapter title..."
+              placeholder="e.g. Organic Chemistry — Ch.4"
               disabled={isGenerating}
-          />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="chapter-category" className="block text-md font-semibold mb-2 text-gray-700">
-            Category
-          </label>
-          <input
-              id="chapter-category"
+              className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition disabled:opacity-60"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+              Category
+            </label>
+            <input
               type="text"
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter category..."
+              placeholder="e.g. Chemistry"
               disabled={isGenerating}
-          />
+              className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition disabled:opacity-60"
+            />
+          </div>
         </div>
+
+        {/* Dropzone */}
         <UploadComponent
-            isDragActive={isDragActive}
-            getInputProps={getInputProps}
-            getRootProps={getRootProps}
+          isDragActive={isDragActive}
+          getInputProps={getInputProps}
+          getRootProps={getRootProps}
         />
+
+        {/* Selected files */}
         {files.length > 0 && (
-            <div className="mt-6">
-              <h4 className="text-md font-semibold mb-2 text-gray-700">Selected PDFs:</h4>
-              <ul className="flex flex-wrap gap-2">
-                {files.map((file) => (
-                    <li key={file.name} className="flex items-center bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-xs font-medium shadow-sm">
-                      <span className="truncate max-w-[120px]">{file.name}</span>
-                      <button
-                          type="button"
-                          onClick={() => removeFile(file.name)}
-                          className="ml-1 text-blue-400 hover:text-red-500 enabled:hover:cursor-pointer disabled:cursor-not-allowed"
-                          aria-label={`Remove ${file.name}`}
-                          disabled={false}
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </li>
-                ))}
-              </ul>
-            </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground tracking-wide mb-2">
+              Selected PDFs
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {files.map((file) => (
+                <li key={file.name} className="flex items-center gap-1.5 bg-accent text-primary rounded-full px-3 py-1 text-xs font-semibold">
+                  <span className="truncate max-w-[140px]">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(file.name)}
+                    className="text-primary/60 hover:text-destructive transition-colors"
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    <X size={14} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
+        {/* Errors / rejections */}
         {fileRejections.length > 0 && (
-            <div className="mt-4 text-red-600">
-              File rejected: Only PDF files allowed.
-            </div>
+          <p className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">
+            Only PDF files are accepted.
+          </p>
         )}
         {error && (
-            <div className="mt-4 text-red-600 font-semibold">{error}</div>
+          <p className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">{error}</p>
         )}
         {success && (
-            <div className="mt-4 text-green-600 font-semibold">{success}</div>
+          <p className="text-xs text-green-700 bg-green-50 rounded-md px-3 py-2 border border-green-200">{success}</p>
         )}
+
+        {/* Generate button */}
         <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className={`mt-8 w-full py-3 rounded bg-blue-600 text-white font-bold text-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed enabled:hover:cursor-pointer`}
+          type="button"
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isGenerating ? <LoadingSpinner message="Generating..." /> : "Generate"}
+          {isGenerating ? <LoadingSpinner message="Generating…" /> : "Generate Questions"}
         </button>
       </div>
     </div>
