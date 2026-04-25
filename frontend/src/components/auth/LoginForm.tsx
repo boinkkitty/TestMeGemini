@@ -1,165 +1,163 @@
-"use client"
+"use client";
 
-import {SubmitHandler, useForm} from "react-hook-form";
-import {useRouter} from "next/navigation";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import api from "@/utils/axiosInstance";
-import {handleError} from "../../utils/handleError";
+import { handleError } from "../../utils/handleError";
+import { LayersIcon } from "lucide-react";
+import Link from "next/link";
 
 type LoginFormProps = {
     formLabel: string;
     isSignup: boolean;
     children?: React.ReactNode;
-}
+};
 
-/**
- * Inputs for LoginForm form fields.
- * @typedef {Object} Inputs
- * @property {string} username - The user's username (signup only).
- * @property {string} email - The user's email address.
- * @property {string} password - The user's password.
- */
 type Inputs = {
     username: string;
     email: string;
     password: string;
-}
+};
 
-/**
- * LoginForm component for user authentication (login/signup).
- * Handles form state, submission, and error display for both login and signup flows.
- *
- * @component
- * @param {string} formLabel - The label for the submit button (e.g., 'Login' or 'Sign Up').
- * @param {boolean} isSignup - If true, renders signup fields and logic; otherwise, login.
- * @param {React.ReactNode} [children] - Optional children to render inside the form (e.g., extra buttons).
- */
-function LoginForm({
-    formLabel,
-    isSignup,
-    children,
-   }: LoginFormProps) {
-    // Next.js router for navigation after login/signup
+function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
     const router = useRouter();
-    // React Hook Form for form state management
-    const {register, handleSubmit} = useForm<Inputs>();
-
-    // State to toggle password visibility
+    const { register, handleSubmit, formState: { isSubmitting } } = useForm<Inputs>();
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    /**
-     * Handles user signup by sending registration data to the backend.
-     * On success, redirects to the login page. On error, shows an alert.
-     * @param {Inputs} data - The form data (username, email, password)
-     */
     const doSignup = async (data: Inputs) => {
         try {
-            const res = await api.post(
-                "/api/users/register/",
-                {
-                    username: data.username,
-                    email: data.email,
-                    password: data.password,
-                },
-                { withCredentials: true }
-            );
-            // Cookies are set by backend, so just redirect
+            await api.post("/api/users/register/", {
+                username: data.username,
+                email: data.email,
+                password: data.password,
+            }, { withCredentials: true });
             router.push("/login");
         } catch (err) {
-            // Handle error (show message, etc.)
-            const errorMsg = `Sign up failed \n ${handleError(err)}`;
-            alert(errorMsg);
-        }
-    };
-    /**
-     * Handles user login by sending credentials to the backend.
-     * On success, redirects to the dashboard. On error, shows an alert.
-     * @param {Inputs} data - The form data (email, password)
-     */
-    const doLogin = async (data: Inputs) => {
-        try {
-            const res = await api.post(
-                "/api/users/login/",
-                {
-                    email: data.email,
-                    password: data.password,
-                },
-                { withCredentials: true }
-            );
-            // Cookies are set by backend, so just redirect
-            router.push("/dashboard");
-        } catch (err: any) {
-            // Handle error (show message, etc.)
-            alert(err?.response?.data?.error || "Login failed");
+            setError(`Sign up failed: ${handleError(err)}`);
         }
     };
 
-    /**
-     * Handles form submission, dispatching to login or signup logic.
-     * @param {Inputs} data - The form data
-     */
-    const onSubmit: SubmitHandler<Inputs> = async (data) => {
-        if (isSignup) {
-            await doSignup(data);
-        } else {
-            await doLogin(data);
+    const doLogin = async (data: Inputs) => {
+        try {
+            await api.post("/api/users/login/", {
+                email: data.email,
+                password: data.password,
+            }, { withCredentials: true });
+            router.push("/dashboard");
+        } catch (err: any) {
+            setError(err?.response?.data?.error || "Login failed");
         }
+    };
+
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        setError(null);
+        if (isSignup) await doSignup(data);
+        else await doLogin(data);
     };
 
     return (
-        <div className="flex flex-col gap-4 mx-auto p-8">
-            <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col gap-4"
-            >
-                {isSignup && (
-                    <div className="flex flex-col gap-2">
-                        <h1>Username</h1>
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+            <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-lg p-9">
+
+                {/* Logo */}
+                <div className="flex items-center justify-center gap-2.5 mb-2">
+                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+                        <LayersIcon size={18} className="text-white" />
+                    </div>
+                    <span className="text-xl font-bold tracking-tight">TestMeGemini</span>
+                </div>
+                <p className="text-center text-sm text-muted-foreground mb-7">
+                    {isSignup ? "Create your account to get started." : "Turn your notes into questions. Log in to begin."}
+                </p>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+
+                    {/* Username (signup only) */}
+                    {isSignup && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                                Username
+                            </label>
+                            <input
+                                {...register("username", { required: isSignup })}
+                                placeholder="e.g. nathan_cs"
+                                type="text"
+                                className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                            />
+                        </div>
+                    )}
+
+                    {/* Email */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                            Email
+                        </label>
                         <input
-                            {...register("username")}
-                            placeholder="Username"
-                            type="text"
-                            className="border border-gray-300 rounded-md shadow-md px-4 py-2"
+                            {...register("email", { required: true })}
+                            placeholder="you@university.edu"
+                            type="email"
+                            className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                         />
                     </div>
-                )}
-                <div className="flex flex-col gap-2">
-                    <h1>Email</h1>
-                    <input
-                        {...register("email")}
-                        placeholder="Email"
-                        type="text"
-                        className="border border-gray-300 rounded-md shadow-md px-4 py-2"
-                    />
-                </div>
-                <div className="flex flex-col gap-2">
-                    <h1>Password</h1>
-                    <div className="relative flex items-center">
-                        <input
-                            {...register("password")}
-                            placeholder="Password"
-                            type={showPassword ? "text" : "password"}
-                            className="border border-gray-300 rounded-md shadow-md px-4 py-2 w-full"
-                        />
-                        <button
-                            type="button"
-                            className="absolute right-3 text-xs text-blue-600 hover:underline focus:outline-none"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                        >
-                            {showPassword ? "Hide" : "Show"}
-                        </button>
+
+                    {/* Password */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <input
+                                {...register("password", { required: true })}
+                                placeholder="••••••••"
+                                type={showPassword ? "text" : "password"}
+                                className="w-full px-3 py-2.5 pr-14 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                            />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                                onClick={() => setShowPassword(p => !p)}
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
                     </div>
-                </div>
-                {children}
-                <button
-                    className="py-3 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-colors enabled:hover:cursor-pointer disabled:cursor-not-allowed"
-                    type="submit"
-                >
-                    {formLabel}
-                </button>
-            </form>
+
+                    {/* Error */}
+                    {error && (
+                        <p className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">
+                            {error}
+                        </p>
+                    )}
+
+                    {children}
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-2.5 mt-1 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? "Please wait…" : formLabel}
+                    </button>
+                </form>
+
+                {/* Footer link */}
+                <p className="text-center text-sm text-muted-foreground mt-5">
+                    {isSignup ? (
+                        <>Already have an account?{" "}
+                            <Link href="/login" className="text-primary font-semibold hover:underline">Log in</Link>
+                        </>
+                    ) : (
+                        <>Don&apos;t have an account?{" "}
+                            <Link href="/signup" className="text-primary font-semibold hover:underline">Sign up</Link>
+                        </>
+                    )}
+                </p>
+            </div>
         </div>
-    )
+    );
 }
 
-export default LoginForm
+export default LoginForm;

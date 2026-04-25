@@ -1,3 +1,5 @@
+"use client";
+
 import { Question } from "@/lib/types";
 
 type QuestionCardProps = {
@@ -7,52 +9,81 @@ type QuestionCardProps = {
     submitted: boolean;
 };
 
-function QuestionCard({ question, selected, onSelect, submitted }: QuestionCardProps) {
-    return (
-        <div className="bg-white shadow-md rounded-md p-6 max-w-xl mx-auto">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                {question.question_text}
-            </h3>
-            <form>
-                {question.choices.map((choice) => {
-                    const isCorrect = choice.is_correct;
-                    const isSelected = selected?.includes(choice.id);
+function QuestionCard({ question, selected = [], onSelect, submitted }: QuestionCardProps) {
+    if (!question) return null;
 
-                    let indicator = null;
+    const isMRQ = question.question_type === "MRQ";
+
+    return (
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-5">
+            {/* Question text */}
+            <p className="text-[15px] font-semibold text-foreground leading-relaxed tracking-tight">
+                {question.question_text}
+            </p>
+
+            {/* Choices */}
+            <div className="flex flex-col gap-2.5">
+                {question.choices.map(choice => {
+                    const isSelected = selected.includes(choice.id);
+                    const isCorrect = choice.is_correct;
+
+                    let stateClass = "border-border hover:border-primary/40 hover:bg-accent/50";
+                    let indicatorClass = "border-border";
+                    let indicatorFill: string | null = null;
+                    let labelClass = "text-foreground";
+                    let sideTag: React.ReactNode = null;
+
                     if (submitted) {
-                        if (isCorrect) {
-                            indicator = <span className="text-green-600 ml-2">✔</span>;
-                        } else if (isSelected && !isCorrect) {
-                            indicator = <span className="text-red-600 ml-2">✘</span>;
+                        if (isCorrect && isSelected) {
+                            stateClass = "border-green-500 bg-green-50";
+                            indicatorClass = "border-green-500";
+                            indicatorFill = "bg-green-500";
+                            labelClass = "text-green-800 font-semibold";
+                            sideTag = <span className="ml-auto text-[11px] font-bold text-green-700 whitespace-nowrap">✓ Correct</span>;
+                        } else if (isCorrect && !isSelected) {
+                            stateClass = "border-green-400 bg-green-50/60";
+                            indicatorClass = "border-green-400";
+                            labelClass = "text-green-700";
+                            sideTag = <span className="ml-auto text-[11px] font-bold text-green-600 whitespace-nowrap">Correct answer</span>;
+                        } else if (!isCorrect && isSelected) {
+                            stateClass = "border-red-400 bg-red-50";
+                            indicatorClass = "border-red-400";
+                            indicatorFill = "bg-red-400";
+                            labelClass = "text-red-800";
+                            sideTag = <span className="ml-auto text-[11px] font-bold text-red-600 whitespace-nowrap">✗ Your pick</span>;
                         }
+                    } else if (isSelected) {
+                        stateClass = "border-primary bg-accent";
+                        indicatorClass = "border-primary";
+                        indicatorFill = "bg-primary";
+                        labelClass = "text-primary font-semibold";
                     }
 
-
-
                     return (
-                        <div key={choice.id} className="mb-3">
-                            <label
-                                className="flex items-center cursor-pointer select-none text-gray-700"
-                                htmlFor={`choice-${question.id}-${choice.id}`}
-                            >
-                                <input
-                                    id={`choice-${question.id}-${choice.id}`}
-                                    type={question.question_type === "MRQ" ? "checkbox" : "radio"}
-                                    name={`question-${question.id}`}
-                                    checked={!!isSelected}
-                                    onChange={() => onSelect(choice.id)}
-                                    disabled={submitted}
-                                    className="form-checkbox text-blue-600 focus:ring-blue-500 rounded"
-                                />
-                                <span className="ml-2">{choice.text}</span>
-                                {indicator}
-                            </label>
-                        </div>
+                        <button
+                            key={choice.id}
+                            onClick={() => !submitted && onSelect(choice.id)}
+                            disabled={submitted}
+                            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl border-[1.5px] text-left transition-all duration-100 ${stateClass} ${submitted ? "cursor-default" : "cursor-pointer"}`}
+                        >
+                            {/* Radio / Checkbox indicator */}
+                            <div className={`flex-shrink-0 w-[18px] h-[18px] border-2 ${isMRQ ? "rounded" : "rounded-full"} ${indicatorClass} flex items-center justify-center transition-colors`}>
+                                {indicatorFill && (
+                                    <div className={`${isMRQ ? "w-2.5 h-2.5 rounded-sm" : "w-2 h-2 rounded-full"} ${indicatorFill}`} />
+                                )}
+                            </div>
+
+                            {/* Choice text */}
+                            <span className={`text-sm flex-1 ${labelClass}`}>{choice.text}</span>
+
+                            {/* Side tag (submitted state) */}
+                            {sideTag}
+                        </button>
                     );
                 })}
-            </form>
+            </div>
         </div>
     );
-};
+}
 
 export default QuestionCard;

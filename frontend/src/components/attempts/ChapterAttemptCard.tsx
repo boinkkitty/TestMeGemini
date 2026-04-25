@@ -1,49 +1,60 @@
-"use client"
+"use client";
 import { ChapterAttempt } from "@/lib/types";
-import {formatScore} from "@/utils/score";
+import { getCategoryColor } from "@/utils/chapterStyles";
 
 type ChapterAttemptCardProps = {
     attempt: ChapterAttempt;
     onViewDetails: (attemptId: number) => void;
 };
 
-/**
- * ChapterAttemptCard component displays a summary of a user's chapter attempt.
- * Shows title, score, date, and a button to view details.
- *
- * @component
- * @param {ChapterAttempt} attempt - The attempt data to display.
- * @param {(attemptId: number) => void} onViewDetails - Handler for viewing attempt details.
- */
 export function ChapterAttemptCard({ attempt, onViewDetails }: ChapterAttemptCardProps) {
-    // Format date as dd/mm/yy
     const formattedDate = new Date(attempt.completed_at).toLocaleDateString('en-GB');
+    const pct = attempt.max_score ? Math.round((attempt.score / attempt.max_score) * 100) : 0;
+    const color = getCategoryColor(attempt.category);
+    const badgeColor = pct >= 70
+        ? "bg-green-100 text-green-700"
+        : pct >= 40
+        ? "bg-orange-100 text-orange-700"
+        : "bg-red-100 text-red-700";
+
     return (
-        <div className="border rounded p-2 px-6 mb-2 flex flex-row items-center justify-between shadow bg-white text-xs">
-            <div className="flex flex-1 flex-row items-center justify-between gap-2">
-                <div className="flex-1">
-                    <div className="font-bold text-[11px] text-gray-700">Title:</div>
-                    <div className="text-sm">{attempt.title}</div>
-                </div>
-                <div className="flex-1">
-                    <div className="font-bold text-[11px] text-gray-700">Category:</div>
-                    <div className="text-sm">{attempt.category}</div>
-                </div>
-                <div className="flex-1">
-                    <div className="font-bold text-[11px] text-gray-700">Score:</div>
-                    <div className="text-sm">{formatScore(attempt.score)} / {attempt.max_score}</div>
-                </div>
-                <div className="flex-1">
-                    <div className="font-bold text-[11px] text-gray-700">Attempted On:</div>
-                    <div className="text-sm">{formattedDate}</div>
+        <div className="flex items-center gap-4 bg-card border border-border rounded-xl px-4 py-3 hover:shadow-sm transition-all">
+            {/* Score ring */}
+            <div
+                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-extrabold text-sm"
+                style={{ background: color.bg, color: color.dot }}
+            >
+                {pct}%
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{attempt.title}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                    <span
+                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: color.bg, color: color.text }}
+                    >
+                        <span className="w-1 h-1 rounded-full" style={{ background: color.dot }} />
+                        {attempt.category}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                    <span className="text-xs text-muted-foreground">{attempt.score}/{attempt.max_score} correct</span>
                 </div>
             </div>
-            <button
-                className="ml-4 px-5 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 font-semibold whitespace-nowrap"
-                onClick={() => onViewDetails(attempt.id)}
-            >
-                View Details
-            </button>
+
+            {/* Badge + action */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${badgeColor}`}>
+                    {pct >= 70 ? "Great" : pct >= 40 ? "Decent" : "Retry"}
+                </span>
+                <button
+                    className="px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                    onClick={() => onViewDetails(attempt.id)}
+                >
+                    View →
+                </button>
+            </div>
         </div>
     );
 }

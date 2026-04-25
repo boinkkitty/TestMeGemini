@@ -1,41 +1,40 @@
-import {usePathname} from "next/navigation";
+'use client';
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 type SidebarItemProps = {
     text: string;
     icon: React.ReactNode;
-    activeIcon: React.ReactNode;
     href: string;
-    onClick?: () => void; // optional click handler for custom actions
+    onClick?: () => void;
 };
 
-function SidebarItem({ text, icon, activeIcon, href, onClick }: SidebarItemProps) {
+export default function SidebarItem({ text, icon, href, onClick }: SidebarItemProps) {
     const pathname = usePathname();
-    const isActive = pathname === href;
+    const isActive = pathname === href || pathname.startsWith(href + "/");
 
-    const baseClasses = `w-full flex items-center gap-3 rounded-md p-2 mb-2 transition-colors duration-300 ease-in-out
-        hover:bg-gray-100 hover:opacity-100 enabled:hover:cursor-pointer disabled:cursor-not-allowed
-        focus:outline-none focus:ring-2 focus:ring-gray-300
-        ${isActive ? "bg-gray-100 border-l-4 border-gray-400" : "bg-transparent"}`;
-
-    const iconClasses = `${isActive ? "text-gray-700" : "text-slate-400"}`;
-    const textClasses = `text-lg font-medium ${isActive ? "text-gray-800" : "text-slate-400"}`;
+    const classes = cn(
+        "flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-100 w-full text-left",
+        isActive
+            ? "bg-accent text-primary font-semibold"
+            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+    );
 
     if (onClick) {
         return (
-            <button className={baseClasses} onClick={onClick}>
-                <span className={iconClasses}>{isActive ? activeIcon : icon}</span>
-                <span className={textClasses}>{text}</span>
+            <button className={classes} onClick={onClick}>
+                <span className="flex-shrink-0">{icon}</span>
+                {text}
             </button>
         );
     }
 
     return (
-        <Link href={href} className={baseClasses}>
-            <span className={iconClasses}>{isActive ? activeIcon : icon}</span>
-            <span className={textClasses}>{text}</span>
+        <Link href={href} className={classes}>
+            <span className="flex-shrink-0">{icon}</span>
+            {text}
         </Link>
     );
 }
-
-export default SidebarItem;
