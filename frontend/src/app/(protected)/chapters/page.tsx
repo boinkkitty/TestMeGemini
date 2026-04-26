@@ -139,6 +139,21 @@ export default function Chapters() {
                     </div>
                 ) : (
                     <>
+                        {filteredChapters.length === 0 && (
+                            <div className="flex flex-col items-center gap-3 py-16 text-center border border-border rounded-xl bg-card">
+                                <p className="text-sm font-semibold text-foreground">
+                                    {chapters.length === 0 ? "No chapters yet" : "No chapters match your filters"}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {chapters.length === 0 ? "Upload your notes to get started." : "Try adjusting the search or category filter."}
+                                </p>
+                                {chapters.length === 0 && (
+                                    <a href="/upload" className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                                        Upload Notes →
+                                    </a>
+                                )}
+                            </div>
+                        )}
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
                             {filteredChapters.map((chapter) => (
                                 <ChapterCard

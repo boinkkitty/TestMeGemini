@@ -133,6 +133,16 @@ export default function Attempts() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-2">
+                    {filteredAttempts.length === 0 && (
+                        <div className="flex flex-col items-center gap-3 py-16 text-center border border-border rounded-xl bg-card">
+                            <p className="text-sm font-semibold text-foreground">
+                                {attempts.length === 0 ? "No attempts yet" : "No attempts match your filters"}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {attempts.length === 0 ? "Complete a quiz to see your results here." : "Try adjusting the search, category, or sort filters."}
+                            </p>
+                        </div>
+                    )}
                     {filteredAttempts.map((attempt) => (
                         <ChapterAttemptCard
                             key={attempt.id}

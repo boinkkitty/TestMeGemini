@@ -87,8 +87,8 @@ export default function Dashboard() {
                 {[
                     { label: "Total Chapters", value: chapters.length || "—", sub: "uploaded", icon: <LayersIcon size={16} /> },
                     { label: "Total Attempts", value: lastTenAttempts.length || "—", sub: "all time", icon: <ClockIcon size={16} /> },
-                    { label: "Avg Score", value: `${averagePercentage}%`, sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
-                    { label: "Best Score", value: `${highestPercentage.toFixed(1)}%`, sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
+                    { label: "Avg Score", value: percentages.length > 0 ? `${averagePercentage}%` : "—", sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
+                    { label: "Best Score", value: percentages.length > 0 ? `${highestPercentage.toFixed(1)}%` : "—", sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
                 ].map((stat, i) => (
                     <div key={i} className="bg-card border border-border rounded-xl p-4">
                         <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
