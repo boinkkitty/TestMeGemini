@@ -153,7 +153,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 from decouple import config
-OPENAI_API_KEY = config('OPENAI_API_KEY')
 GEMINI_API_KEY = config('GEMINI_API_KEY')
 
 TIME_ZONE = 'Asia/Singapore'

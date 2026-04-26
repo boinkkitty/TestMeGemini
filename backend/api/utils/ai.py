@@ -4,7 +4,6 @@ Includes prompt building, schema definitions, and model-calling functions for AI
 """
 
 import json
-from openai import OpenAI
 from google import genai
 from django.conf import settings
 from typing import List, Literal
@@ -108,29 +107,6 @@ def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
       </chapter_content>
       """
     
-def call_gpt_model(chapter_title: str, chapter_content: str) -> dict:
-    """
-    Call the OpenAI GPT model to generate quiz questions and chapter summary.
-
-    Args:
-        chapter_title (str): The title of the chapter.
-        chapter_content (str): The full text content of the chapter.
-
-    Returns:
-        dict: The parsed AI model response as a dictionary.
-    """
-    prompt = build_user_prompt(chapter_title, chapter_content)
-    client = OpenAI(api_key = settings.OPENAI_API_KEY)
-    response = client.chat.completions.parse(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": BASE_INSTRUCTIONS},
-            {"role": "user", "content": prompt}
-        ],
-        response_format=ChapterSchema,
-    )
-    return response.choices[0].message.parsed.dict()
-
 def call_gemini_model(chapter_title: str, chapter_content: str, *, max_retries_per_model: int = 2, base_backoff: float = 0.75) -> dict:
     """Try Gemini models in order with retry/fallback. Returns parsed JSON."""
     prompt = build_user_prompt(chapter_title, chapter_content)

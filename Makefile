@@ -1,5 +1,5 @@
 .PHONY: help \
-        backend-install backend-migrate backend-run \
+	backend-install backend-makemigrations backend-migrate backend-run \
         frontend-install frontend-run-dev frontend-build frontend-run-prod \
         docker-up docker-down docker-build docker-logs \
         clean
@@ -7,6 +7,7 @@
 help:
 	@echo "Local (no Docker):"
 	@echo "  backend-install   Create python venv and install backend requirements"
+	@echo "  backend-makemigrations Create Django migration files from model changes"
 	@echo "  backend-migrate   Run Django migrations"
 	@echo "  backend-run       Run Django dev server"
 	@echo "  frontend-install  Install frontend dependencies"
@@ -30,8 +31,10 @@ backend-install:
 	fi
 	cd backend && venv/bin/pip install -r requirements.txt
 
-backend-migrate:
+backend-makemigrations:
 	cd backend && venv/bin/python manage.py makemigrations
+
+backend-migrate:
 	cd backend && venv/bin/python manage.py migrate
 
 backend-run:
