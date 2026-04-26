@@ -40,7 +40,7 @@ export default function Sidebar() {
     ];
 
     return (
-        <div className="sticky top-0 h-screen w-58 bg-white border-r border-border flex flex-col">
+        <div className="sticky top-0 h-screen w-58 bg-card border-r border-border flex flex-col">
 
             {/* Logo + upload CTA */}
             <div className="px-4 pt-5 pb-4 border-b border-border flex flex-col gap-3">
