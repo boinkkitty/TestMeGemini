@@ -7,14 +7,15 @@ import PaginatedQuestionAttempts from "@/components/attempts/PaginatedQuestionAt
 import { getChapterAttempt, getUserChapterAttempts } from "@/services/attempts";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
-import { getCategoryColor } from "@/utils/chapterStyles";
+import { ClockIcon } from "lucide-react";
 
 type SortType = "latest" | "oldest" | "highest" | "lowest";
 
 export default function Attempts() {
     const [attempts, setAttempts] = useState<ChapterAttempt[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
+    const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+    const [selectedAttempt, setSelectedAttempt] = useState<ChapterAttempt | null>(null);
     const [questionAttempts, setQuestionAttempts] = useState<QuestionAttempt[]>([]);
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
@@ -47,23 +48,23 @@ export default function Attempts() {
             break;
     }
 
-    const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
     const categoryOptions = Array.from(new Set(attempts.map(a => a.category)))
         .filter(Boolean)
         .map((cat) => ({ value: cat, label: cat }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
     const handleSelectAttempt = async (attemptId: number) => {
-        setIsLoading(true);
-        setSelectedAttemptId(attemptId);
-        const attempt = attempts.find((attempt) => attempt.id === attemptId);
-        await getChapterAttempt(attempt!.id).then((data) => {
+        const attempt = attempts.find((a) => a.id === attemptId);
+        if (!attempt) return;
+        setIsLoadingDetail(true);
+        setSelectedAttempt(attempt);
+        await getChapterAttempt(attempt.id).then((data) => {
             setQuestionAttempts(data.question_attempts ?? []);
-        }).finally(() => setIsLoading(false));
+        }).finally(() => setIsLoadingDetail(false));
     };
 
     const handleBack = () => {
-        setSelectedAttemptId(null);
+        setSelectedAttempt(null);
         setQuestionAttempts([]);
     };
 
@@ -76,82 +77,67 @@ export default function Attempts() {
 
     if (isLoading) return <LoadingSpinner message="Loading attempts…" />;
 
+    // Detail view — full-page layout (no p-8 wrapper)
+    if (selectedAttempt) {
+        if (isLoadingDetail) return <LoadingSpinner message="Loading attempt…" />;
+        if (questionAttempts.length > 0) {
+            return (
+                <PaginatedQuestionAttempts
+                    attempts={questionAttempts}
+                    attempt={selectedAttempt}
+                    onBack={handleBack}
+                />
+            );
+        }
+        return (
+            <div className="p-8">
+                <button onClick={handleBack} className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-border rounded-md text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors mb-4">
+                    ← Back
+                </button>
+                <p className="text-sm text-muted-foreground">No question attempts found.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="p-8 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    {selectedAttempt ? (
-                        <>
-                            <div className="flex items-center gap-2 mb-1">
-                                {(() => {
-                                    const color = getCategoryColor(selectedAttempt.category);
-                                    return (
-                                        <span
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
-                                            style={{ background: color.bg, color: color.text }}
-                                        >
-                                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: color.dot }} />
-                                            {selectedAttempt.category}
-                                        </span>
-                                    );
-                                })()}
-                            </div>
-                            <h1 className="text-2xl font-bold tracking-tight">{selectedAttempt.title}</h1>
-                        </>
-                    ) : (
-                        <h1 className="text-2xl font-bold tracking-tight">Attempts</h1>
-                    )}
-                </div>
-                {selectedAttempt && (
-                    <button
-                        onClick={handleBack}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-card border border-border rounded-md text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                    >
-                        ← Back
-                    </button>
-                )}
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Attempts</h1>
+                <p className="text-sm text-muted-foreground mt-1">All your past quiz attempts</p>
             </div>
 
             {/* Filters */}
-            {!selectedAttempt && (
-                <div className="flex items-center gap-4">
-                    <SearchBar placeholder="Search title…" value={chapterTitleFilter} onChange={(v) => setChapterTitleFilter(v.toLowerCase())} />
-                    <DropDownSelection label="Category" options={categoryOptions} value={categoryFilter} onChange={setCategoryFilter} showBlankOption={true} />
-                    <DropDownSelection label="Sort By" options={SORT_OPTIONS} value={sortBy} onChange={(v) => setSortBy(v as SortType)} showBlankOption={false} />
-                </div>
-            )}
+            <div className="flex items-center gap-4 flex-wrap">
+                <SearchBar placeholder="Search title…" value={chapterTitleFilter} onChange={(v) => setChapterTitleFilter(v.toLowerCase())} />
+                <DropDownSelection label="Category" options={categoryOptions} value={categoryFilter} onChange={setCategoryFilter} showBlankOption={true} />
+                <DropDownSelection label="Sort By" options={SORT_OPTIONS} value={sortBy} onChange={(v) => setSortBy(v as SortType)} showBlankOption={false} />
+            </div>
 
-            {/* Content */}
-            {selectedAttempt ? (
-                <div className="flex justify-center">
-                    {questionAttempts && questionAttempts.length > 0 ? (
-                        <PaginatedQuestionAttempts attempts={questionAttempts} />
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-8">No question attempts found for this attempt.</p>
-                    )}
-                </div>
-            ) : (
-                <div className="flex flex-col gap-2">
-                    {filteredAttempts.length === 0 && (
-                        <div className="flex flex-col items-center gap-3 py-16 text-center border border-border rounded-xl bg-card">
-                            <p className="text-sm font-semibold text-foreground">
-                                {attempts.length === 0 ? "No attempts yet" : "No attempts match your filters"}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                {attempts.length === 0 ? "Complete a quiz to see your results here." : "Try adjusting the search, category, or sort filters."}
-                            </p>
+            {/* List */}
+            <div className="flex flex-col gap-2">
+                {filteredAttempts.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-14 text-center border-[1.5px] border-dashed border-border rounded-xl bg-card">
+                        <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-1">
+                            <ClockIcon size={22} className="text-primary" strokeWidth={1.8} />
                         </div>
-                    )}
-                    {filteredAttempts.map((attempt) => (
+                        <p className="text-sm font-bold text-foreground">
+                            {attempts.length === 0 ? "No attempts yet" : "No attempts match your filters"}
+                        </p>
+                        <p className="text-sm text-muted-foreground max-w-[280px] leading-relaxed">
+                            {attempts.length === 0 ? "Complete a quiz to see your results here." : "Try adjusting the search, category, or sort filters."}
+                        </p>
+                    </div>
+                ) : (
+                    filteredAttempts.map((attempt) => (
                         <ChapterAttemptCard
                             key={attempt.id}
                             attempt={attempt}
                             onViewDetails={handleSelectAttempt}
                         />
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
         </div>
     );
 }

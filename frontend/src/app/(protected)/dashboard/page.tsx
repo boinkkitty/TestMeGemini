@@ -123,10 +123,9 @@ export default function Dashboard() {
                         {chapters.map(ch => {
                             const color = getCategoryColor(ch.category);
                             return (
-                                <Link
+                                <div
                                     key={ch.id}
-                                    href="/chapters"
-                                    className="flex items-center gap-3 p-3 border border-border rounded-xl hover:shadow-sm transition-all group"
+                                    className="flex items-center gap-3 p-3 border border-border rounded-xl hover:shadow-sm transition-all"
                                 >
                                     <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: color.bg }}>
                                         <BookOpenIcon size={16} style={{ stroke: color.dot }} />
@@ -141,16 +140,23 @@ export default function Dashboard() {
                                             {ch.category}
                                         </span>
                                     </div>
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                        <Link
+                                            href="/chapters"
+                                            onClick={e => e.stopPropagation()}
+                                            className="text-xs font-semibold border border-border rounded-md text-muted-foreground hover:text-foreground hover:border-foreground/30 px-2.5 py-1.5 transition-colors"
+                                        >
+                                            Browse
+                                        </Link>
                                         <Link
                                             href="/quiz"
                                             onClick={e => e.stopPropagation()}
-                                            className="text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-1.5 rounded-md transition-colors"
+                                            className="text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1.5 rounded-md transition-colors"
                                         >
                                             Quiz →
                                         </Link>
                                     </div>
-                                </Link>
+                                </div>
                             );
                         })}
                     </div>
@@ -224,9 +230,20 @@ export default function Dashboard() {
                                     href="/attempts"
                                     className="flex items-center gap-4 bg-card border border-border rounded-xl px-4 py-3 hover:shadow-sm transition-all"
                                 >
-                                    <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-extrabold text-sm" style={{ background: color.bg, color: color.dot }}>
-                                        {pct}%
-                                    </div>
+                                    {(() => {
+                                        const r = 18;
+                                        const circ = 2 * Math.PI * r;
+                                        const offset = circ - (pct / 100) * circ;
+                                        return (
+                                            <div className="relative w-11 h-11 flex-shrink-0">
+                                                <svg width="44" height="44" viewBox="0 0 44 44" style={{ transform: "rotate(-90deg)" }}>
+                                                    <circle cx="22" cy="22" r={r} fill="none" stroke="var(--border)" strokeWidth="4" />
+                                                    <circle cx="22" cy="22" r={r} fill="none" stroke="var(--primary)" strokeWidth="4" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} />
+                                                </svg>
+                                                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-foreground">{pct}%</span>
+                                            </div>
+                                        );
+                                    })()}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-foreground truncate">{a.title}</p>
                                         <p className="text-xs text-muted-foreground mt-0.5">{a.category} · {a.score}/{a.max_score} correct</p>

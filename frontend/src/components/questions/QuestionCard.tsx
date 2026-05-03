@@ -7,15 +7,31 @@ type QuestionCardProps = {
     selected?: number[];
     onSelect: (choiceId: number) => void;
     submitted: boolean;
+    questionLabel?: string;
+    isMRQ?: boolean;
 };
 
-function QuestionCard({ question, selected = [], onSelect, submitted }: QuestionCardProps) {
+function QuestionCard({ question, selected = [], onSelect, submitted, questionLabel, isMRQ }: QuestionCardProps) {
     if (!question) return null;
-
-    const isMRQ = question.question_type === "MRQ";
 
     return (
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-5">
+            {/* Question label row */}
+            {(questionLabel || isMRQ) && (
+                <div className="flex items-center gap-2">
+                    {questionLabel && (
+                        <span className="text-[11.5px] font-bold text-muted-foreground uppercase tracking-wider">
+                            {questionLabel}
+                        </span>
+                    )}
+                    {isMRQ && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-primary uppercase tracking-wide">
+                            Select all that apply
+                        </span>
+                    )}
+                </div>
+            )}
+
             {/* Question text */}
             <p className="text-[15px] font-semibold text-foreground leading-relaxed tracking-tight">
                 {question.question_text}
@@ -59,6 +75,8 @@ function QuestionCard({ question, selected = [], onSelect, submitted }: Question
                         labelClass = "text-primary font-semibold";
                     }
 
+                    const isCheckbox = isMRQ ?? question.question_type === "MRQ";
+
                     return (
                         <button
                             key={choice.id}
@@ -66,17 +84,12 @@ function QuestionCard({ question, selected = [], onSelect, submitted }: Question
                             disabled={submitted}
                             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl border-[1.5px] text-left transition-all duration-100 ${stateClass} ${submitted ? "cursor-default" : "cursor-pointer"}`}
                         >
-                            {/* Radio / Checkbox indicator */}
-                            <div className={`flex-shrink-0 w-[18px] h-[18px] border-2 ${isMRQ ? "rounded" : "rounded-full"} ${indicatorClass} flex items-center justify-center transition-colors`}>
+                            <div className={`flex-shrink-0 w-[18px] h-[18px] border-2 ${isCheckbox ? "rounded" : "rounded-full"} ${indicatorClass} flex items-center justify-center transition-colors`}>
                                 {indicatorFill && (
-                                    <div className={`${isMRQ ? "w-2.5 h-2.5 rounded-sm" : "w-2 h-2 rounded-full"} ${indicatorFill}`} />
+                                    <div className={`${isCheckbox ? "w-2.5 h-2.5 rounded-sm" : "w-2 h-2 rounded-full"} ${indicatorFill}`} />
                                 )}
                             </div>
-
-                            {/* Choice text */}
                             <span className={`text-sm flex-1 ${labelClass}`}>{choice.text}</span>
-
-                            {/* Side tag (submitted state) */}
                             {sideTag}
                         </button>
                     );

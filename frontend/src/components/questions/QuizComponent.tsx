@@ -10,9 +10,10 @@ import { getCategoryColor } from "@/utils/chapterStyles";
 type QuizComponentProps = {
     chapter?: Chapter | null;
     questions: Question[];
+    onBack?: () => void;
 };
 
-function QuizComponent({ chapter, questions }: QuizComponentProps) {
+function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState<number[][]>([]);
     const [submitted, setSubmitted] = useState(false);
@@ -56,72 +57,79 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
         }
     };
 
-    const isMRQ = questions[currentIndex]?.question_type === "MRQ";
     const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
     const categoryColor = chapter ? getCategoryColor(chapter.category) : null;
+    const pct = submitted && questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    const badge = pct >= 70 ? "Great" : pct >= 40 ? "Decent" : "Retry";
+    const badgeColor = pct >= 70 ? "text-green-600" : pct >= 40 ? "text-orange-500" : "text-red-500";
+    const isMRQ = questions[currentIndex]?.question_type === "MRQ";
 
     return (
-        <div className="max-w-2xl mx-auto space-y-5">
+        <div className="flex flex-col min-h-screen">
 
-            {/* Chapter header */}
-            {chapter && (
-                <div className="flex items-center gap-3">
-                    {categoryColor && (
-                        <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
-                            style={{ background: categoryColor.bg, color: categoryColor.text }}
+            {/* Header */}
+            <div className="flex items-center justify-between px-8 py-4 border-b border-border bg-card">
+                <div className="flex items-center gap-4">
+                    {onBack && (
+                        <button
+                            onClick={onBack}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-md text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex-shrink-0"
                         >
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: categoryColor.dot }} />
-                            {chapter.category}
-                        </span>
+                            ← Back
+                        </button>
                     )}
-                    <span className="text-[15px] font-bold tracking-tight text-foreground">{chapter.title}</span>
-                </div>
-            )}
-
-            {/* Score banner (post-submit) */}
-            {submitted && (
-                <div className="bg-primary/10 border border-primary/20 rounded-xl px-5 py-4 flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-bold text-primary">Quiz complete!</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Review your answers below</p>
-                    </div>
-                    <div className="text-3xl font-extrabold tracking-tight text-primary">
-                        {formatScore(score)} / {questions.length}
+                        <h2 className="text-[18px] font-bold tracking-tight text-foreground leading-tight">
+                            {chapter?.title}
+                        </h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            {submitted
+                                ? `${formatScore(score)}/${questions.length} correct`
+                                : `${questions.length} questions`}
+                        </p>
                     </div>
                 </div>
-            )}
+                <div className="flex-shrink-0">
+                    {submitted ? (
+                        <span className={`text-sm font-bold ${badgeColor}`}>
+                            {pct}% · {badge}
+                        </span>
+                    ) : (
+                        categoryColor && (
+                            <span
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                                style={{ background: categoryColor.bg, color: categoryColor.text }}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ background: categoryColor.dot }} />
+                                {chapter?.category}
+                            </span>
+                        )
+                    )}
+                </div>
+            </div>
 
             {/* Progress bar */}
-            <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+            <div className="h-[3px] bg-border">
                 <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${progress}%` }}
                 />
             </div>
 
-            {/* Question counter + MRQ tag */}
-            <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">
-                    Question {currentIndex + 1} of {questions.length}
-                </span>
-                {isMRQ && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-primary uppercase tracking-wide">
-                        Select all that apply
-                    </span>
-                )}
+            {/* Question content */}
+            <div className="flex-1 px-8 py-6">
+                <QuestionCard
+                    question={questions[currentIndex]}
+                    selected={answers[currentIndex] || []}
+                    onSelect={(choiceId) => handleSelect(currentIndex, choiceId)}
+                    submitted={submitted}
+                    questionLabel={`Question ${currentIndex + 1} of ${questions.length}`}
+                    isMRQ={isMRQ}
+                />
             </div>
 
-            {/* Question card */}
-            <QuestionCard
-                question={questions[currentIndex]}
-                selected={answers[currentIndex] || []}
-                onSelect={(choiceId) => handleSelect(currentIndex, choiceId)}
-                submitted={submitted}
-            />
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between">
+            {/* Bottom nav */}
+            <div className="px-8 py-4 flex items-center justify-between border-t border-border">
                 {currentIndex > 0 ? (
                     <button
                         onClick={() => setCurrentIndex(p => p - 1)}
@@ -145,11 +153,11 @@ function QuizComponent({ chapter, questions }: QuizComponentProps) {
                 ) : !submitted ? (
                     <button
                         onClick={handleSubmit}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 transition-colors"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors"
                     >
                         Submit
                     </button>
-                ) : null}
+                ) : <div />}
             </div>
         </div>
     );
