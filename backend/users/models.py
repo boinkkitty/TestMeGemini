@@ -4,6 +4,7 @@ Defines the CustomUser model, extending Django's AbstractUser for email-based au
 """
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
 
@@ -14,6 +15,11 @@ class CustomUser(AbstractUser):
     """
     USERNAME_FIELD = 'email'
     email = models.EmailField(unique=True)
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     objects = CustomUserManager()
+
+    class Meta(AbstractUser.Meta):
+        constraints = [
+            models.UniqueConstraint(Lower('email'), name='unique_user_email_ci'),
+        ]

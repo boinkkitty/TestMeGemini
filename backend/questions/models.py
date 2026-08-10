@@ -29,6 +29,11 @@ class Question(models.Model):
 
     objects = QuestionQuerySet.as_manager()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["chapter", "id"], name="question_chapter_id_idx"),
+        ]
+
 class Choice(models.Model):
     """
     Represents a choice for a question.
@@ -41,3 +46,8 @@ class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["question", "id"], name="choice_question_id_idx"),
+        ]

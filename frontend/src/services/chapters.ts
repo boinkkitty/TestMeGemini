@@ -1,6 +1,6 @@
 /**
  * Service functions for chapter CRUD operations.
- * Includes fetching, creating, soft deleting, and permanently deleting chapters.
+ * Includes fetching, creating, and deleting chapters.
  *
  * @module services/chapters
  */
@@ -24,7 +24,7 @@ export type GetChaptersParams = {
  */
 export async function getUserChapters(params?: GetChaptersParams): Promise<Chapter[]> {
     try {
-        const res = await api.get(`/api/chapters/`, { params });
+        const res = await api.get(`/api/v1/chapters/`, { params });
         return res.data;
     } catch (err) {
         console.error("Failed to fetch chapters:", err);
@@ -59,7 +59,7 @@ export async function createChaptersAndQuestions({ title, category, files }: Cre
         formData.append("files", files[i]);
     }
     try {
-        const res = await api.post("/api/chapters/", formData);
+        const res = await api.post("/api/v1/chapter-generations/", formData);
         return res.data;
     } catch (err) {
         console.error("Failed to create chapter and questions:", err);
@@ -68,29 +68,11 @@ export async function createChaptersAndQuestions({ title, category, files }: Cre
 }
 
 /**
- * Soft delete a chapter (mark as deleted but not remove from DB).
- * @param {number} chapterId - The ID of the chapter to soft delete.
- * @returns {Promise<void>}
- */
-export async function softDeleteChapter(chapterId: number): Promise<void> {
-    try {
-        await api.put(`/api/chapters/${chapterId}/`, {
-            is_deleted: true,
-        });
-    } catch (err) {
-        console.error("Failed to soft delete chapter:", err);
-    }
-}
-
-/**
- * Permanently delete a chapter from the database.
+ * Delete a chapter. The backend retains it as a soft-deleted record so attempt
+ * history and relational integrity are preserved.
  * @param {number} chapterId - The ID of the chapter to delete.
  * @returns {Promise<void>}
  */
 export async function deleteChapter(chapterId: number): Promise<void> {
-    try {
-        await api.delete(`/api/chapters/${chapterId}/`);
-    } catch (err) {
-        console.error("Failed to permanently delete chapter:", err);
-    }
+    await api.delete(`/api/v1/chapters/${chapterId}/`);
 }

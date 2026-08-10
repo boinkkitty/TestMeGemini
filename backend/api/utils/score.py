@@ -17,14 +17,16 @@ def get_score(question, selected_choice_ids, correct_choices) -> float:
     Returns:
         float: The calculated score (partial for MRQ, 1/0 for MCQ/TF).
     """
-    # MRQ: partial credit for each correct choice selected, no penalty for extra
+    # MRQ: partial credit with an equal penalty for each incorrect selection.
+    # This prevents selecting every option from receiving full credit.
     if question.question_type == Question.QuestionType.MRQ:
         selected_set = set(selected_choice_ids)
         correct_set = set(correct_choices)
         if not correct_set:  # no correct choices
             return 0.0
-        # return fraction of correct choices selected
-        return len(selected_set & correct_set) / len(correct_set)
+        correct_selected = len(selected_set & correct_set)
+        incorrect_selected = len(selected_set - correct_set)
+        return max(0.0, (correct_selected - incorrect_selected) / len(correct_set))
 
     # MCQ/TF: score 1 if exact match, else 0
     return 1.0 if selected_choice_ids == correct_choices else 0.0

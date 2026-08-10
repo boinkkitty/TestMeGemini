@@ -1,10 +1,8 @@
-function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle, isDeleteAttempts, setDeleteAttempts }: {
+function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle }: {
     open: boolean;
     onClose: () => void;
     onConfirm: () => void;
     chapterTitle: string;
-    isDeleteAttempts: boolean;
-    setDeleteAttempts: (v: boolean) => void;
 }) {
     if (!open) return null;
     return (
@@ -14,19 +12,8 @@ function DeleteChapterModal({ open, onClose, onConfirm, chapterTitle, isDeleteAt
                 <p className="text-sm text-muted-foreground">
                     Are you sure you want to delete{" "}
                     <span className="font-semibold text-foreground">{chapterTitle}</span>?
+                    {" "}Your previous quiz attempts will be preserved.
                 </p>
-                <div className="flex items-center gap-2">
-                    <input
-                        id="delete-attempts"
-                        type="checkbox"
-                        checked={isDeleteAttempts}
-                        onChange={e => setDeleteAttempts(e.target.checked)}
-                        className="rounded border-border"
-                    />
-                    <label htmlFor="delete-attempts" className="text-xs text-muted-foreground">
-                        Also delete related attempts
-                    </label>
-                </div>
                 <div className="flex justify-end gap-2 pt-1">
                     <button
                         onClick={onClose}

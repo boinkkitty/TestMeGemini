@@ -1,74 +1,98 @@
 """
 API views for the attempts app.
-Provides endpoints for creating/listing chapter attempts and retrieving attempt details.
 """
 
-from django.db.models import Q
-from api.utils.score import get_score
-from questions.models import Question
+from datetime import datetime, time, timedelta
+
+from django.db.models import Count, Prefetch
+from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
-from .models import ChapterAttempt
-from .serializers import ChapterAttemptSerializer, QuestionAttemptSerializer, ChapterAttemptDetailSerializer
-from .services import process_question_attempts
+
+from .models import ChapterAttempt, QuestionAttempt
+from .serializers import (
+    ChapterAttemptDetailSerializer,
+    ChapterAttemptFilterSerializer,
+    ChapterAttemptInputSerializer,
+    ChapterAttemptSerializer,
+)
+from .services import create_chapter_attempt
+
+
+def _date_start(value):
+    return timezone.make_aware(datetime.combine(value, time.min))
+
+
+def _date_after(value):
+    return timezone.make_aware(datetime.combine(value + timedelta(days=1), time.min))
+
 
 class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     """
-    API endpoint for listing and creating chapter attempts for the authenticated user.
-    GET: Returns a list of chapter attempts, optionally filtered by date and limit.
-    POST: Creates a new chapter attempt, calculates score, and creates related question attempts.
+    List and create chapter attempts for the authenticated user.
     """
     serializer_class = ChapterAttemptSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """
-        Returns queryset of chapter attempts for the current user, filtered by query params.
-        """
-        user = self.request.user
-        params = self.request.query_params
-        limit = params.get('limit')
-        start_date = params.get('start_date')
-        end_date = params.get('end_date')
-        qs = ChapterAttempt.objects.for_user(user)
-        if start_date:
-            qs = qs.completed_on_or_after(start_date)
-        if end_date:
-            qs = qs.completed_on_or_before(end_date)
+        filter_serializer = ChapterAttemptFilterSerializer(data=self.request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        filters = filter_serializer.validated_data
+
+        qs = (
+            ChapterAttempt.objects
+            .for_user(self.request.user)
+            .select_related("chapter", "user")
+            .annotate(question_attempt_count=Count("question_attempts"))
+        )
+
+        if "start_date" in filters:
+            qs = qs.completed_on_or_after(_date_start(filters["start_date"]))
+        if "end_date" in filters:
+            qs = qs.completed_on_or_before(_date_after(filters["end_date"]))
+
         qs = qs.ordered_by_latest_completed()
-        if limit and str(limit).isdigit() and int(limit) > 0:
-            qs = qs[:int(limit)]
+        if "limit" in filters:
+            qs = qs[:filters["limit"]]
         return qs
 
     def create(self, request, *args, **kwargs):
-        """
-        Handles creation of a chapter attempt, calculates total score, and creates question attempts.
-        Args:
-            request (Request): The HTTP request containing attempt and questions data.
-        Returns:
-            Response: HTTP 201 with created attempt data.
-        """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        chapter_attempt = serializer.save(user=request.user)
-        questions_data = request.data.get('questions', [])
-        total_score = process_question_attempts(chapter_attempt=chapter_attempt, questions_data=questions_data)
-        chapter_attempt.score = total_score
-        chapter_attempt.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        input_serializer = ChapterAttemptInputSerializer(
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        input_serializer.is_valid(raise_exception=True)
+        chapter_attempt = create_chapter_attempt(
+            user=request.user,
+            validated_data=input_serializer.validated_data,
+        )
+        output_serializer = self.get_serializer(chapter_attempt)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class ChapterAttemptRetrieveAPIView(RetrieveAPIView):
     """
-    API endpoint for retrieving details of a single chapter attempt for the authenticated user.
+    Retrieve one chapter attempt for the authenticated user.
     """
     serializer_class = ChapterAttemptDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = ChapterAttempt.objects.all()
 
     def get_queryset(self):
-        """
-        Returns queryset of chapter attempts for the current user.
-        """
-        return ChapterAttempt.objects.filter(user=self.request.user)
+        question_attempts = (
+            QuestionAttempt.objects
+            .select_related("question")
+            .prefetch_related(
+                "selected_choices",
+                Prefetch("question__choices"),
+            )
+            .order_by("attempted_at", "id")
+        )
+        return (
+            ChapterAttempt.objects
+            .filter(user=self.request.user)
+            .select_related("chapter", "user")
+            .prefetch_related(Prefetch("question_attempts", queryset=question_attempts))
+            .annotate(question_attempt_count=Count("question_attempts"))
+        )

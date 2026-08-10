@@ -15,7 +15,7 @@ import {UserInfo} from "@/lib/types";
  */
 export async function getUserInfo(): Promise<UserInfo> {
     try {
-        const res = await api.get("/api/users/user-info", {
+        const res = await api.get("/api/v1/users/me/", {
             withCredentials: true
         })
 

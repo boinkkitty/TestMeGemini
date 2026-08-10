@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Chapter, ChapterAttemptInput, Question } from "@/lib/types";
 import QuestionCard from "@/components/questions/QuestionCard";
-import { submitChapterAttempt } from "@/services/attempts";
+import { getChapterAttempt, submitChapterAttempt } from "@/services/attempts";
 import { formatScore } from "@/utils/score";
 import { getCategoryColor } from "@/utils/chapterStyles";
 
@@ -18,11 +18,16 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
     const [answers, setAnswers] = useState<number[][]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [score, setScore] = useState(0);
+    const [reviewQuestions, setReviewQuestions] = useState<Question[]>([]);
 
     useEffect(() => {
         if (questions.length > 0) {
             setAnswers(Array.from({ length: questions.length }, () => []));
         }
+        setCurrentIndex(0);
+        setSubmitted(false);
+        setScore(0);
+        setReviewQuestions([]);
     }, [questions]);
 
     const handleSelect = (questionIdx: number, choiceId: number) => {
@@ -52,6 +57,16 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
         };
         const res = await submitChapterAttempt(data);
         if (res) {
+            const detail = await getChapterAttempt(res.id);
+            const reviewByQuestionId = new Map(
+                (detail.question_attempts || []).map((attempt) => [
+                    attempt.question_detail.id,
+                    attempt.question_detail,
+                ])
+            );
+            setReviewQuestions(
+                questions.map((question) => reviewByQuestionId.get(question.id) || question)
+            );
             setSubmitted(true);
             setScore(res.score);
         }
@@ -62,7 +77,9 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
     const pct = submitted && questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
     const badge = pct >= 70 ? "Great" : pct >= 40 ? "Decent" : "Retry";
     const badgeColor = pct >= 70 ? "text-green-600" : pct >= 40 ? "text-orange-500" : "text-red-500";
-    const isMRQ = questions[currentIndex]?.question_type === "MRQ";
+    const displayedQuestions = submitted ? reviewQuestions : questions;
+    const displayedQuestion = displayedQuestions[currentIndex];
+    const isMRQ = displayedQuestion?.question_type === "MRQ";
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -119,7 +136,7 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
             {/* Question content */}
             <div className="flex-1 px-8 py-6">
                 <QuestionCard
-                    question={questions[currentIndex]}
+                    question={displayedQuestion}
                     selected={answers[currentIndex] || []}
                     onSelect={(choiceId) => handleSelect(currentIndex, choiceId)}
                     submitted={submitted}
