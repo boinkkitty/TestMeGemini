@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
+
+from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,13 +23,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-186z6f$c6&-%#)j*k)24kvx8*m^@_1n9$8&_b!$-qqz0o7n@a_'
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+_LOCAL_SECRET_KEY = 'django-insecure-local-development-only-change-me'
+SECRET_KEY = config('SECRET_KEY', default=_LOCAL_SECRET_KEY)
+if not DEBUG and SECRET_KEY == _LOCAL_SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG is false.')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,[::1]' if DEBUG else '',
+    cast=Csv()
+)
+if not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured('ALLOWED_HOSTS must be set when DEBUG is false.')
 
 
 # Application definition
@@ -48,9 +59,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,12 +93,28 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_ENGINE = config('DATABASE_ENGINE', default='django.db.backends.sqlite3')
+if DATABASE_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': DATABASE_ENGINE,
+            'NAME': config('DATABASE_NAME', default=str(BASE_DIR / 'db.sqlite3')),
+            'CONN_MAX_AGE': 0,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DATABASE_ENGINE,
+            'NAME': config('DATABASE_NAME'),
+            'USER': config('DATABASE_USER'),
+            'PASSWORD': config('DATABASE_PASSWORD'),
+            'HOST': config('DATABASE_HOST', default='localhost'),
+            'PORT': config('DATABASE_PORT', default='5432'),
+            'CONN_MAX_AGE': config('DATABASE_CONN_MAX_AGE', default=60, cast=int),
+            'CONN_HEALTH_CHECKS': True,
+        }
+    }
 
 
 # Password validation
@@ -115,11 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -137,10 +159,26 @@ AUTH_USER_MODEL = 'users.CustomUser'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'users.authentication.CookieJWTAuthentication',
-    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': config('DRF_ANON_THROTTLE_RATE', default='100/hour'),
+        'user': config('DRF_USER_THROTTLE_RATE', default='1000/hour'),
+        'auth_login': config('DRF_AUTH_LOGIN_THROTTLE_RATE', default='5/minute'),
+        'auth_register': config('DRF_AUTH_REGISTER_THROTTLE_RATE', default='5/minute'),
+        'auth_refresh': config('DRF_AUTH_REFRESH_THROTTLE_RATE', default='10/minute'),
+        'auth_logout': config('DRF_AUTH_LOGOUT_THROTTLE_RATE', default='10/minute'),
+        'user_settings': config('DRF_USER_SETTINGS_THROTTLE_RATE', default='60/minute'),
+        'chapter_generation': config('DRF_CHAPTER_GENERATION_THROTTLE_RATE', default='5/hour'),
+    },
 }
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
@@ -149,11 +187,52 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000' if DEBUG else '',
+    cast=Csv()
+)
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000' if DEBUG else '',
+    cast=Csv()
+)
 
-from decouple import config
+JWT_COOKIE_SECURE = config('JWT_COOKIE_SECURE', default=not DEBUG, cast=bool)
+JWT_COOKIE_SAMESITE = config('JWT_COOKIE_SAMESITE', default='Lax')
+JWT_COOKIE_DOMAIN = config('JWT_COOKIE_DOMAIN', default=None)
+JWT_ACCESS_COOKIE_NAME = config('JWT_ACCESS_COOKIE_NAME', default='access_token')
+JWT_REFRESH_COOKIE_NAME = config('JWT_REFRESH_COOKIE_NAME', default='refresh_token')
+
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SESSION_COOKIE_SAMESITE = config('SESSION_COOKIE_SAMESITE', default='Lax')
+CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=0 if DEBUG else 31536000, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=not DEBUG, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
 GEMINI_API_KEY = config('GEMINI_API_KEY')
+GEMINI_TIMEOUT_SECONDS = config('GEMINI_TIMEOUT_SECONDS', default=30, cast=int)
+
+CHAPTER_UPLOAD_MAX_FILES = config('CHAPTER_UPLOAD_MAX_FILES', default=5, cast=int)
+CHAPTER_UPLOAD_MAX_FILE_BYTES = config(
+    'CHAPTER_UPLOAD_MAX_FILE_BYTES', default=10 * 1024 * 1024, cast=int
+)
+CHAPTER_UPLOAD_MAX_TOTAL_BYTES = config(
+    'CHAPTER_UPLOAD_MAX_TOTAL_BYTES', default=25 * 1024 * 1024, cast=int
+)
+CHAPTER_UPLOAD_MAX_PDF_PAGES = config('CHAPTER_UPLOAD_MAX_PDF_PAGES', default=80, cast=int)
+CHAPTER_UPLOAD_MAX_TEXT_CHARS = config('CHAPTER_UPLOAD_MAX_TEXT_CHARS', default=120_000, cast=int)
+CHAPTER_QUESTION_LIMIT_MAX = config('CHAPTER_QUESTION_LIMIT_MAX', default=50, cast=int)
+QUESTION_CHOICE_LIMIT_MAX = config('QUESTION_CHOICE_LIMIT_MAX', default=10, cast=int)
+CHAPTER_LIST_LIMIT_MAX = config('CHAPTER_LIST_LIMIT_MAX', default=100, cast=int)
+ATTEMPT_LIST_LIMIT_MAX = config('ATTEMPT_LIST_LIMIT_MAX', default=100, cast=int)
 
 TIME_ZONE = 'Asia/Singapore'
 USE_TZ = True

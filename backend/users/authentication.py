@@ -3,8 +3,13 @@ Custom authentication backend for JWT in cookies.
 Extends SimpleJWT's JWTAuthentication to support reading tokens from cookies.
 """
 
+from django.conf import settings
+from rest_framework.authentication import CSRFCheck
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
+
 
 class CookieJWTAuthentication(JWTAuthentication):
     """
@@ -21,7 +26,7 @@ class CookieJWTAuthentication(JWTAuthentication):
         Raises:
             AuthenticationFailed: If token validation or user retrieval fails.
         """
-        token = request.COOKIES.get("access_token")
+        token = request.COOKIES.get(settings.JWT_ACCESS_COOKIE_NAME)
 
         if not token:
             return None
@@ -30,10 +35,16 @@ class CookieJWTAuthentication(JWTAuthentication):
         except AuthenticationFailed as e:
             raise AuthenticationFailed(f"Token validation failed:{str(e)}")
         try:
-            user=self.get_user(validated_token)
+            user = self.get_user(validated_token)
+            if request.method not in SAFE_METHODS:
+                self.enforce_csrf(request)
             return user, validated_token
         except AuthenticationFailed as e:
             raise AuthenticationFailed(f"Error retrieving user:{str(e)}")
 
-    pass
-
+    def enforce_csrf(self, request):
+        check = CSRFCheck(lambda request: None)
+        check.process_request(request)
+        reason = check.process_view(request, None, (), {})
+        if reason:
+            raise PermissionDenied(f"CSRF Failed: {reason}")

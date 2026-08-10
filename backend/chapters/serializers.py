@@ -3,8 +3,10 @@ Serializers for the chapters app.
 Includes serializers for listing, creating, and retrieving chapters, with nested questions.
 """
 
+from django.conf import settings
+from django.db import transaction
 from rest_framework import serializers
-from questions.serializers import QuestionSerializer
+from questions.serializers import QuestionReadSerializer, QuestionWriteSerializer
 from .models import Chapter
 
 class ChapterBaseSerializer(serializers.ModelSerializer):
@@ -25,12 +27,25 @@ class ChapterListSerializer(ChapterBaseSerializer):
     """
     pass
 
-class ChapterSerializer(ChapterBaseSerializer):
+
+class ChapterDetailSerializer(ChapterBaseSerializer):
+    """Safe chapter detail serializer with answer-secrecy preserving questions."""
+
+    questions = QuestionReadSerializer(many=True, read_only=True)
+
+    class Meta(ChapterBaseSerializer.Meta):
+        fields = ChapterBaseSerializer.Meta.fields + ['questions']
+
+
+class ChapterCreateSerializer(ChapterBaseSerializer):
     """
-    Serializer for retrieving and creating chapters, including nested questions.
-    Handles creation of chapter and associated questions.
+    Serializer for creating chapters with nested questions.
     """
-    questions = QuestionSerializer(many=True)
+    questions = QuestionWriteSerializer(
+        many=True,
+        min_length=1,
+        max_length=settings.CHAPTER_QUESTION_LIMIT_MAX,
+    )
 
     class Meta(ChapterBaseSerializer.Meta):
         fields = ChapterBaseSerializer.Meta.fields + ['questions']
@@ -44,12 +59,21 @@ class ChapterSerializer(ChapterBaseSerializer):
         Returns:
             Chapter: The created Chapter instance.
         """
-        # Extract questions data from validated_data
-        questions_data = validated_data.pop('questions', [])
-        chapter = Chapter.objects.create(**validated_data)
-        for question_data in questions_data:
-            question_serializer = QuestionSerializer(data=question_data)
-            if question_serializer.is_valid():
-                question_serializer.save(chapter=chapter)
+        questions_data = validated_data.pop('questions')
+        with transaction.atomic():
+            chapter = Chapter.objects.create(**validated_data)
+            for question_data in questions_data:
+                QuestionWriteSerializer().create({**question_data, "chapter": chapter})
         return chapter
 
+
+class ChapterUpdateSerializer(ChapterBaseSerializer):
+    """Serializer for normal chapter PUT/PATCH without writable nested questions."""
+
+    class Meta(ChapterBaseSerializer.Meta):
+        fields = ChapterBaseSerializer.Meta.fields
+
+
+class ChapterSerializer(ChapterDetailSerializer):
+    """Backward-compatible safe read serializer name."""
+    pass

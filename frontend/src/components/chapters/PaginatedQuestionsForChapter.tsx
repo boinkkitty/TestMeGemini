@@ -9,7 +9,6 @@ type PaginatedQuestionsForChapterProps = {
 
 function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapterProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [showAnswer, setShowAnswer] = useState(false);
     const currentQuestion = questions[currentIndex];
     const isFirst = currentIndex === 0;
     const isLast = currentIndex === questions.length - 1;
@@ -17,11 +16,9 @@ function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapte
 
     const goLeft = () => {
         if (!isFirst) setCurrentIndex(currentIndex - 1);
-        setShowAnswer(false);
     };
     const goRight = () => {
         if (!isLast) setCurrentIndex(currentIndex + 1);
-        setShowAnswer(false);
     };
 
     return (
@@ -49,35 +46,18 @@ function PaginatedQuestionsForChapter({ questions }: PaginatedQuestionsForChapte
                 {/* Choices */}
                 <div className="flex flex-col gap-2.5">
                     {currentQuestion.choices.map((choice) => {
-                        const isCorrect = choice.is_correct;
-                        const showCorrect = showAnswer && isCorrect;
                         return (
                             <div
                                 key={choice.id}
-                                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl border-[1.5px] transition-all ${
-                                    showCorrect
-                                        ? "border-green-500 bg-green-50"
-                                        : "border-border"
-                                }`}
+                                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border-[1.5px] border-border"
                             >
-                                <span className={`text-sm flex-1 ${showCorrect ? "text-green-800 font-semibold" : "text-foreground"}`}>
+                                <span className="text-sm flex-1 text-foreground">
                                     {choice.text}
                                 </span>
-                                {showCorrect && (
-                                    <span className="ml-auto text-[11px] font-bold text-green-700 whitespace-nowrap">✓ Correct</span>
-                                )}
                             </div>
                         );
                     })}
                 </div>
-
-                {/* Show/hide answer */}
-                <button
-                    className="text-xs font-semibold px-3 py-1.5 rounded-md bg-background border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                    onClick={() => setShowAnswer((prev) => !prev)}
-                >
-                    {showAnswer ? "Hide Answer" : "Show Answer"}
-                </button>
             </div>
 
             {/* Navigation */}

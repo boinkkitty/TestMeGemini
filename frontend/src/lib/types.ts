@@ -16,7 +16,7 @@ export type Chapter = {
 export type Choice = {
     id: number;
     text: string;
-    is_correct: boolean;
+    is_correct?: boolean;
 };
 
 export type Question = {
@@ -35,7 +35,7 @@ export type ChapterAttempt = {
     score: number;
     max_score: number;
     completed_at: string;
-    chapter: number; // Foreign key to Chapter
+    chapter?: number; // Legacy foreign key shape
     chapter_id?: number; // For compatibility with dummy data and backend write
     order?: Array<number>;
     question_attempts?: QuestionAttempt[];

@@ -5,7 +5,7 @@ import { Chapter, Question } from "@/lib/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
 import ChapterCard from "@/components/chapters/ChapterCard";
-import { deleteChapter, softDeleteChapter } from "@/services/chapters";
+import { deleteChapter } from "@/services/chapters";
 import { getUserChapters } from "@/services/chapters";
 import { getChapterQuestions } from "@/services/questions";
 import SearchBar from "@/components/ui/SearchBar";
@@ -26,7 +26,6 @@ export default function Chapters() {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [deleteChapterId, setDeleteChapterId] = useState<number | null>(null);
     const [deleteChapterTitle, setDeleteChapterTitle] = useState<string>("");
-    const [isPermanentDelete, setIsPermanentDelete] = useState<boolean>(false);
 
     const filteredChapters = chapters.filter(chapter =>
         chapter.title.toLowerCase().includes(chapterTitleFilter) &&
@@ -48,25 +47,19 @@ export default function Chapters() {
     const handleDeleteIconClick = (chapter: Chapter) => {
         setDeleteChapterId(chapter.id);
         setDeleteChapterTitle(chapter.title);
-        setIsPermanentDelete(false);
         setShowDeleteModal(true);
     };
 
     const handleConfirmDelete = async () => {
         if (deleteChapterId == null) return;
         try {
-            if (isPermanentDelete) {
-                await deleteChapter(deleteChapterId);
-            } else {
-                await softDeleteChapter(deleteChapterId);
-            }
+            await deleteChapter(deleteChapterId);
             const data = await getUserChapters();
             setChapters(data);
         } catch (err) {
             console.error("Delete failed:", err);
         } finally {
             setShowDeleteModal(false);
-            setIsPermanentDelete(false);
         }
     };
 
@@ -180,8 +173,6 @@ export default function Chapters() {
                             onClose={() => setShowDeleteModal(false)}
                             onConfirm={handleConfirmDelete}
                             chapterTitle={deleteChapterTitle}
-                            isDeleteAttempts={isPermanentDelete}
-                            setDeleteAttempts={setIsPermanentDelete}
                         />
                     </>
                 )}

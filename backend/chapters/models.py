@@ -28,3 +28,8 @@ class Chapter(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     objects = ChapterQuerySet.as_manager()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "is_deleted", "-created_at"], name="chap_user_del_created_idx"),
+        ]

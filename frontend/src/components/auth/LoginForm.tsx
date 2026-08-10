@@ -3,7 +3,7 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import api from "@/utils/axiosInstance";
+import api, { ensureCsrfCookie } from "@/utils/axiosInstance";
 import { handleError } from "../../utils/handleError";
 import { LayersIcon } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,8 @@ function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
 
     const doSignup = async (data: Inputs) => {
         try {
-            await api.post("/api/users/register/", {
+            await ensureCsrfCookie();
+            await api.post("/api/v1/users/", {
                 username: data.username,
                 email: data.email,
                 password: data.password,
@@ -41,7 +42,8 @@ function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
 
     const doLogin = async (data: Inputs) => {
         try {
-            await api.post("/api/users/login/", {
+            await ensureCsrfCookie();
+            await api.post("/api/v1/auth/login/", {
                 email: data.email,
                 password: data.password,
             }, { withCredentials: true });

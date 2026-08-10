@@ -17,10 +17,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from chapters.urls import chapter_urlpatterns, generation_urlpatterns
+from users.urls import auth_urlpatterns, user_urlpatterns
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/users/', include((user_urlpatterns, 'users'), namespace='v1-users')),
+    path('api/v1/auth/', include((auth_urlpatterns, 'auth'), namespace='v1-auth')),
+    path('api/v1/chapters/', include((chapter_urlpatterns, 'chapters'), namespace='v1-chapters')),
+    path(
+        'api/v1/chapter-generations/',
+        include((generation_urlpatterns, 'chapter-generations'), namespace='v1-chapter-generations'),
+    ),
+    path('api/v1/attempts/', include(('attempts.urls', 'attempts'), namespace='v1-attempts')),
+
+    # Backward-compatible routes. New clients should use the versioned API above.
     path('api/users/', include("users.urls")),
     path('api/chapters/', include("chapters.urls")),
     path('api/attempts/', include("attempts.urls")),
 ]
-

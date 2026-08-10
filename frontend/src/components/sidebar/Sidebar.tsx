@@ -35,7 +35,7 @@ export default function Sidebar() {
     ];
 
     const handleLogout = async () => {
-        await api.post("/api/users/logout/")
+        await api.post("/api/v1/auth/logout/")
             .catch((error) => console.error("Logout failed", error))
             .finally(() => router.push("/login"));
     };

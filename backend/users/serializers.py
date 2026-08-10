@@ -7,7 +7,9 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from .models import CustomUser
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from rest_framework.views import APIView
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError, transaction
 
 class CustomUserSerializer(ModelSerializer):
     """
@@ -17,6 +19,24 @@ class CustomUserSerializer(ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ("id", "email", "username")
+
+    def validate_email(self, value):
+        normalized = value.strip().lower()
+        duplicate = CustomUser.objects.filter(email__iexact=normalized)
+        if self.instance is not None:
+            duplicate = duplicate.exclude(pk=self.instance.pk)
+        if duplicate.exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return normalized
+
+    def update(self, instance, validated_data):
+        try:
+            with transaction.atomic():
+                return super().update(instance, validated_data)
+        except IntegrityError as exc:
+            raise serializers.ValidationError(
+                {"email": "A user with this email already exists."}
+            ) from exc
 
 class RegisterUserSerializer(ModelSerializer):
     """
@@ -28,6 +48,20 @@ class RegisterUserSerializer(ModelSerializer):
         fields = ("email", "username", "password")
         extra_kwargs = {"password": {"write_only":True}}
 
+    def validate(self, attrs):
+        candidate = CustomUser(email=attrs.get("email"), username=attrs.get("username"))
+        try:
+            validate_password(attrs.get("password"), user=candidate)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": list(exc.messages)}) from exc
+        return attrs
+
+    def validate_email(self, value):
+        normalized = value.strip().lower()
+        if CustomUser.objects.filter(email__iexact=normalized).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return normalized
+
     def create(self, validated_data):
         """
         Create a new user with hashed password.
@@ -36,8 +70,12 @@ class RegisterUserSerializer(ModelSerializer):
         Returns:
             CustomUser: The created user instance.
         """
-        user = CustomUser.objects.create_user(**validated_data)
-        return user      
+        try:
+            return CustomUser.objects.create_user(**validated_data)
+        except IntegrityError as exc:
+            raise serializers.ValidationError(
+                {"email": "A user with this email already exists."}
+            ) from exc
 
 class LoginUserSerializer(Serializer):
     """
@@ -59,6 +97,4 @@ class LoginUserSerializer(Serializer):
         user = authenticate(**data)
         if user and user.is_active:
             return user
-        raise serializers.ValidationError("Incorrect ccredentials!")
-
-
+        raise serializers.ValidationError("Incorrect credentials!")

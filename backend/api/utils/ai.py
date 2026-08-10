@@ -85,6 +85,10 @@ MODEL_CHAIN = [
 ]
 OVERLOAD_MARKERS = ("unavailable", "overloaded", "503")
 
+
+class AIServiceError(RuntimeError):
+    """Client-safe AI generation failure."""
+
 def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
     """
     Build a prompt string to send to the AI model for quiz/question generation.
@@ -107,10 +111,22 @@ def build_user_prompt(chapter_title: str, chapter_content: str) -> str:
       </chapter_content>
       """
     
+def _gemini_client():
+    timeout = getattr(settings, "GEMINI_TIMEOUT_SECONDS", 30)
+    try:
+        return genai.Client(
+            api_key=settings.GEMINI_API_KEY,
+            http_options={"timeout": timeout * 1000},
+        )
+    except TypeError:
+        logger.warning("[Gemini] SDK client does not support http_options timeout")
+        return genai.Client(api_key=settings.GEMINI_API_KEY)
+
+
 def call_gemini_model(chapter_title: str, chapter_content: str, *, max_retries_per_model: int = 2, base_backoff: float = 0.75) -> dict:
     """Try Gemini models in order with retry/fallback. Returns parsed JSON."""
     prompt = build_user_prompt(chapter_title, chapter_content)
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    client = _gemini_client()
 
     last_err = None
     for model in MODEL_CHAIN:
@@ -140,6 +156,6 @@ def call_gemini_model(chapter_title: str, chapter_content: str, *, max_retries_p
                 if is_overload:  # move to next model
                     break
                 # Non-overload error: bubble up immediately
-                raise
+                raise AIServiceError("Question generation failed.") from e
         # next model
-    raise RuntimeError(f"Gemini models unavailable: {last_err}")
+    raise AIServiceError("Question generation is temporarily unavailable.") from last_err

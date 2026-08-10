@@ -29,13 +29,13 @@ export type GetChapterAttemptsParams = {
  */
 export async function getChapterAttempt(attemptId: number): Promise<ChapterAttempt> {
     try {
-        const res = await api.get(`/api/attempts/${attemptId}/`, {
+        const res = await api.get(`/api/v1/attempts/${attemptId}/`, {
             withCredentials: true,
         });
         return res.data;
     } catch (error) {
-        console.error("Failed to fetch chapters:", error);
-        throw new Error("Failed to fetch chapters");
+        console.error("Failed to fetch chapter attempt:", error);
+        throw new Error("Failed to fetch chapter attempt");
     }
 }
 
@@ -46,7 +46,7 @@ export async function getChapterAttempt(attemptId: number): Promise<ChapterAttem
  */
 export async function getUserChapterAttempts(params?: GetChapterAttemptsParams): Promise<ChapterAttempt[]> {
     try {
-        const res = await api.get(`/api/attempts/`, { params });
+        const res = await api.get(`/api/v1/attempts/`, { params });
         return res.data;
     } catch (err) {
         console.error("Failed to fetch attempts:", err);
@@ -62,8 +62,7 @@ export async function getUserChapterAttempts(params?: GetChapterAttemptsParams):
  */
 export async function submitChapterAttempt(attempt: ChapterAttemptInput): Promise<ChapterAttempt> {
     try {
-        const res = await api.post("/api/attempts/", attempt);
-        console.log("Chapter attempt submitted successfully:", res.data); // optional success log
+        const res = await api.post("/api/v1/attempts/", attempt);
         return res.data;
     } catch (error) {
         console.error("Failed to submit chapter attempt:", error);

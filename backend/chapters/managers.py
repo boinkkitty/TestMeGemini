@@ -11,5 +11,8 @@ class ChapterQuerySet(models.QuerySet):
     def not_deleted(self):
         return self.filter(is_deleted=False)
 
+    def active_for_user(self, user):
+        return self.for_user(user).not_deleted()
+
     def ordered_by_created(self):
         return self.order_by('-created_at')

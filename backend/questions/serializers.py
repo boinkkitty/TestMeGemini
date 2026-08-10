@@ -3,13 +3,22 @@ Serializers for the questions app.
 Includes serializers for questions and choices, with validation for question types and choices.
 """
 
+from django.conf import settings
 from rest_framework import serializers
 from .models import Question, Choice
-from chapters.models import Chapter
 
-class ChoiceSerializer(serializers.ModelSerializer):
+class ChoiceReadSerializer(serializers.ModelSerializer):
+    """Safe choice serializer for quiz reads before submission."""
+
+    class Meta:
+        model = Choice
+        fields = ['id', 'text']
+        read_only_fields = ['id', 'text']
+
+
+class ChoiceReviewSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Choice model.
+    Internal/review serializer for the Choice model, including correctness.
     """
 
     class Meta:
@@ -17,11 +26,26 @@ class ChoiceSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'is_correct']
         read_only_fields = ['id']
 
-class QuestionSerializer(serializers.ModelSerializer):
+
+class QuestionReadSerializer(serializers.ModelSerializer):
+    """Safe question serializer for quiz reads before submission."""
+
+    choices = ChoiceReadSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'chapter', 'question_text', 'question_type', 'choices', 'created_at']
+        read_only_fields = fields
+
+
+class QuestionWriteSerializer(serializers.ModelSerializer):
     """
-    Serializer for the Question model, including nested choices and validation.
+    Write/internal serializer for questions, including nested correctness data.
     """
-    choices = ChoiceSerializer(many=True)
+    choices = ChoiceReviewSerializer(
+        many=True,
+        max_length=settings.QUESTION_CHOICE_LIMIT_MAX,
+    )
 
     class Meta:
         model = Question
@@ -77,3 +101,11 @@ class QuestionSerializer(serializers.ModelSerializer):
         Choice.objects.bulk_create(choice_instances)
         return question
 
+
+class QuestionReviewSerializer(QuestionWriteSerializer):
+    """Explicit correctness-bearing serializer for trusted review contexts."""
+    pass
+
+
+# Public default stays safe for consumers that render question details.
+QuestionSerializer = QuestionReadSerializer
