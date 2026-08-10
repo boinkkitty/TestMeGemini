@@ -1,15 +1,29 @@
-.PHONY: help backend-install backend-migrate backend-run frontend-install frontend-run-dev frontend-build frontend-run-prod clean
+.PHONY: help \
+	backend-install backend-makemigrations backend-migrate backend-run \
+        frontend-install frontend-run-dev frontend-build frontend-run-prod \
+        docker-up docker-down docker-build docker-logs \
+        clean
 
 help:
-	@echo "Available targets:"
-	@echo "  backend-install   Create python venv and Install backend requirements"
+	@echo "Local (no Docker):"
+	@echo "  backend-install   Create python venv and install backend requirements"
+	@echo "  backend-makemigrations Create Django migration files from model changes"
 	@echo "  backend-migrate   Run Django migrations"
 	@echo "  backend-run       Run Django dev server"
 	@echo "  frontend-install  Install frontend dependencies"
-	@echo "  frontend-run-dev      Run Next.js dev server"
+	@echo "  frontend-run-dev  Run Next.js dev server"
 	@echo "  frontend-build    Build Next.js for production"
 	@echo "  frontend-run-prod Run Next.js production server"
+	@echo ""
+	@echo "Docker:"
+	@echo "  docker-up         Build images (if needed) and start all services"
+	@echo "  docker-build      Force rebuild images and start all services"
+	@echo "  docker-down       Stop and remove containers"
+	@echo "  docker-logs       Tail logs from all services"
+	@echo ""
 	@echo "  clean             Remove backend venv and node_modules"
+
+# ── Local ────────────────────────────────────────────────────────────────────
 
 backend-install:
 	@if [ ! -d backend/venv ]; then \
@@ -17,8 +31,10 @@ backend-install:
 	fi
 	cd backend && venv/bin/pip install -r requirements.txt
 
-backend-migrate:
+backend-makemigrations:
 	cd backend && venv/bin/python manage.py makemigrations
+
+backend-migrate:
 	cd backend && venv/bin/python manage.py migrate
 
 backend-run:
@@ -31,10 +47,26 @@ frontend-run-dev:
 	cd frontend && npm run dev
 
 frontend-build:
-	cd frontend && npm run build 
+	cd frontend && npm run build
 
 frontend-run-prod:
 	cd frontend && npm start
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+
+docker-up:
+	docker compose up
+
+docker-build:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
 
 clean:
 	rm -rf backend/venv frontend/node_modules

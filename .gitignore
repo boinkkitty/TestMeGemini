@@ -3,7 +3,6 @@ frontend/node_modules/
 frontend/.next/
 frontend/.env.local
 frontend/.env*
-frontend/package-lock.json
 frontend/yarn.lock
 
 
@@ -29,6 +28,10 @@ backend/**/migrations/*.py
 *.db
 *.db-journal
 
+# === Docker ===
+# docker-compose.override.yml is for local overrides, not committed
+docker-compose.override.yml
+
 # === OS/system files ===
 .DS_Store
 Thumbs.db
@@ -39,3 +42,4 @@ Thumbs.db
 *.orig
 
 .idea/
+.vercel

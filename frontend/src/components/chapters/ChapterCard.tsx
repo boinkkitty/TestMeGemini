@@ -1,58 +1,75 @@
-import { CHAPTER_COLORS } from "@/utils/chapterStyles";
+import { getCategoryColor } from "@/utils/chapterStyles";
 import { Chapter } from "@/lib/types";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { Folder } from "lucide-react";
+import { Trash2, BookOpenIcon } from "lucide-react";
 
 type ChapterCardProps = {
     chapter: Chapter;
-    index: number;
+    index?: number;
     onClick?: () => void;
+    onQuiz?: () => void;
     onDeleteIconClick?: (chapter: Chapter) => void;
 };
 
-/**
- * ChapterCard component displays a chapter's summary in a styled card.
- * Shows category, title, description, and a delete icon if provided.
- *
- * @component
- * @param {Chapter} chapter - The chapter data to display.
- * @param {number} index - The index of the chapter (for color selection).
- * @param {() => void} [onClick] - Optional handler for card click.
- * @param {(chapter: Chapter) => void} [onDeleteIconClick] - Optional handler for delete icon click.
- */
-function ChapterCard({ chapter, index, onClick, onDeleteIconClick }: ChapterCardProps) {
-    const colorClass = CHAPTER_COLORS[index % CHAPTER_COLORS.length];
-    return (
-        <div
-            className={`relative rounded-lg shadow hover:shadow-lg transition p-4 border border-gray-100 ${colorClass} text-white ${onClick ? "cursor-pointer" : ""} min-h-[200px] h-full flex flex-col justify-between`}
-            style={{ maxHeight: 240 }}
-            onClick={onClick}
-        >
-            {onDeleteIconClick && (
-                <button
-                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 focus:outline-none"
-                    title="Delete chapter"
-                    onClick={e => {
-                        e.stopPropagation();
-                        onDeleteIconClick(chapter);
-                    }}
-                >
-                    <TrashIcon className="h-5 w-5 text-white" />
-                </button>
-            )}
+function ChapterCard({ chapter, onClick, onQuiz, onDeleteIconClick }: ChapterCardProps) {
+    const color = getCategoryColor(chapter.category);
 
-            <div className="flex items-center mb-2">
-                <Folder className="w-4 h-4 text-white/80" fill="currentColor" />
-                <span className="text-white text-xs font-semibold px-3 py-1 rounded-full max-w-full truncate" title={chapter.category}>
+    return (
+        <div className="relative bg-card rounded-xl border border-border p-4 flex flex-col gap-3 min-h-[180px] h-full transition-all duration-150 hover:shadow-md hover:-translate-y-px">
+            {/* Top row: category badge + delete */}
+            <div className="flex items-center justify-between">
+                <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                    style={{ background: color.bg, color: color.text }}
+                >
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color.dot }} />
                     {chapter.category}
                 </span>
+                {onDeleteIconClick && (
+                    <button
+                        className="p-1.5 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Delete chapter"
+                        onClick={e => { e.stopPropagation(); onDeleteIconClick(chapter); }}
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                )}
             </div>
 
-            <h3 className="text-l font-bold mb-2 truncate" title={chapter.title}>
+            {/* Title */}
+            <h3 className="text-[15px] font-bold tracking-tight text-foreground leading-snug truncate">
                 {chapter.title}
             </h3>
 
-            <p className="line-clamp-5 overflow-hidden text-ellipsis text-sm flex-1" title={chapter.description}>{chapter.description}</p>
+            {/* Description */}
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed line-clamp-3 flex-1">
+                {chapter.description}
+            </p>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                    <BookOpenIcon size={12} />
+                    <span>{chapter.questions?.length ?? "—"} questions</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    {onClick && (
+                        <button
+                            onClick={e => { e.stopPropagation(); onClick(); }}
+                            className="px-2.5 py-1 text-xs font-semibold border border-border rounded-md text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                        >
+                            Browse
+                        </button>
+                    )}
+                    {onQuiz && (
+                        <button
+                            onClick={e => { e.stopPropagation(); onQuiz(); }}
+                            className="px-2.5 py-1 text-xs font-semibold bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                        >
+                            Quiz →
+                        </button>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

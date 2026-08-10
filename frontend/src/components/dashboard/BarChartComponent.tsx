@@ -1,90 +1,83 @@
-"use client"
-
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+"use client";
 
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import {
-    ChartConfig,
-    ChartContainer,
-    ChartTooltip,
-} from "@/components/ui/chart"
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
-const chartConfig = {
-    value: {
-        label: "% Score",
-        color: "var(--chart-1)",
-    },
-} satisfies ChartConfig;
-
-type DataRecord = {
+type DataPoint = {
     axisKey: string;
     value: number;
-    title?: string;
-    category?: string;
-    date?: string;
-    score?: number;
-    max_score?: number;
+    title: string;
+    category: string;
+    date: string;
+    score: number;
+    max_score: number;
 };
 
 type BarChartComponentProps = {
+    data: DataPoint[];
     label: string;
     description: string;
-    data: DataRecord[];
     barColor?: string;
     height?: number;
 };
 
-import { YAxis } from "recharts";
-import {formatScore} from "@/utils/score";
+const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        const d: DataPoint = payload[0].payload;
+        return (
+            <div className="bg-card border border-border rounded-lg shadow-md px-3 py-2.5 text-sm">
+                <p className="font-semibold text-foreground">{d.title}</p>
+                <p className="text-xs text-muted-foreground">{d.category} · {d.date}</p>
+                <p className="font-bold text-primary mt-1">{d.score}/{d.max_score} correct ({d.value.toFixed(1)}%)</p>
+            </div>
+        );
+    }
+    return null;
+};
 
-export function BarChartComponent({ label, description, data, barColor = "#f59e42", height }: BarChartComponentProps) {
-
+function BarChartComponent({ data, label, description }: BarChartComponentProps) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{label}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={chartConfig} height={height}>
-                    <BarChart accessibilityLayer data={data} height={height}>
-                        <CartesianGrid vertical={false} />
+        <div className="w-full space-y-1">
+            <p className="text-sm font-bold text-foreground">{label}</p>
+            <p className="text-xs text-muted-foreground mb-3">{description}</p>
+            {data.length === 0 ? (
+                <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
+                    No attempts yet
+                </div>
+            ) : (
+                <ResponsiveContainer width="100%" height={140}>
+                    <BarChart data={data} barSize={18} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                         <XAxis
                             dataKey="axisKey"
-                            tickLine={false}
-                            tickMargin={10}
+                            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
                             axisLine={false}
+                            tickLine={false}
                         />
-                        <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                        <ChartTooltip
-                            cursor={false}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length > 0) {
-                                    const d = payload[0].payload;
-                                    return (
-                                        <div className="bg-white p-2 rounded shadow text-xs">
-                                            <div><b>{d.category}</b></div>
-                                            <div><b>{d.title}</b></div>
-                                            <div>Date: {d.date}</div>
-                                            <div>Score: {formatScore(d.score)} / {d.max_score}</div>
-                                            <div>Percent: {formatScore(d.value)}%</div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
+                        <YAxis
+                            domain={[0, 100]}
+                            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={v => `${v}%`}
                         />
-                        <Bar dataKey="value" fill={barColor} radius={8} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--accent)" }} />
+                        <Bar
+                            dataKey="value"
+                            fill="var(--primary)"
+                            radius={[4, 4, 0, 0]}
+                        />
                     </BarChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+                </ResponsiveContainer>
+            )}
+        </div>
     );
 }
 

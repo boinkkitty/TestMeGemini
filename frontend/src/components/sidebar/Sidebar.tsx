@@ -1,70 +1,106 @@
 'use client';
 
 import SidebarItem from "./SidebarItem";
-import { HiHome, HiOutlineHome } from "react-icons/hi";
-import { HiBookOpen, HiOutlineBookOpen } from "react-icons/hi";
-import { HiClipboardList, HiOutlineClipboardList } from "react-icons/hi";
-import { HiCheckCircle, HiOutlineCheckCircle } from "react-icons/hi";
-import { HiLogout, HiOutlineLogout } from "react-icons/hi";
+import {
+    HomeIcon,
+    BookOpenIcon,
+    ClipboardListIcon,
+    CheckCircleIcon,
+    LogOutIcon,
+    LayersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import api from "@/utils/axiosInstance";
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { getUserInfo } from "@/services/users";
+import { UserInfo } from "@/lib/types";
 
 export default function Sidebar() {
     const router = useRouter();
+    const [user, setUser] = useState<UserInfo | null>(null);
+
+    useEffect(() => {
+        getUserInfo().then(setUser).catch(() => null);
+    }, []);
 
     const topItems = [
-        { text: "Home", icon: <HiOutlineHome size={24} />, activeIcon: <HiHome size={24} />, href: "/dashboard" },
+        { text: "Dashboard", icon: <HomeIcon size={18} />, href: "/dashboard" },
     ];
 
     const middleItems = [
-        { text: "Chapters", icon: <HiOutlineBookOpen size={24} />, activeIcon: <HiBookOpen size={24} />, href: "/chapters" },
-        { text: "Quiz", icon: <HiOutlineClipboardList size={24} />, activeIcon: <HiClipboardList size={24} />, href: "/quiz" },
-        { text: "Attempts", icon: <HiOutlineCheckCircle size={24} />, activeIcon: <HiCheckCircle size={24} />, href: "/attempts" },
+        { text: "Chapters", icon: <BookOpenIcon size={18} />, href: "/chapters" },
+        { text: "Quiz", icon: <ClipboardListIcon size={18} />, href: "/quiz" },
+        { text: "Attempts", icon: <CheckCircleIcon size={18} />, href: "/attempts" },
     ];
 
-    const bottomItems = [
-        {
-            text: "Log Out",
-            icon: <HiOutlineLogout size={24} />,
-            activeIcon: <HiLogout size={24} />,
-            href: "/login",
-            onClick: async () => {
-                await api.post("/api/users/logout/")
-                .catch((error) => {
-                    console.error("Logout failed", error);
-                })
-                .finally(() => {
-                    router.push("/login");
-                });
-            },
-        },
-    ];
+    const handleLogout = async () => {
+        await api.post("/api/users/logout/")
+            .catch((error) => console.error("Logout failed", error))
+            .finally(() => router.push("/login"));
+    };
+
+    const initials = user?.username
+        ? user.username.slice(0, 1).toUpperCase()
+        : "?";
 
     return (
-        <div className="sticky top-0 h-screen w-64 bg-gray-800 text-white flex flex-col">
-            <div className="basis-1/6 p-4 border-b border-gray-700 flex flex-col gap-4">
-                {topItems.map((item, idx) => (
-                    <SidebarItem key={idx} {...item} />
-                ))}
+        <div className="fixed top-0 left-0 bottom-0 h-screen w-[232px] bg-card border-r border-border flex flex-col z-10">
+
+            {/* Logo + upload CTA */}
+            <div className="px-4 pt-5 pb-4 border-b border-border flex flex-col gap-3">
+                <Link href="/dashboard" className="flex items-center gap-2.5 px-1">
+                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                        <LayersIcon size={14} className="text-white" />
+                    </div>
+                    <span className="text-sm font-semibold tracking-tight text-foreground">
+                        TestMeGemini
+                    </span>
+                </Link>
                 <Link
                     href="/upload"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-center text-lg transition-colors duration-200 shadow-md m-4 hover:cursor-pointer"
+                    className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 px-4 rounded-lg text-sm transition-colors duration-150"
                 >
-                    Upload Notes
+                    + Upload Notes
                 </Link>
             </div>
 
-            <div className="basis-2/3 p-4 border-b border-gray-700">
+            {/* Main nav */}
+            <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5">
+                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest px-2 py-1.5">
+                    Navigation
+                </span>
+                {topItems.map((item, idx) => (
+                    <SidebarItem key={idx} {...item} />
+                ))}
                 {middleItems.map((item, idx) => (
                     <SidebarItem key={idx} {...item} />
                 ))}
-            </div>
+            </nav>
 
-            <div className="basis-1/6 p-4">
-                {bottomItems.map((item, idx) => (
-                    <SidebarItem key={idx} {...item} />
-                ))}
+            {/* Bottom: logout + user chip */}
+            <div className="px-2 pb-4 pt-2 border-t border-border flex flex-col gap-1">
+                <SidebarItem
+                    text="Log Out"
+                    icon={<LogOutIcon size={18} />}
+                    href="/login"
+                    onClick={handleLogout}
+                />
+                {user && (
+                    <div className="flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-md">
+                        <div className="w-7 h-7 rounded-full bg-accent text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                                {user.username}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground truncate leading-tight">
+                                {user.email}
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -33,16 +33,20 @@ function DropDownSelection({ label, value, options, onChange, showBlankOption = 
   };
 
   return (
-    <div className="flex items-center gap-4 min-w-[180px]">
-      {label && <label className="font-semibold text-gray-700 mb-1 pl-1">{label}</label>}
+    <div className="flex items-center gap-2 min-w-[180px]">
+      {label && (
+        <label className="text-xs font-semibold text-muted-foreground tracking-wide whitespace-nowrap">
+          {label}
+        </label>
+      )}
       <Select value={value === "" ? "null" : value} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-[180px] text-sm">
           <SelectValue placeholder={showBlankOption ? "Select" : options[0]?.label || "Select"} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             {showBlankOption && (
-              <SelectItem value="null">Select {label}</SelectItem>
+              <SelectItem value="null">All {label}</SelectItem>
             )}
             {options.map((option) => (
               <SelectItem key={option.value} value={option.value}>
