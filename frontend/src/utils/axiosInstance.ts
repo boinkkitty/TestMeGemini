@@ -29,7 +29,7 @@ api.interceptors.response.use(
                 // Retry the original request
                 return api(originalRequest);
                 }
-            } catch (refreshError) {
+            } catch {
                 console.warn("Refresh failed, logging out");
             }
 

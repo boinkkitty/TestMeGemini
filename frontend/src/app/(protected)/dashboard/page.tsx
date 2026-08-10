@@ -222,7 +222,6 @@ export default function Dashboard() {
                     <div className="flex flex-col gap-2">
                         {lastTenAttempts.slice(0, 3).map(a => {
                             const pct = a.max_score ? Math.round((a.score / a.max_score) * 100) : 0;
-                            const color = getCategoryColor(a.category);
                             const badgeColor = pct >= 70 ? "bg-green-100 text-green-700" : pct >= 40 ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700";
                             return (
                                 <Link
