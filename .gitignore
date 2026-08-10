@@ -3,7 +3,6 @@ frontend/node_modules/
 frontend/.next/
 frontend/.env.local
 frontend/.env*
-frontend/package-lock.json
 frontend/yarn.lock
 
 
@@ -43,3 +42,4 @@ Thumbs.db
 *.orig
 
 .idea/
+.vercel

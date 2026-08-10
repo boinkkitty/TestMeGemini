@@ -62,7 +62,7 @@ Defined in `src/app/globals.css` as CSS custom properties, consumed by Tailwind 
 
 ## Typography
 
-**Font:** DM Sans via `next/font/google`  
+**Font:** DM Sans via `next/font/google`
 Fallback: `system-ui, sans-serif`
 
 Configured in `src/app/layout.tsx` (`DM_Sans`, weights 300–700), token `--font-sans: var(--font-dm-sans)` in globals.css.
@@ -89,8 +89,8 @@ Configured in `src/app/layout.tsx` (`DM_Sans`, weights 300–700), token `--font
 | `--radius-lg` | `10px` |
 | `--radius-xl` | `14px` |
 
-**Sidebar width:** 232px (`position: fixed`, `top-0 left-0 bottom-0 h-screen`)  
-**Main content offset:** `ml-[232px]` on `<main>` in `(protected)/layout.tsx`  
+**Sidebar width:** 232px (`position: fixed`, `top-0 left-0 bottom-0 h-screen`)
+**Main content offset:** `ml-[232px]` on `<main>` in `(protected)/layout.tsx`
 **Page padding:** `p-8` (32px) on all protected pages  
 **Card gap:** `gap-4` to `gap-6` depending on density  
 **Section gap within a card:** `gap-2.5` to `gap-3`
@@ -176,7 +176,7 @@ px-3 py-2.5 bg-background border border-border rounded-md text-sm
 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition
 ```
 
-Labels: `text-xs font-semibold text-muted-foreground tracking-wide`  
+Labels: `text-xs font-semibold text-muted-foreground tracking-wide`
 Textarea: same classes, add `resize-none`
 
 ### Empty States
