@@ -4,6 +4,8 @@ frontend/.next/
 frontend/.env.local
 frontend/.env*
 frontend/yarn.lock
+frontend/playwright-report/
+frontend/test-results/
 
 
 # === Python/Django (backend/) ===
