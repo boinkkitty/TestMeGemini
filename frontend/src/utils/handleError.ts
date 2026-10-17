@@ -30,8 +30,19 @@ export function handleError(error: unknown): string {
 
     if (axios.isAxiosError(error)) {
         if (error.response) {
+            const contentType = String(error.response.headers?.["content-type"] ?? "");
+            const responseBody = error.response.data;
+            const isHtmlResponse =
+                contentType.toLowerCase().includes("text/html") ||
+                (typeof responseBody === "string" &&
+                    /^\s*(?:<!doctype\s+html|<html\b)/i.test(responseBody));
+
+            if (isHtmlResponse) {
+                return "The server returned an unexpected response. Please try again.";
+            }
+
             errMsg =
-                flattenApiError(error.response.data) ||
+                flattenApiError(responseBody) ||
                 error.response.statusText ||
                 errMsg;
         } else if (error.request) {

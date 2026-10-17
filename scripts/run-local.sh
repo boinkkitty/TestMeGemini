@@ -54,7 +54,9 @@ echo "Applying Django migrations..."
 echo "Starting Django at http://127.0.0.1:$BACKEND_PORT"
 (
   cd "$PROJECT_ROOT/backend"
-  exec venv/bin/python manage.py runserver "127.0.0.1:$BACKEND_PORT"
+  CORS_ALLOWED_ORIGINS="http://localhost:$FRONTEND_PORT,http://127.0.0.1:$FRONTEND_PORT" \
+  CSRF_TRUSTED_ORIGINS="http://localhost:$FRONTEND_PORT,http://127.0.0.1:$FRONTEND_PORT" \
+    exec venv/bin/python manage.py runserver "127.0.0.1:$BACKEND_PORT"
 ) &
 BACKEND_PID=$!
 

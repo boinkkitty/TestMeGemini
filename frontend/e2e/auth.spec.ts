@@ -32,3 +32,48 @@ test("signup, authentication guards, password visibility, login, and logout", as
   await page.goto("/chapters");
   await expect(page).toHaveURL(/\/login$/);
 });
+
+test("login does not expose an HTML server error", async ({ page }) => {
+  await page.route("**/api/v1/auth/login/", (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: "text/html",
+      body: "<!DOCTYPE html><html><body>CSRF debug details</body></html>",
+    }),
+  );
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("user@example.com");
+  await page.getByLabel("Password").fill("invalid-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(
+    page.getByText(
+      "Login failed: The server returned an unexpected response. Please try again.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(/DOCTYPE|CSRF debug details/)).toBeHidden();
+});
+
+test("signup does not expose an HTML server error", async ({ page }) => {
+  await page.route("**/api/v1/users/", (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: "text/html",
+      body: "<!DOCTYPE html><html><body>CSRF debug details</body></html>",
+    }),
+  );
+
+  await page.goto("/signup");
+  await page.getByLabel("Username").fill("tester");
+  await page.getByLabel("Email").fill("tester@example.com");
+  await page.getByLabel("Password").fill("invalid-password");
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await expect(
+    page.getByText(
+      "Sign up failed: The server returned an unexpected response. Please try again.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(/DOCTYPE|CSRF debug details/)).toBeHidden();
+});
