@@ -5,6 +5,16 @@ import { expect, test } from "@playwright/test";
 import { loginThroughUi, signUpThroughUi, uniqueCredentials } from "./support/fixtures";
 
 test("upload rejects invalid input, reports malformed PDFs, and resets after success", async ({ page }) => {
+  const handledServiceErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      message.text().includes("Failed to create chapter and questions")
+    ) {
+      handledServiceErrors.push(message.text());
+    }
+  });
+
   const credentials = uniqueCredentials("upload");
   await signUpThroughUi(page, credentials);
   await loginThroughUi(page, credentials);
@@ -19,6 +29,8 @@ test("upload rejects invalid input, reports malformed PDFs, and resets after suc
   await fileInput.setInputFiles(path.resolve(process.cwd(), "e2e/fixtures/invalid.pdf"));
   await page.getByRole("button", { name: "Generate questions" }).click();
   await expect(page.getByText(/PDF|extract|process|valid/i).last()).toBeVisible();
+  await page.waitForTimeout(500);
+  expect(handledServiceErrors).toEqual([]);
 
   for (const value of ["10", "20", "30", "50"]) {
     await page.getByLabel("No. of questions").selectOption(value);

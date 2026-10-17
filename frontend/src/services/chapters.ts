@@ -58,13 +58,8 @@ export async function createChaptersAndQuestions({ title, category, description,
     for (let i = 0; i < files.length; i++) {
         formData.append("files", files[i]);
     }
-    try {
-        const res = await api.post("/api/v1/chapter-generations/", formData);
-        return res.data;
-    } catch (err) {
-        console.error("Failed to create chapter and questions:", err);
-        throw err;
-    }
+    const res = await api.post("/api/v1/chapter-generations/", formData);
+    return res.data;
 }
 
 /**
