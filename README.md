@@ -62,6 +62,38 @@ Turn your notes into interactive quizzes and track your learning progress.
 
 ## Installation & Local Development
 
+### Quick local start
+
+After installing dependencies and creating `backend/.env`, start Django and
+Next.js together from the repository root:
+
+```bash
+make local-run
+```
+
+The default local URLs are:
+
+- Frontend: `http://127.0.0.1:3000`
+- Backend: `http://127.0.0.1:8001`
+
+Port `8001` is used for Django so the app can coexist with tools that commonly
+occupy port `8000`. Override either port when needed:
+
+```bash
+TESTME_BACKEND_PORT=8100 TESTME_FRONTEND_PORT=3100 make local-run
+```
+
+The dashboard, chapters, quizzes, and attempt history work without calling an
+AI provider. Uploading a PDF to generate new questions requires a valid
+`GEMINI_API_KEY`.
+
+To verify that both servers start, proxy requests correctly, and shut down
+cleanly:
+
+```bash
+make local-check
+```
+
 ### Environment Variables
 
 - Backend: copy `backend/.env.example` to `backend/.env`, then set a unique
@@ -111,11 +143,26 @@ make frontend-build
 make frontend-run-prod
 ```
 
+### Tests
+
+```bash
+make test-backend
+make test-frontend
+make test-e2e
+make test-all
+```
+
+The Playwright command is added by the full QA setup and uses an isolated test
+database; it does not call Gemini.
+
+For verified click-by-click behavior, every versioned endpoint, Django/DRF
+implementation details, and the latest test record, see [docs/QA.md](docs/QA.md).
+
 ## Architecture Overview
 
 - **Architecture:** Single Page Application
 - **Backend:** Django REST Framework, cookie-based JWT authentication, CSRF
-  protection, and Gemini integration for question generation.
+  protection, and Google Gemini integration for question generation.
 - **Frontend:** Next.js (App Router), React, Tailwind CSS, shadcn/ui, Recharts for charts.
 - **Database:** SQLite (default, can be swapped for Postgres/MySQL)
 - **Database Modelling**: ![Database Modelling](docs/dbmodelling.png)
@@ -138,39 +185,31 @@ The default `SameSite=Lax` cookie mode is intended for same-site deployments.
 If the frontend and backend are genuinely cross-site, configure `SameSite=None`
 and secure HTTPS cookies explicitly.
 
-## Model Choice & Cost Comparison
+## AI Model
 
-The application uses a Gemini fallback chain for AI generation:
+The application currently uses the Google Gen AI SDK with this Gemini fallback chain:
 
-1. Try gemini-2.5-flash first for balanced latency, quality, and cost.
-2. If it returns transient overload / 503 after limited retries, fall back to gemini-2.5-pro.
-3. If Pro also overloads, fall back to gemini-2.5-flash-lite (fastest / cheapest) to still return something.
-4. If all three fail, a clear error is returned.
+1. `gemini-2.5-flash` — primary model, selected for its price/performance balance and low latency.
+2. `gemini-2.5-pro` — fallback for more capable reasoning when Flash is temporarily overloaded.
+3. `gemini-2.5-flash-lite` — final, cost-efficient fallback for availability.
 
-Only text input/output is currently used (no image/video/audio responses stored), but full multimodal support is available in all three Gemini 2.5 models.
+All three model IDs are stable Google Gemini API models and support structured output. The application sends the text extracted from uploaded PDFs and asks Gemini to return the chapter summary and quiz questions as JSON matching the Pydantic response schema. The selected question count is enforced in the prompt, with JSON Schema `minItems`/`maxItems`, and through server-side validation before anything is saved.
 
-### Text Pricing (USD per 1M tokens, August 2025)
+Fallback occurs only for transient overload or HTTP 503-style failures. Each model is retried twice before the application advances to the next model. Other provider errors stop immediately and return a safe generation error.
 
-(Shows standard vs batch where relevant; Flash Lite & Flash have same rate ≤ / > 200K for text.)
+Model configuration is defined by `MODEL_CHAIN` in `backend/api/utils/ai.py`. Authentication and timeout configuration use:
 
-| Model                 | Input ≤200K | Input >200K | Output Text (≤200K→>200K) | Batch Input ≤200K | Batch Input >200K | Batch Output (≤200K→>200K) | Max Input Tokens | Max Output Tokens | Notes                            |
-| --------------------- | ----------- | ----------- | ------------------------- | ----------------- | ----------------- | -------------------------- | ---------------- | ----------------- | -------------------------------- |
-| gemini-2.5-pro        | $1.25       | $2.50       | $10 → $15                 | $0.625            | $1.25             | $5.00 → $7.50              | 1,048,576        | 65,535            | Highest quality / deep reasoning |
-| gemini-2.5-flash      | $0.30       | $0.30       | $2.50 (flat)              | $0.15             | $0.15             | $1.25 (flat)               | 1,048,576        | 65,535            | Balanced cost/speed              |
-| gemini-2.5-flash-lite | $0.10       | $0.10       | $0.40 (flat)              | $0.05             | $0.05             | $0.20 (flat)               | 1,048,576        | 65,536            | Lowest cost / fallback & bulk    |
-| gpt-4o-mini (ref)     | $0.50       | $0.50       | $1.50                     | –                 | –                 | –                          | 128,000          | ~16,000+          | Alternative; polish tradeoff     |
+```env
+GEMINI_API_KEY=your-google-ai-api-key
+GEMINI_TIMEOUT_SECONDS=30
+```
 
-### Rationale
-
-- Pro delivers best structured summaries & nuanced distractors for MCQ/MRQ.
-- Flash handles the majority of volume cheaply when Pro is temporarily busy.
-- Flash Lite ensures resilience under sustained platform load (keeps user flow unblocked).
-- Gemini chosen for this personal project because of a generous free usage tier → near-zero iteration cost while prototyping; GPT kept as an easy swap path.
+Google model references: [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash), [Gemini 2.5 Pro](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-pro), and [Gemini 2.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite).
 
 ### Observability
 
 - The service adds an internal `_model_used` field for downstream logging/analytics.
-- Fallback & retry logic lives in `backend/api/utils/ai.py` (`call_gemini_model`). Adjust order via `MODEL_CHAIN`.
+- Fallback and retry logic lives in `backend/api/utils/ai.py` (`call_gemini_model`). Adjust the order with `MODEL_CHAIN`.
 
 ## License
 

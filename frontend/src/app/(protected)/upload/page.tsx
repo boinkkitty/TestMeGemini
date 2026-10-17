@@ -26,6 +26,7 @@ export default function UploadClient() {
   const [success, setSuccess] = useState<string>("");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    setError("");
     setFiles((prev) => {
       const existingNames = prev.map((f) => f.name);
       const newFiles = acceptedFiles.filter((f) => !existingNames.includes(f.name));
@@ -33,17 +34,18 @@ export default function UploadClient() {
     });
   }, []);
 
-  const removeFile = (name: string) => {
-    setFiles((prev) => prev.filter((f) => f.name !== name));
-  };
-
-  const { isDragActive, getInputProps, getRootProps, fileRejections } = useDropzone({
+  const { isDragActive, getInputProps, getRootProps, fileRejections, inputRef } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
     noClick: false,
     noKeyboard: false,
   });
+
+  const removeFile = (name: string) => {
+    setFiles((prev) => prev.filter((f) => f.name !== name));
+    if (inputRef.current) inputRef.current.value = "";
+  };
 
   const handleGenerate = async () => {
     setError("");
@@ -53,7 +55,13 @@ export default function UploadClient() {
     if (files.length === 0) { setError("Please upload at least one PDF file."); return; }
     setIsGenerating(true);
     try {
-      await createChaptersAndQuestions({ title, category, files });
+      await createChaptersAndQuestions({
+        title,
+        category,
+        description,
+        questionCount: Number(numQuestions),
+        files,
+      });
       setSuccess("Chapter and questions generated successfully!");
       setFiles([]);
       setTitle("");
@@ -85,30 +93,33 @@ export default function UploadClient() {
         {/* 3-column top row */}
         <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Chapter title</label>
+            <label htmlFor="chapter-title" className={labelClass}>Chapter title</label>
             <input
+              id="chapter-title"
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={e => { setTitle(e.target.value); setError(""); }}
               placeholder="e.g. Lec 4 — Search Algorithms"
               disabled={isGenerating}
               className={inputClass}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Subject / Category</label>
+            <label htmlFor="chapter-category" className={labelClass}>Subject / Category</label>
             <input
+              id="chapter-category"
               type="text"
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={e => { setCategory(e.target.value); setError(""); }}
               placeholder="e.g. CS2109S"
               disabled={isGenerating}
               className={inputClass}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>No. of questions</label>
+            <label htmlFor="question-count" className={labelClass}>No. of questions</label>
             <select
+              id="question-count"
               value={numQuestions}
               onChange={e => setNumQuestions(e.target.value)}
               disabled={isGenerating}
@@ -153,10 +164,11 @@ export default function UploadClient() {
           {/* Right: Description + What happens next */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>
+              <label htmlFor="chapter-description" className={labelClass}>
                 Description <span className="font-normal text-muted-foreground/70">(optional)</span>
               </label>
               <textarea
+                id="chapter-description"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 disabled={isGenerating}

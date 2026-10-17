@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from django.conf import settings
+from django.db.models import Count
 from .models import Chapter
 from .serializers import (
     ChapterCreateSerializer,
@@ -41,6 +42,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
         """Return chapters belonging to current user with optional limit."""
         qs = (Chapter.objects
               .active_for_user(self.request.user)
+              .annotate(question_count=Count("questions"))
               .ordered_by_created())
         limit = self.request.query_params.get('limit')
         limit_val = self._bounded_limit(limit)
@@ -77,7 +79,9 @@ class ChapterListCreateAPIView(ListCreateAPIView):
                 user=request.user,
                 files=files,
                 title=request.data.get("title"),
+                description=request.data.get("description"),
                 category=request.data.get("category"),
+                question_count=request.data.get("question_count"),
                 request=request,
             )
             return Response(result, status=status_code)
@@ -98,7 +102,9 @@ class ChapterGenerationAPIView(APIView):
             user=request.user,
             files=request.FILES.getlist("files"),
             title=request.data.get("title"),
+            description=request.data.get("description"),
             category=request.data.get("category"),
+            question_count=request.data.get("question_count"),
             request=request,
         )
         return Response(result, status=status_code)

@@ -1,13 +1,14 @@
 "use client";
 import { Chapter, Question } from "@/lib/types";
 import QuizComponent from "@/components/questions/QuizComponent";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getUserChapters } from "@/services/chapters";
 import { getChapterQuestions } from "@/services/questions";
 import { getCategoryColor } from "@/utils/chapterStyles";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import ErrorState from "@/components/ErrorState";
 
 export default function Quiz() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -16,30 +17,39 @@ export default function Quiz() {
     const [isStarted, setIsStarted] = useState<boolean>(false);
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [loadError, setLoadError] = useState(false);
+    const [startError, setStartError] = useState(false);
 
     const selectedChapter = chapters.find((c) => c.id === selectedChapterId);
 
-    useEffect(() => {
-        getUserChapters()
-            .then((data) => setChapters(data))
-            .catch((err) => console.error(err))
-            .finally(() => setIsLoading(false));
+    const loadChapters = useCallback(async () => {
+        setIsLoading(true);
+        setLoadError(false);
+        try { setChapters(await getUserChapters()); }
+        catch { setLoadError(true); }
+        finally { setIsLoading(false); }
     }, []);
+
+    useEffect(() => { void loadChapters(); }, [loadChapters]);
 
     const handleSelectAndStart = async (chapterId: number) => {
         setIsStarting(true);
+        setStartError(false);
         setSelectedChapterId(chapterId);
         const chapter = chapters.find(c => c.id === chapterId);
-        if (!chapter) return;
-        await getChapterQuestions(chapter.id)
-            .then((qs) => setQuestions(qs))
-            .finally(() => {
-                setIsStarting(false);
-                setIsStarted(true);
-            });
+        if (!chapter) { setIsStarting(false); return; }
+        try {
+            setQuestions(await getChapterQuestions(chapter.id));
+            setIsStarted(true);
+        } catch {
+            setStartError(true);
+        } finally {
+            setIsStarting(false);
+        }
     };
 
     if (isLoading) return <LoadingSpinner message="Loading chapters…" />;
+    if (loadError) return <div className="p-8"><ErrorState message="Unable to load chapters." onRetry={() => void loadChapters()} /></div>;
 
     if (isStarted && selectedChapter) {
         return (
@@ -57,6 +67,10 @@ export default function Quiz() {
                 <h1 className="text-2xl font-bold tracking-tight">Quiz</h1>
                 <p className="text-sm text-muted-foreground mt-1">Test your knowledge on a chapter</p>
             </div>
+
+            {startError && selectedChapterId && (
+                <div className="mb-6"><ErrorState message="Unable to start quiz." onRetry={() => void handleSelectAndStart(selectedChapterId)} /></div>
+            )}
 
             {chapters.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-14 text-center border-[1.5px] border-dashed border-border rounded-xl bg-card">
@@ -97,7 +111,7 @@ export default function Quiz() {
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold text-foreground">{ch.title}</p>
-                                            <p className="text-xs text-muted-foreground">{ch.questions?.length ?? "—"} questions</p>
+                                            <p className="text-xs text-muted-foreground">{ch.question_count ?? ch.questions?.length ?? 0} questions</p>
                                         </div>
                                         <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
                                     </button>

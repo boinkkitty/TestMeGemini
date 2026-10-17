@@ -19,7 +19,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: `http://127.0.0.1:${frontendPort}`,
+    baseURL: `http://localhost:${frontendPort}`,
     trace: "on-first-retry",
   },
   projects: [
@@ -37,12 +37,13 @@ export default defineConfig({
       env: {
         ...process.env,
         TESTME_E2E_BACKEND_PORT: String(backendPort),
+        TESTME_E2E_FRONTEND_PORT: String(frontendPort),
         TESTME_E2E_DB: databasePath,
       },
     },
     {
       command: "../scripts/run-e2e-frontend.sh",
-      url: `http://127.0.0.1:${frontendPort}/login`,
+      url: `http://localhost:${frontendPort}/login`,
       timeout: 120_000,
       reuseExistingServer: false,
       env: {

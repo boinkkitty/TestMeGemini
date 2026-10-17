@@ -8,4 +8,5 @@ FRONTEND_PORT=${TESTME_E2E_FRONTEND_PORT:-13111}
 
 cd "$PROJECT_ROOT/frontend"
 export API_URL="http://127.0.0.1:$BACKEND_PORT"
+export NEXT_DIST_DIR=.next-e2e
 exec npm run dev -- --hostname 127.0.0.1 --port "$FRONTEND_PORT"

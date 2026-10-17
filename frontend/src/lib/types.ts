@@ -10,6 +10,7 @@ export type Chapter = {
     title: string;
     description: string;
     category: string;
+    question_count?: number;
     questions?: Question[];
 };
 

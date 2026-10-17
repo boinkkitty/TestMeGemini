@@ -49,7 +49,7 @@ function ChapterCard({ chapter, onClick, onQuiz, onDeleteIconClick }: ChapterCar
             <div className="flex items-center justify-between pt-2 border-t border-border/60">
                 <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
                     <BookOpenIcon size={12} />
-                    <span>{chapter.questions?.length ?? "—"} questions</span>
+                    <span>{chapter.question_count ?? chapter.questions?.length ?? 0} questions</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                     {onClick && (

@@ -45,13 +45,8 @@ export async function getChapterAttempt(attemptId: number): Promise<ChapterAttem
  * @returns {Promise<ChapterAttempt[]>} List of chapter attempts.
  */
 export async function getUserChapterAttempts(params?: GetChapterAttemptsParams): Promise<ChapterAttempt[]> {
-    try {
-        const res = await api.get(`/api/v1/attempts/`, { params });
-        return res.data;
-    } catch (err) {
-        console.error("Failed to fetch attempts:", err);
-        return [];
-    }
+    const res = await api.get(`/api/v1/attempts/`, { params });
+    return res.data;
 }
 
 /**

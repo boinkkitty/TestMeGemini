@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Chapter, UserInfo, ChapterAttempt } from "@/lib/types";
 import { getUserInfo } from "@/services/users";
@@ -10,6 +10,7 @@ import BarChartComponent from "@/components/dashboard/BarChartComponent";
 import Link from "next/link";
 import { BookOpenIcon, LayersIcon, ClockIcon, TrendingUpIcon } from "lucide-react";
 import { getCategoryColor } from "@/utils/chapterStyles";
+import ErrorState from "@/components/ErrorState";
 
 export default function Dashboard() {
     const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -17,6 +18,7 @@ export default function Dashboard() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [lastWeekAttempts, setLastWeekAttempts] = useState<ChapterAttempt[]>([]);
     const [lastTenAttempts, setLastTenAttempts] = useState<ChapterAttempt[]>([]);
+    const [loadError, setLoadError] = useState(false);
 
     const percentages = lastWeekAttempts
         .filter(a => a.max_score && a.max_score > 0)
@@ -38,23 +40,32 @@ export default function Dashboard() {
         lastWeekAttempts.map(a => new Date(a.completed_at).toDateString())
     );
 
-    useEffect(() => {
+    const loadDashboard = useCallback(async () => {
         setIsLoading(true);
+        setLoadError(false);
         const startDate = formatDateYYYYMMDD(getNDaysAgo(6));
-        Promise.all([
-            getUserInfo().catch(() => null),
-            getUserChapters({ limit: 4 }).catch(() => []),
-            getUserChapterAttempts({ start_date: startDate }).catch(() => []),
-            getUserChapterAttempts({ limit: 10 }),
-        ]).then(([userInfoData, chaptersData, lastWeekData, lastTenData]) => {
-            if (userInfoData) setUserInfo(userInfoData);
+        try {
+            const [userInfoData, chaptersData, lastWeekData, lastTenData] = await Promise.all([
+                getUserInfo(),
+                getUserChapters({ limit: 4 }),
+                getUserChapterAttempts({ start_date: startDate }),
+                getUserChapterAttempts({ limit: 10 }),
+            ]);
+            setUserInfo(userInfoData);
             setChapters(chaptersData);
             setLastWeekAttempts(lastWeekData);
             setLastTenAttempts(lastTenData);
-        }).finally(() => setIsLoading(false));
+        } catch {
+            setLoadError(true);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
+    useEffect(() => { void loadDashboard(); }, [loadDashboard]);
+
     if (isLoading) return <LoadingSpinner message="Loading dashboard…" />;
+    if (loadError) return <div className="p-8"><ErrorState message="Unable to load dashboard." onRetry={() => void loadDashboard()} /></div>;
 
     const greeting = () => {
         const h = new Date().getHours();
@@ -85,8 +96,8 @@ export default function Dashboard() {
             {/* ── Stats strip ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                    { label: "Total Chapters", value: chapters.length || "—", sub: "uploaded", icon: <LayersIcon size={16} /> },
-                    { label: "Total Attempts", value: lastTenAttempts.length || "—", sub: "all time", icon: <ClockIcon size={16} /> },
+                    { label: "Total Chapters", value: chapters.length, sub: "uploaded", icon: <LayersIcon size={16} /> },
+                    { label: "Total Attempts", value: lastTenAttempts.length, sub: "all time", icon: <ClockIcon size={16} /> },
                     { label: "Avg Score", value: percentages.length > 0 ? `${averagePercentage}%` : "—", sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
                     { label: "Best Score", value: percentages.length > 0 ? `${highestPercentage.toFixed(1)}%` : "—", sub: "7-day window", icon: <TrendingUpIcon size={16} />, accent: true },
                 ].map((stat, i) => (

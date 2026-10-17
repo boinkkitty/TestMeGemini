@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Chapter, Question } from "@/lib/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginatedQuestionsForChapter from "@/components/chapters/PaginatedQuestionsForChapter";
@@ -13,6 +13,7 @@ import DropDownSelection from "@/components/ui/DropDownSelection";
 import DeleteChapterModal from "@/components/chapters/DeleteChapterModal";
 import { getCategoryColor } from "@/utils/chapterStyles";
 import { useRouter } from "next/navigation";
+import ErrorState from "@/components/ErrorState";
 
 export default function Chapters() {
     const router = useRouter();
@@ -26,6 +27,8 @@ export default function Chapters() {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [deleteChapterId, setDeleteChapterId] = useState<number | null>(null);
     const [deleteChapterTitle, setDeleteChapterTitle] = useState<string>("");
+    const [loadError, setLoadError] = useState(false);
+    const [questionError, setQuestionError] = useState(false);
 
     const filteredChapters = chapters.filter(chapter =>
         chapter.title.toLowerCase().includes(chapterTitleFilter) &&
@@ -37,12 +40,19 @@ export default function Chapters() {
         .map((cat) => ({ value: cat, label: cat }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
-    useEffect(() => {
-        getUserChapters()
-            .then((data) => setChapters(data))
-            .catch((err) => console.error(err))
-            .finally(() => setIsLoadingChapters(false));
+    const loadChapters = useCallback(async () => {
+        setIsLoadingChapters(true);
+        setLoadError(false);
+        try {
+            setChapters(await getUserChapters());
+        } catch {
+            setLoadError(true);
+        } finally {
+            setIsLoadingChapters(false);
+        }
     }, []);
+
+    useEffect(() => { void loadChapters(); }, [loadChapters]);
 
     const handleDeleteIconClick = (chapter: Chapter) => {
         setDeleteChapterId(chapter.id);
@@ -65,11 +75,17 @@ export default function Chapters() {
 
     const handleSelectChapter = async (chapterId: number) => {
         setIsLoading(true);
+        setQuestionError(false);
         setSelectedChapterId(chapterId);
         const chapter = chapters.find(ch => ch.id === chapterId) || null;
-        await getChapterQuestions(chapter!.id)
-            .then((data) => setQuestions(data))
-            .finally(() => setIsLoading(false));
+        if (!chapter) { setIsLoading(false); return; }
+        try {
+            setQuestions(await getChapterQuestions(chapter.id));
+        } catch {
+            setQuestionError(true);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleBack = () => {
@@ -78,6 +94,7 @@ export default function Chapters() {
     };
 
     if (isLoadingChapters) return <LoadingSpinner message="Loading chapters…" />;
+    if (loadError) return <div className="p-8"><ErrorState message="Unable to load chapters." onRetry={() => void loadChapters()} /></div>;
 
     return (
         <div className="p-8 space-y-6">
@@ -131,6 +148,8 @@ export default function Chapters() {
             <div>
                 {isLoading ? (
                     <LoadingSpinner message="Loading questions…" />
+                ) : questionError && selectedChapterId ? (
+                    <ErrorState message="Unable to load chapter questions." onRetry={() => void handleSelectChapter(selectedChapterId)} />
                 ) : selectedChapterId && selectedChapter ? (
                     <div className="flex justify-center">
                         <PaginatedQuestionsForChapter questions={questions} />
