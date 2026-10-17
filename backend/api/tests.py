@@ -131,3 +131,46 @@ class GeminiGenerationTests(SimpleTestCase):
         self.assertEqual(len(result["questions"]), 10)
         self.assertEqual(generate_content.call_count, 2)
         sleep_mock.assert_called_once_with(0.75)
+
+    @patch("api.utils.ai._gemini_client")
+    def test_falls_back_through_current_free_tier_models(self, gemini_client):
+        generate_content = gemini_client.return_value.models.generate_content
+        generate_content.side_effect = [
+            RuntimeError("503 overloaded"),
+            RuntimeError("503 overloaded"),
+            completion_for(generated_payload(10)),
+        ]
+
+        result = call_gemini_model(
+            "Network Resource Allocation",
+            "Course content",
+            question_count=10,
+            max_retries_per_model=1,
+        )
+
+        self.assertEqual(result["_model_used"], "gemini-3.5-flash-lite")
+        self.assertEqual(
+            [call.kwargs["model"] for call in generate_content.call_args_list],
+            [
+                "gemini-3.8-flash",
+                "gemini-3.6-flash",
+                "gemini-3.5-flash-lite",
+            ],
+        )
+
+    @patch("api.utils.ai._gemini_client")
+    def test_falls_back_when_provider_deadline_expires(self, gemini_client):
+        generate_content = gemini_client.return_value.models.generate_content
+        generate_content.side_effect = [
+            RuntimeError("504 DEADLINE_EXCEEDED"),
+            completion_for(generated_payload(10)),
+        ]
+
+        result = call_gemini_model(
+            "Network Resource Allocation",
+            "Course content",
+            question_count=10,
+            max_retries_per_model=1,
+        )
+
+        self.assertEqual(result["_model_used"], "gemini-3.6-flash")

@@ -189,13 +189,15 @@ and secure HTTPS cookies explicitly.
 
 The application currently uses the Google Gen AI SDK with this Gemini fallback chain:
 
-1. `gemini-2.5-flash` — primary model, selected for its price/performance balance and low latency.
-2. `gemini-2.5-pro` — fallback for more capable reasoning when Flash is temporarily overloaded.
-3. `gemini-2.5-flash-lite` — final, cost-efficient fallback for availability.
+1. `gemini-3.8-flash` — primary model, selected for its output quality and current stable free-tier availability.
+2. `gemini-3.6-flash` — stable general-purpose fallback when the primary model is temporarily overloaded.
+3. `gemini-3.5-flash-lite` — final, cost-efficient stable fallback for availability.
 
-All three model IDs are stable Google Gemini API models and support structured output. The application sends the text extracted from uploaded PDFs and asks Gemini to return the chapter summary and quiz questions as JSON matching the Pydantic response schema. The selected question count is enforced in the prompt, with JSON Schema `minItems`/`maxItems`, and through server-side validation before anything is saved.
+All three model IDs are stable Google Gemini API models, accept text/PDF input, support structured output, and are currently eligible for free input/output usage within a project's free-tier quota. Exact RPM, TPM, and daily limits vary by project and are shown in Google AI Studio. Free-tier prompts and uploaded content may be used by Google to improve its products, so do not upload private or sensitive documents without reviewing Google's current data-use terms.
 
-Fallback occurs only for transient overload or HTTP 503-style failures. Each model is retried twice before the application advances to the next model. Other provider errors stop immediately and return a safe generation error.
+The application extracts text from uploaded PDFs and asks Gemini to return the chapter summary and quiz questions as JSON matching the Pydantic response schema. The selected question count is enforced in the prompt, with JSON Schema `minItems`/`maxItems`, and through server-side validation before anything is saved.
+
+Fallback occurs only for transient overload, service-unavailable, or deadline-timeout failures (HTTP 503/504). Each model is retried twice before the application advances to the next model. Other provider errors stop immediately and return a safe generation error.
 
 Model configuration is defined by `MODEL_CHAIN` in `backend/api/utils/ai.py`. Authentication and timeout configuration use:
 
@@ -204,7 +206,7 @@ GEMINI_API_KEY=your-google-ai-api-key
 GEMINI_TIMEOUT_SECONDS=30
 ```
 
-Google model references: [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash), [Gemini 2.5 Pro](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-pro), and [Gemini 2.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite).
+Google model references: [Gemini 3.8 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash), [Gemini 3.6 Flash](https://ai.google.dev/gemini-api/docs/models/gemini-3.6-flash), [Gemini 3.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite), [pricing](https://ai.google.dev/gemini-api/docs/pricing), and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 ### Observability
 
