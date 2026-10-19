@@ -2,7 +2,7 @@ import json
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from api.utils.ai import (
     AIServiceError,
@@ -174,3 +174,32 @@ class GeminiGenerationTests(SimpleTestCase):
         )
 
         self.assertEqual(result["_model_used"], "gemini-3.6-flash")
+
+
+class OpenAPISchemaTests(TestCase):
+    def test_schema_exposes_only_canonical_versioned_api_paths(self):
+        response = self.client.get("/api/schema/?format=json")
+
+        self.assertEqual(response.status_code, 200)
+        schema = json.loads(response.content)
+        self.assertIn("/api/v1/chapters/", schema["paths"])
+        self.assertIn("/api/v1/chapter-generations/", schema["paths"])
+        self.assertIn("/api/v1/attempts/", schema["paths"])
+        self.assertNotIn("/api/chapters/", schema["paths"])
+
+    def test_interactive_documentation_routes_are_available(self):
+        self.assertEqual(self.client.get("/api/schema/swagger-ui/").status_code, 200)
+        self.assertEqual(self.client.get("/api/schema/redoc/").status_code, 200)
+
+    def test_generation_schema_describes_multipart_request_and_response(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+        operation = schema["paths"]["/api/v1/chapter-generations/"]["post"]
+
+        self.assertIn("multipart/form-data", operation["requestBody"]["content"])
+        request_schema = operation["requestBody"]["content"]["multipart/form-data"]["schema"]
+        request_schema = schema["components"]["schemas"][request_schema["$ref"].rsplit("/", 1)[-1]]
+        properties = request_schema["properties"]
+        self.assertEqual(set(properties), {"files", "title", "category", "description", "question_count"})
+        response_schema = operation["responses"]["201"]["content"]["application/json"]["schema"]
+        response_schema = schema["components"]["schemas"][response_schema["$ref"].rsplit("/", 1)[-1]]
+        self.assertEqual(set(response_schema["properties"]), {"chapter_id", "question_ids"})

@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema, inline_serializer
 from django.conf import settings
 from django.db.models import Count
 from .models import Chapter
@@ -73,18 +75,6 @@ class ChapterListCreateAPIView(ListCreateAPIView):
         """
         Create a chapter from nested JSON, or route legacy file uploads through generation.
         """
-        files = request.FILES.getlist("files")
-        if files:
-            result, status_code = generate_chapter_from_files(
-                user=request.user,
-                files=files,
-                title=request.data.get("title"),
-                description=request.data.get("description"),
-                category=request.data.get("category"),
-                question_count=request.data.get("question_count"),
-                request=request,
-            )
-            return Response(result, status=status_code)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         chapter = serializer.save(user=request.user)
@@ -97,6 +87,31 @@ class ChapterGenerationAPIView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_scope = "chapter_generation"
 
+    @extend_schema(
+        tags=["Chapter generation"],
+        summary="Generate a chapter quiz from PDF uploads",
+        request=inline_serializer(
+            name="ChapterGenerationRequest",
+            fields={
+                "files": serializers.ListField(child=serializers.FileField(), min_length=1),
+                "title": serializers.CharField(),
+                "category": serializers.CharField(),
+                "description": serializers.CharField(required=False, allow_blank=True),
+                "question_count": serializers.ChoiceField(
+                    choices=[10, 20, 30, 50], required=False
+                ),
+            },
+        ),
+        responses={
+            201: inline_serializer(
+                name="ChapterGenerationResponse",
+                fields={
+                    "chapter_id": serializers.IntegerField(),
+                    "question_ids": serializers.ListField(child=serializers.IntegerField()),
+                },
+            )
+        },
+    )
     def post(self, request, *args, **kwargs):
         result, status_code = generate_chapter_from_files(
             user=request.user,
