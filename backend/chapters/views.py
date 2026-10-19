@@ -118,7 +118,35 @@ class ChapterGenerationAPIView(APIView):
             request=request,
         )
         return Response(result, status=status_code)
-    
+
+
+class LegacyChapterListCreateAPIView(ChapterListCreateAPIView):
+    """Compatibility-only endpoint retaining the former multipart upload behavior."""
+
+    def get_throttles(self):
+        self.throttle_scope = (
+            "chapter_generation"
+            if self.request.method == "POST" and self.request.FILES.getlist("files")
+            else None
+        )
+        return super().get_throttles()
+
+    def create(self, request, *args, **kwargs):
+        files = request.FILES.getlist("files")
+        if files:
+            result, status_code = generate_chapter_from_files(
+                user=request.user,
+                files=files,
+                title=request.data.get("title"),
+                description=request.data.get("description"),
+                category=request.data.get("category"),
+                question_count=request.data.get("question_count"),
+                request=request,
+            )
+            return Response(result, status=status_code)
+        return super().create(request, *args, **kwargs)
+
+
 class ChapterRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     API endpoint for retrieving, updating, and deleting a chapter.

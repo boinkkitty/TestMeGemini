@@ -244,6 +244,24 @@ class ChapterQuestionAPITests(APITestCase):
 
     @patch("chapters.services.extract_text", return_value="Extracted chapter content")
     @patch("chapters.services.call_gemini_model")
+    def test_legacy_chapters_upload_route_remains_compatible(self, call_gemini, _extract):
+        call_gemini.return_value = {
+            "chapter": {"title": "Generated", "description": "Generated summary"},
+            "questions": generated_question_payloads(10),
+        }
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/chapters/",
+            {"title": "Legacy upload", "category": "Category", "files": [upload]},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("chapter_id", response.data)
+
+    @patch("chapters.services.extract_text", return_value="Extracted chapter content")
+    @patch("chapters.services.call_gemini_model")
     def test_generation_prefers_supplied_description(self, call_gemini, extract_text_mock):
         call_gemini.return_value = {
             "chapter": {"title": "Generated", "description": "Generated summary"},
