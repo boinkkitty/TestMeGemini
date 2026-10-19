@@ -4,7 +4,12 @@ Defines endpoints for listing, creating, retrieving, and managing chapters and t
 """
 
 from django.urls import path, include
-from .views import ChapterGenerationAPIView, ChapterListCreateAPIView, ChapterRetrieveUpdateDestroyAPIView
+from .views import (
+    ChapterGenerationAPIView,
+    ChapterListCreateAPIView,
+    ChapterRetrieveUpdateDestroyAPIView,
+    LegacyChapterListCreateAPIView,
+)
 
 chapter_urlpatterns = [
     path('', ChapterListCreateAPIView.as_view(), name='chapters_list_create'),
@@ -16,4 +21,8 @@ generation_urlpatterns = [
     path('', ChapterGenerationAPIView.as_view(), name='chapter_generation_create'),
 ]
 
-urlpatterns = chapter_urlpatterns
+urlpatterns = [
+    path('', LegacyChapterListCreateAPIView.as_view(), name='legacy-chapters-list-create'),
+    path('<int:id>/', ChapterRetrieveUpdateDestroyAPIView.as_view(), name='legacy-chapter-rud'),
+    path('<int:id>/questions/', include('questions.urls')),
+]

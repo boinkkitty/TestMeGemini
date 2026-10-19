@@ -9,6 +9,7 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 
 from .models import ChapterAttempt, QuestionAttempt
 from .serializers import (
@@ -28,6 +29,17 @@ def _date_after(value):
     return timezone.make_aware(datetime.combine(value + timedelta(days=1), time.min))
 
 
+@extend_schema_view(
+    post=extend_schema(
+        request=ChapterAttemptInputSerializer,
+        responses={
+            201: ChapterAttemptSerializer,
+            400: OpenApiResponse(description="Invalid chapter, questions, choices, or submission payload."),
+            401: OpenApiResponse(description="Authentication is required."),
+            403: OpenApiResponse(description="A valid CSRF token is required."),
+        },
+    )
+)
 class ChapterAttemptCreateListAPIView(ListCreateAPIView):
     """
     List and create chapter attempts for the authenticated user.

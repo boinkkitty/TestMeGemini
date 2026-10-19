@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test import override_settings
@@ -241,6 +243,34 @@ class ChapterQuestionAPITests(APITestCase):
         call_gemini.assert_called_once_with(
             "Upload", "Extracted chapter content", question_count=20
         )
+
+    @patch("chapters.services.extract_text", return_value="Extracted chapter content")
+    @patch("chapters.services.call_gemini_model")
+    @override_settings(
+        REST_FRAMEWORK={
+            **settings.REST_FRAMEWORK,
+            "DEFAULT_THROTTLE_RATES": {
+                **settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],
+                "chapter_generation": "100/hour",
+            },
+        }
+    )
+    def test_legacy_chapters_upload_route_remains_compatible(self, call_gemini, _extract):
+        cache.clear()
+        call_gemini.return_value = {
+            "chapter": {"title": "Generated", "description": "Generated summary"},
+            "questions": generated_question_payloads(10),
+        }
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/chapters/",
+            {"title": "Legacy upload", "category": "Category", "files": [upload]},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("chapter_id", response.data)
 
     @patch("chapters.services.extract_text", return_value="Extracted chapter content")
     @patch("chapters.services.call_gemini_model")

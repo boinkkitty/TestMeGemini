@@ -2,7 +2,7 @@ import json
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from api.utils.ai import (
     AIServiceError,
@@ -174,3 +174,71 @@ class GeminiGenerationTests(SimpleTestCase):
         )
 
         self.assertEqual(result["_model_used"], "gemini-3.6-flash")
+
+
+class OpenAPISchemaTests(TestCase):
+    def test_schema_exposes_only_canonical_versioned_api_paths(self):
+        response = self.client.get("/api/schema/?format=json")
+
+        self.assertEqual(response.status_code, 200)
+        schema = json.loads(response.content)
+        self.assertIn("/api/v1/chapters/", schema["paths"])
+        self.assertIn("/api/v1/chapter-generations/", schema["paths"])
+        self.assertIn("/api/v1/attempts/", schema["paths"])
+        self.assertNotIn("/api/chapters/", schema["paths"])
+
+    def test_interactive_documentation_routes_are_available(self):
+        self.assertEqual(self.client.get("/api/schema/swagger-ui/").status_code, 200)
+        self.assertEqual(self.client.get("/api/schema/redoc/").status_code, 200)
+
+    def test_generation_schema_describes_multipart_request_and_response(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+        operation = schema["paths"]["/api/v1/chapter-generations/"]["post"]
+
+        self.assertEqual(set(operation["requestBody"]["content"]), {"multipart/form-data"})
+        request_schema = operation["requestBody"]["content"]["multipart/form-data"]["schema"]
+        request_schema = schema["components"]["schemas"][request_schema["$ref"].rsplit("/", 1)[-1]]
+        properties = request_schema["properties"]
+        self.assertEqual(set(properties), {"files", "title", "category", "description", "question_count"})
+        response_schema = operation["responses"]["201"]["content"]["application/json"]["schema"]
+        response_schema = schema["components"]["schemas"][response_schema["$ref"].rsplit("/", 1)[-1]]
+        self.assertEqual(set(response_schema["properties"]), {"chapter_id", "question_ids"})
+        self.assertTrue({"400", "401", "403", "429"}.issubset(operation["responses"]))
+
+    def test_auth_schema_matches_the_runtime_response_envelopes(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+
+        for path, method, expected_properties in (
+            ("/api/v1/auth/login/", "post", {"user"}),
+            ("/api/v1/auth/logout/", "post", {"message"}),
+            ("/api/v1/auth/token/refresh/", "post", {"message"}),
+        ):
+            response_schema = schema["paths"][path][method]["responses"]["200"]["content"][
+                "application/json"
+            ]["schema"]
+            response_schema = schema["components"]["schemas"][
+                response_schema["$ref"].rsplit("/", 1)[-1]
+            ]
+            self.assertEqual(set(response_schema["properties"]), expected_properties)
+
+        self.assertTrue(
+            {"400", "403"}.issubset(
+                schema["paths"]["/api/v1/auth/login/"]["post"]["responses"]
+            )
+        )
+        self.assertTrue(
+            {"401", "403"}.issubset(
+                schema["paths"]["/api/v1/auth/token/refresh/"]["post"]["responses"]
+            )
+        )
+        self.assertIn("500", schema["paths"]["/api/v1/auth/logout/"]["post"]["responses"])
+
+    def test_attempt_creation_schema_uses_the_submission_payload(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+        operation = schema["paths"]["/api/v1/attempts/"]["post"]
+        request_schema = operation["requestBody"]["content"]["application/json"]["schema"]
+        request_schema = schema["components"]["schemas"][request_schema["$ref"].rsplit("/", 1)[-1]]
+
+        self.assertEqual(set(request_schema["properties"]), {"chapter_id", "order", "questions"})
+        self.assertEqual(set(request_schema["required"]), {"chapter_id", "order", "questions"})
+        self.assertIn("400", operation["responses"])

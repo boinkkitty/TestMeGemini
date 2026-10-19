@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
     'rest_framework',
+    'drf_spectacular',
     'users',
     'chapters',
     'questions',
@@ -157,6 +158,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'users.authentication.CookieJWTAuthentication',
     ),
@@ -178,6 +180,16 @@ REST_FRAMEWORK = {
         'user_settings': config('DRF_USER_SETTINGS_THROTTLE_RATE', default='60/minute'),
         'chapter_generation': config('DRF_CHAPTER_GENERATION_THROTTLE_RATE', default='5/hour'),
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'TestMeGemini API',
+    'DESCRIPTION': (
+        'Canonical version 1 API. Browser clients authenticate with JWT cookies: '
+        'request /api/v1/auth/csrf/ first, then send X-CSRFToken on unsafe requests.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 SIMPLE_JWT = {

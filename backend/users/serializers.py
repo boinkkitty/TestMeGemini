@@ -98,3 +98,15 @@ class LoginUserSerializer(Serializer):
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Incorrect credentials!")
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    """Document the cookie-auth login response without exposing token values."""
+
+    user = CustomUserSerializer(read_only=True)
+
+
+class MessageResponseSerializer(serializers.Serializer):
+    """Shared response envelope for auth actions that only return a message."""
+
+    message = serializers.CharField(read_only=True)

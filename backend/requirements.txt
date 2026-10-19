@@ -1,5 +1,6 @@
 Django==5.2.4
 djangorestframework==3.16.0
+drf-spectacular==0.28.0
 djangorestframework_simplejwt==5.5.1
 django-cors-headers==4.7.0
 openai==1.99.5

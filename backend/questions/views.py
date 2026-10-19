@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from chapters.models import Chapter
 
 # Retrieve all or limited random questions for a specific chapter
@@ -21,6 +22,7 @@ class ChapterQuestionsAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(tags=["Questions"], responses={200: QuestionSerializer(many=True)})
     def get(self, request, id):
         limit = request.query_params.get('limit')
         get_object_or_404(Chapter.objects.active_for_user(request.user), id=id)

@@ -16,11 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+import api.openapi  # Register drf-spectacular authentication extension.
 
 from chapters.urls import chapter_urlpatterns, generation_urlpatterns
 from users.urls import auth_urlpatterns, user_urlpatterns
 
 urlpatterns = [
+    path('api/schema/', SpectacularAPIView.as_view(urlconf='api.schema_urls'), name='schema'),
+    path(
+        'api/schema/swagger-ui/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui',
+    ),
+    path(
+        'api/schema/redoc/',
+        SpectacularRedocView.as_view(url_name='schema'),
+        name='redoc',
+    ),
     path('admin/', admin.site.urls),
     path('api/v1/users/', include((user_urlpatterns, 'users'), namespace='v1-users')),
     path('api/v1/auth/', include((auth_urlpatterns, 'auth'), namespace='v1-auth')),

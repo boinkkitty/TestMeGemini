@@ -177,7 +177,7 @@ class ChapterAttemptSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_max_score(self, obj):
+    def get_max_score(self, obj) -> int:
         annotated_count = getattr(obj, "question_attempt_count", None)
         if annotated_count is not None:
             return annotated_count
@@ -192,7 +192,7 @@ class ChapterAttemptSerializer(serializers.ModelSerializer):
 class ChapterAttemptDetailSerializer(ChapterAttemptSerializer):
     question_attempts = serializers.SerializerMethodField(read_only=True)
 
-    def get_question_attempts(self, obj):
+    def get_question_attempts(self, obj) -> list[dict]:
         attempts = obj.question_attempts.all()
         return QuestionAttemptSerializer(attempts, many=True).data
 
