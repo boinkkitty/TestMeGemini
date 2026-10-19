@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
-from rest_framework import serializers
-from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import parsers, serializers
+from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer
 from django.conf import settings
 from django.db.models import Count
 from .models import Chapter
@@ -76,6 +76,7 @@ class ChapterGenerationAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
     throttle_scope = "chapter_generation"
+    parser_classes = [parsers.MultiPartParser]
 
     @extend_schema(
         tags=["Chapter generation"],
@@ -104,7 +105,11 @@ class ChapterGenerationAPIView(APIView):
                     "chapter_id": serializers.IntegerField(),
                     "question_ids": serializers.ListField(child=serializers.IntegerField()),
                 },
-            )
+            ),
+            400: OpenApiResponse(description="Invalid upload, metadata, PDF, or generation request."),
+            401: OpenApiResponse(description="Authentication is required."),
+            403: OpenApiResponse(description="A valid CSRF token is required."),
+            429: OpenApiResponse(description="Generation rate limit exceeded."),
         },
     )
     def post(self, request, *args, **kwargs):

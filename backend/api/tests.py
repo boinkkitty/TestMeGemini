@@ -195,7 +195,7 @@ class OpenAPISchemaTests(TestCase):
         schema = json.loads(self.client.get("/api/schema/?format=json").content)
         operation = schema["paths"]["/api/v1/chapter-generations/"]["post"]
 
-        self.assertIn("multipart/form-data", operation["requestBody"]["content"])
+        self.assertEqual(set(operation["requestBody"]["content"]), {"multipart/form-data"})
         request_schema = operation["requestBody"]["content"]["multipart/form-data"]["schema"]
         request_schema = schema["components"]["schemas"][request_schema["$ref"].rsplit("/", 1)[-1]]
         properties = request_schema["properties"]
@@ -203,6 +203,7 @@ class OpenAPISchemaTests(TestCase):
         response_schema = operation["responses"]["201"]["content"]["application/json"]["schema"]
         response_schema = schema["components"]["schemas"][response_schema["$ref"].rsplit("/", 1)[-1]]
         self.assertEqual(set(response_schema["properties"]), {"chapter_id", "question_ids"})
+        self.assertTrue({"400", "401", "403", "429"}.issubset(operation["responses"]))
 
     def test_auth_schema_matches_the_runtime_response_envelopes(self):
         schema = json.loads(self.client.get("/api/schema/?format=json").content)
@@ -219,3 +220,25 @@ class OpenAPISchemaTests(TestCase):
                 response_schema["$ref"].rsplit("/", 1)[-1]
             ]
             self.assertEqual(set(response_schema["properties"]), expected_properties)
+
+        self.assertTrue(
+            {"400", "403"}.issubset(
+                schema["paths"]["/api/v1/auth/login/"]["post"]["responses"]
+            )
+        )
+        self.assertTrue(
+            {"401", "403"}.issubset(
+                schema["paths"]["/api/v1/auth/token/refresh/"]["post"]["responses"]
+            )
+        )
+        self.assertIn("500", schema["paths"]["/api/v1/auth/logout/"]["post"]["responses"])
+
+    def test_attempt_creation_schema_uses_the_submission_payload(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+        operation = schema["paths"]["/api/v1/attempts/"]["post"]
+        request_schema = operation["requestBody"]["content"]["application/json"]["schema"]
+        request_schema = schema["components"]["schemas"][request_schema["$ref"].rsplit("/", 1)[-1]]
+
+        self.assertEqual(set(request_schema["properties"]), {"chapter_id", "order", "questions"})
+        self.assertEqual(set(request_schema["required"]), {"chapter_id", "order", "questions"})
+        self.assertIn("400", operation["responses"])

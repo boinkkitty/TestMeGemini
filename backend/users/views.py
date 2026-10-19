@@ -97,7 +97,11 @@ class LoginView(APIView):
     @extend_schema(
         tags=["Authentication"],
         request=LoginUserSerializer,
-        responses={200: OpenApiResponse(LoginResponseSerializer)},
+        responses={
+            200: OpenApiResponse(LoginResponseSerializer),
+            400: OpenApiResponse(description="Invalid credentials or request payload."),
+            403: OpenApiResponse(description="A valid CSRF token is required."),
+        },
     )
     def post(self, request):
         """
@@ -129,7 +133,15 @@ class LogoutView(APIView):
     authentication_classes = []
     throttle_scope = "auth_logout"
 
-    @extend_schema(tags=["Authentication"], request=None, responses={200: MessageResponseSerializer})
+    @extend_schema(
+        tags=["Authentication"],
+        request=None,
+        responses={
+            200: MessageResponseSerializer,
+            403: OpenApiResponse(description="A valid CSRF token is required."),
+            500: OpenApiResponse(description="Refresh-token invalidation failed."),
+        },
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
@@ -162,7 +174,15 @@ class CookieTokenRefreshView(APIView):
     authentication_classes = []
     throttle_scope = "auth_refresh"
 
-    @extend_schema(tags=["Authentication"], request=None, responses={200: MessageResponseSerializer})
+    @extend_schema(
+        tags=["Authentication"],
+        request=None,
+        responses={
+            200: MessageResponseSerializer,
+            401: OpenApiResponse(description="Refresh token is missing or invalid."),
+            403: OpenApiResponse(description="A valid CSRF token is required."),
+        },
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
