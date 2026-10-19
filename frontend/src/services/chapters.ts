@@ -23,13 +23,8 @@ export type GetChaptersParams = {
  * @returns {Promise<Chapter[]>} List of chapters.
  */
 export async function getUserChapters(params?: GetChaptersParams): Promise<Chapter[]> {
-    try {
-        const res = await api.get(`/api/v1/chapters/`, { params });
-        return res.data;
-    } catch (err) {
-        console.error("Failed to fetch chapters:", err);
-        return [];
-    }
+    const res = await api.get(`/api/v1/chapters/`, { params });
+    return res.data;
 }
 
 /**
@@ -37,11 +32,14 @@ export async function getUserChapters(params?: GetChaptersParams): Promise<Chapt
  * @typedef {Object} CreateChaptersAndQuestionsParams
  * @property {string} title - The chapter title.
  * @property {string} category - The category for the chapter.
+ * @property {number} questionCount - Exact number of questions to generate.
  * @property {File[]} files - Files to upload for the chapter.
  */
 export type CreateChaptersAndQuestionsParams = {
     title: string;
     category: string;
+    description?: string;
+    questionCount: number;
     files: File[];
 };
 
@@ -51,20 +49,17 @@ export type CreateChaptersAndQuestionsParams = {
  * @returns {Promise<Chapter>} The created chapter.
  * @throws {Error} If creation fails.
  */
-export async function createChaptersAndQuestions({ title, category, files }: CreateChaptersAndQuestionsParams): Promise<Chapter> {
+export async function createChaptersAndQuestions({ title, category, description, questionCount, files }: CreateChaptersAndQuestionsParams): Promise<Chapter> {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("category", category);
+    if (description?.trim()) formData.append("description", description.trim());
+    formData.append("question_count", String(questionCount));
     for (let i = 0; i < files.length; i++) {
         formData.append("files", files[i]);
     }
-    try {
-        const res = await api.post("/api/v1/chapter-generations/", formData);
-        return res.data;
-    } catch (err) {
-        console.error("Failed to create chapter and questions:", err);
-        throw err;
-    }
+    const res = await api.post("/api/v1/chapter-generations/", formData);
+    return res.data;
 }
 
 /**

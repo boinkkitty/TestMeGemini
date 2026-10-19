@@ -22,7 +22,7 @@ type Inputs = {
 
 function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
     const router = useRouter();
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm<Inputs>();
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Inputs>();
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -48,8 +48,8 @@ function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
                 password: data.password,
             }, { withCredentials: true });
             router.push("/dashboard");
-        } catch (err: any) {
-            setError(err?.response?.data?.error || "Login failed");
+        } catch (err) {
+            setError(`Login failed: ${handleError(err)}`);
         }
     };
 
@@ -79,41 +79,52 @@ function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
                     {/* Username (signup only) */}
                     {isSignup && (
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                            <label htmlFor="username" className="text-xs font-semibold text-muted-foreground tracking-wide">
                                 Username
                             </label>
                             <input
-                                {...register("username", { required: isSignup })}
+                                id="username"
+                                {...register("username", { required: "Username is required." })}
                                 placeholder="e.g. nathan_cs"
                                 type="text"
+                                aria-invalid={Boolean(errors.username)}
+                                aria-describedby={errors.username ? "username-error" : undefined}
                                 className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                             />
+                            {errors.username && <p id="username-error" className="text-xs text-destructive">{errors.username.message}</p>}
                         </div>
                     )}
 
                     {/* Email */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                        <label htmlFor="email" className="text-xs font-semibold text-muted-foreground tracking-wide">
                             Email
                         </label>
                         <input
-                            {...register("email", { required: true })}
+                            id="email"
+                            {...register("email", { required: "Email is required." })}
                             placeholder="you@university.edu"
                             type="email"
+                            aria-invalid={Boolean(errors.email)}
+                            aria-describedby={errors.email ? "email-error" : undefined}
                             className="w-full px-3 py-2.5 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                         />
+                        {errors.email && <p id="email-error" className="text-xs text-destructive">{errors.email.message}</p>}
                     </div>
 
                     {/* Password */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+                        <label htmlFor="password" className="text-xs font-semibold text-muted-foreground tracking-wide">
                             Password
                         </label>
                         <div className="relative">
                             <input
-                                {...register("password", { required: true })}
+                                id="password"
+                                {...register("password", { required: "Password is required." })}
                                 placeholder="••••••••"
                                 type={showPassword ? "text" : "password"}
+                                aria-invalid={Boolean(errors.password)}
+                                aria-describedby={errors.password ? "password-error" : undefined}
                                 className="w-full px-3 py-2.5 pr-14 bg-background border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                             />
                             <button
@@ -124,6 +135,7 @@ function LoginForm({ formLabel, isSignup, children }: LoginFormProps) {
                                 {showPassword ? "Hide" : "Show"}
                             </button>
                         </div>
+                        {errors.password && <p id="password-error" className="text-xs text-destructive">{errors.password.message}</p>}
                     </div>
 
                     {/* Error */}

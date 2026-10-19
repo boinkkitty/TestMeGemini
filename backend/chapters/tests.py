@@ -23,6 +23,10 @@ def question_payload(text="Question?"):
     }
 
 
+def generated_question_payloads(count):
+    return [question_payload(f"Generated question {index + 1}?") for index in range(count)]
+
+
 class ChapterQuestionAPITests(APITestCase):
     def setUp(self):
         user_model = get_user_model()
@@ -87,6 +91,26 @@ class ChapterQuestionAPITests(APITestCase):
         self.assertEqual(questions.status_code, status.HTTP_200_OK)
         self.assertLessEqual(len(detail_queries), 3)
         self.assertLessEqual(len(question_queries), 4)
+
+    def test_chapter_list_includes_question_count_without_n_plus_one_queries(self):
+        first = self.create_chapter_with_question()
+        second = self.create_chapter_with_question()
+        extra = Question.objects.create(
+            chapter=second,
+            question_text="Another question?",
+            question_type=Question.QuestionType.MCQ,
+        )
+        Choice.objects.create(question=extra, text="Right", is_correct=True)
+        Choice.objects.create(question=extra, text="Wrong", is_correct=False)
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/api/v1/chapters/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        counts = {item["id"]: item["question_count"] for item in response.data}
+        self.assertEqual(counts[first.id], 1)
+        self.assertEqual(counts[second.id], 2)
+        self.assertLessEqual(len(queries), 2)
 
     def test_question_list_filters_deleted_and_foreign_chapters(self):
         deleted = self.create_chapter_with_question(is_deleted=True)
@@ -186,6 +210,115 @@ class ChapterQuestionAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
+        call_gemini.assert_not_called()
+
+    @patch("chapters.services.extract_text", return_value="Extracted chapter content")
+    @patch("chapters.services.call_gemini_model")
+    def test_generation_passes_requested_question_count_to_gemini(
+        self, call_gemini, extract_text_mock
+    ):
+        call_gemini.return_value = {
+            "chapter": {"title": "Generated", "description": "Generated summary"},
+            "questions": generated_question_payloads(20),
+            "_model_used": "gemini-2.5-flash",
+        }
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/v1/chapter-generations/",
+            {
+                "title": "Upload",
+                "category": "Category",
+                "question_count": "20",
+                "files": [upload],
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data["question_ids"]), 20)
+        extract_text_mock.assert_called_once()
+        call_gemini.assert_called_once_with(
+            "Upload", "Extracted chapter content", question_count=20
+        )
+
+    @patch("chapters.services.extract_text", return_value="Extracted chapter content")
+    @patch("chapters.services.call_gemini_model")
+    def test_generation_prefers_supplied_description(self, call_gemini, extract_text_mock):
+        call_gemini.return_value = {
+            "chapter": {"title": "Generated", "description": "Generated summary"},
+            "questions": generated_question_payloads(10),
+            "_model_used": "gemini-2.5-flash",
+        }
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/v1/chapter-generations/",
+            {
+                "title": "Upload",
+                "description": "  My own summary  ",
+                "category": "Category",
+                "question_count": "10",
+                "files": [upload],
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        chapter = Chapter.objects.get(id=response.data["chapter_id"])
+        self.assertEqual(chapter.description, "My own summary")
+        extract_text_mock.assert_called_once()
+
+    @patch("chapters.services.extract_text", return_value="Extracted chapter content")
+    @patch("chapters.services.call_gemini_model")
+    def test_generation_falls_back_to_generated_description(
+        self, call_gemini, extract_text_mock
+    ):
+        call_gemini.return_value = {
+            "chapter": {"title": "Generated", "description": "Generated summary"},
+            "questions": generated_question_payloads(10),
+            "_model_used": "gemini-2.5-flash",
+        }
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/v1/chapter-generations/",
+            {
+                "title": "Upload",
+                "description": "   ",
+                "category": "Category",
+                "question_count": "10",
+                "files": [upload],
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        chapter = Chapter.objects.get(id=response.data["chapter_id"])
+        self.assertEqual(chapter.description, "Generated summary")
+        extract_text_mock.assert_called_once()
+
+    @patch("chapters.services.extract_text")
+    @patch("chapters.services.call_gemini_model")
+    def test_generation_rejects_unsupported_question_count_before_processing(
+        self, call_gemini, extract_text_mock
+    ):
+        upload = SimpleUploadedFile("notes.pdf", b"%PDF-1.4", content_type="application/pdf")
+
+        response = self.client.post(
+            "/api/v1/chapter-generations/",
+            {
+                "title": "Upload",
+                "category": "Category",
+                "question_count": "7",
+                "files": [upload],
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("question_count", response.data)
+        extract_text_mock.assert_not_called()
         call_gemini.assert_not_called()
 
     @override_settings(CHAPTER_QUESTION_LIMIT_MAX=3)

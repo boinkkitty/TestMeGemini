@@ -25,7 +25,10 @@ class ChapterListSerializer(ChapterBaseSerializer):
     """
     Serializer for listing chapters (no nested questions).
     """
-    pass
+    question_count = serializers.IntegerField(read_only=True)
+
+    class Meta(ChapterBaseSerializer.Meta):
+        fields = ChapterBaseSerializer.Meta.fields + ['question_count']
 
 
 class ChapterDetailSerializer(ChapterBaseSerializer):

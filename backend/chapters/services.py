@@ -14,6 +14,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_QUESTION_COUNTS = {10, 20, 30, 50}
+
+
+def parse_question_count(value):
+    """Validate the requested generation size while preserving legacy uploads."""
+    if value in (None, ""):
+        return 10
+    try:
+        question_count = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError({"question_count": "Must be an integer."}) from exc
+    if question_count not in ALLOWED_QUESTION_COUNTS:
+        allowed = ", ".join(str(count) for count in sorted(ALLOWED_QUESTION_COUNTS))
+        raise ValidationError({"question_count": f"Must be one of: {allowed}."})
+    return question_count
+
 
 def create_chapter_and_questions_atomic(*, user, payload, request):
     """
@@ -39,16 +55,28 @@ def create_chapter_and_questions_atomic(*, user, payload, request):
         return result, status.HTTP_201_CREATED
 
 
-def generate_chapter_from_files(*, user, files, title, category, request):
+def generate_chapter_from_files(
+    *, user, files, title, description=None, category, question_count=None, request
+):
     if not title or not category:
         raise ValidationError({"error": "Missing required fields: title and category."})
 
+    question_count = parse_question_count(question_count)
+
     try:
         chapter_content = extract_text(files)
-        data = call_gemini_model(title, chapter_content)
+        data = call_gemini_model(
+            title,
+            chapter_content,
+            question_count=question_count,
+        )
         payload = {
             "title": title,
-            "description": data.get("chapter", {}).get("description") or "",
+            "description": (
+                description.strip()
+                if isinstance(description, str) and description.strip()
+                else data.get("chapter", {}).get("description") or ""
+            ),
             "category": category,
             "questions": data.get("questions", []),
         }

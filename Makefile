@@ -1,6 +1,7 @@
 .PHONY: help \
 	backend-install backend-makemigrations backend-migrate backend-run \
         frontend-install frontend-run-dev frontend-build frontend-run-prod \
+        local-run local-check test-backend test-frontend test-e2e test-all \
         docker-up docker-down docker-build docker-logs \
         clean
 
@@ -14,6 +15,12 @@ help:
 	@echo "  frontend-run-dev  Run Next.js dev server"
 	@echo "  frontend-build    Build Next.js for production"
 	@echo "  frontend-run-prod Run Next.js production server"
+	@echo "  local-run         Run Django and Next.js together (ports 8001 and 3000)"
+	@echo "  local-check       Smoke-test startup, proxying, and clean shutdown"
+	@echo "  test-backend      Run Django tests and migration checks"
+	@echo "  test-frontend     Run frontend lint and production build"
+	@echo "  test-e2e          Run Playwright browser tests"
+	@echo "  test-all          Run all backend, frontend, and browser checks"
 	@echo ""
 	@echo "Docker:"
 	@echo "  docker-up         Build images (if needed) and start all services"
@@ -51,6 +58,26 @@ frontend-build:
 
 frontend-run-prod:
 	cd frontend && npm start
+
+local-run:
+	./scripts/run-local.sh
+
+local-check:
+	./scripts/check-local.sh
+
+test-backend:
+	cd backend && venv/bin/python manage.py test
+	cd backend && venv/bin/python manage.py makemigrations --check --dry-run
+	cd backend && venv/bin/python manage.py check
+
+test-frontend:
+	cd frontend && npm run lint
+	cd frontend && npm run build
+
+test-e2e:
+	cd frontend && npm run test:e2e
+
+test-all: test-backend test-frontend test-e2e
 
 # ── Docker ───────────────────────────────────────────────────────────────────
 

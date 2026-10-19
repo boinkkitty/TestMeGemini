@@ -3,7 +3,9 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+    // Keep browser requests same-origin so CSRF cookies can be set and sent
+    // reliably during local development. Next rewrites `/api/*` to Django.
+    baseURL: "",
     withCredentials: true,
     withXSRFToken: true,
     xsrfCookieName: "csrftoken",
@@ -12,7 +14,7 @@ const api = axios.create({
 
 // Second instance to avoid interceptor loop
 const refreshApi = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+    baseURL: "",
     withCredentials: true,
     withXSRFToken: true,
     xsrfCookieName: "csrftoken",

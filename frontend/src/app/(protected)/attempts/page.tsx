@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ChapterAttempt, QuestionAttempt } from "@/lib/types";
 import { ChapterAttemptCard } from "@/components/attempts/ChapterAttemptCard";
@@ -8,6 +8,7 @@ import { getChapterAttempt, getUserChapterAttempts } from "@/services/attempts";
 import SearchBar from "@/components/ui/SearchBar";
 import DropDownSelection from "@/components/ui/DropDownSelection";
 import { ClockIcon } from "lucide-react";
+import ErrorState from "@/components/ErrorState";
 
 type SortType = "latest" | "oldest" | "highest" | "lowest";
 
@@ -20,6 +21,8 @@ export default function Attempts() {
     const [chapterTitleFilter, setChapterTitleFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
     const [sortBy, setSortBy] = useState<SortType>("latest");
+    const [loadError, setLoadError] = useState(false);
+    const [detailError, setDetailError] = useState(false);
 
     const SORT_OPTIONS = [
         { value: "latest", label: "Latest" },
@@ -57,10 +60,16 @@ export default function Attempts() {
         const attempt = attempts.find((a) => a.id === attemptId);
         if (!attempt) return;
         setIsLoadingDetail(true);
+        setDetailError(false);
         setSelectedAttempt(attempt);
-        await getChapterAttempt(attempt.id).then((data) => {
+        try {
+            const data = await getChapterAttempt(attempt.id);
             setQuestionAttempts(data.question_attempts ?? []);
-        }).finally(() => setIsLoadingDetail(false));
+        } catch {
+            setDetailError(true);
+        } finally {
+            setIsLoadingDetail(false);
+        }
     };
 
     const handleBack = () => {
@@ -68,18 +77,23 @@ export default function Attempts() {
         setQuestionAttempts([]);
     };
 
-    useEffect(() => {
-        getUserChapterAttempts()
-            .then((data) => setAttempts(data))
-            .catch((err) => console.error(err))
-            .finally(() => setIsLoading(false));
+    const loadAttempts = useCallback(async () => {
+        setIsLoading(true);
+        setLoadError(false);
+        try { setAttempts(await getUserChapterAttempts()); }
+        catch { setLoadError(true); }
+        finally { setIsLoading(false); }
     }, []);
 
+    useEffect(() => { void loadAttempts(); }, [loadAttempts]);
+
     if (isLoading) return <LoadingSpinner message="Loading attempts…" />;
+    if (loadError) return <div className="p-8"><ErrorState message="Unable to load attempts." onRetry={() => void loadAttempts()} /></div>;
 
     // Detail view — full-page layout (no p-8 wrapper)
     if (selectedAttempt) {
         if (isLoadingDetail) return <LoadingSpinner message="Loading attempt…" />;
+        if (detailError) return <div className="p-8"><ErrorState message="Unable to load attempt details." onRetry={() => void handleSelectAttempt(selectedAttempt.id)} /></div>;
         if (questionAttempts.length > 0) {
             return (
                 <PaginatedQuestionAttempts

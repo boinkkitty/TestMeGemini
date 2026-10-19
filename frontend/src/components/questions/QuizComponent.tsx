@@ -19,6 +19,8 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
     const [submitted, setSubmitted] = useState(false);
     const [score, setScore] = useState(0);
     const [reviewQuestions, setReviewQuestions] = useState<Question[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(false);
 
     useEffect(() => {
         if (questions.length > 0) {
@@ -28,6 +30,7 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
         setSubmitted(false);
         setScore(0);
         setReviewQuestions([]);
+        setSubmitError(false);
     }, [questions]);
 
     const handleSelect = (questionIdx: number, choiceId: number) => {
@@ -47,6 +50,8 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
     };
 
     const handleSubmit = async () => {
+        setIsSubmitting(true);
+        setSubmitError(false);
         const data: ChapterAttemptInput = {
             chapter_id: chapter!.id,
             order: questions.map(q => q.id),
@@ -55,8 +60,8 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
                 selected_choices: answers[i] || [],
             })),
         };
-        const res = await submitChapterAttempt(data);
-        if (res) {
+        try {
+            const res = await submitChapterAttempt(data);
             const detail = await getChapterAttempt(res.id);
             const reviewByQuestionId = new Map(
                 (detail.question_attempts || []).map((attempt) => [
@@ -69,6 +74,10 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
             );
             setSubmitted(true);
             setScore(res.score);
+        } catch {
+            setSubmitError(true);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -135,6 +144,11 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
 
             {/* Question content */}
             <div className="flex-1 px-8 py-6">
+                {submitError && (
+                    <p role="alert" className="mb-4 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
+                        Unable to submit quiz. Please try again.
+                    </p>
+                )}
                 <QuestionCard
                     question={displayedQuestion}
                     selected={answers[currentIndex] || []}
@@ -170,9 +184,10 @@ function QuizComponent({ chapter, questions, onBack }: QuizComponentProps) {
                 ) : !submitted ? (
                     <button
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                         className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-semibold hover:bg-primary/90 transition-colors"
                     >
-                        Submit
+                        {isSubmitting ? "Submitting…" : "Submit"}
                     </button>
                 ) : <div />}
             </div>

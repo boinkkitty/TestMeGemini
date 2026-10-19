@@ -1,9 +1,12 @@
 # === Node.js (Next.js frontend/) ===
 frontend/node_modules/
 frontend/.next/
+frontend/.next-e2e/
 frontend/.env.local
 frontend/.env*
 frontend/yarn.lock
+frontend/playwright-report/
+frontend/test-results/
 
 
 # === Python/Django (backend/) ===
@@ -42,3 +45,6 @@ Thumbs.db
 
 .idea/
 .vercel
+
+# Local PDF fixtures may contain private course material and must not be committed.
+/test-pdfs/
