@@ -8,11 +8,17 @@ from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_spectacular.utils import OpenApiResponse, OpenApiTypes, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import CustomUserSerializer, LoginUserSerializer, RegisterUserSerializer
+from .serializers import (
+    CustomUserSerializer,
+    LoginResponseSerializer,
+    LoginUserSerializer,
+    MessageResponseSerializer,
+    RegisterUserSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +97,7 @@ class LoginView(APIView):
     @extend_schema(
         tags=["Authentication"],
         request=LoginUserSerializer,
-        responses={200: OpenApiResponse(CustomUserSerializer)},
+        responses={200: OpenApiResponse(LoginResponseSerializer)},
     )
     def post(self, request):
         """
@@ -123,7 +129,7 @@ class LogoutView(APIView):
     authentication_classes = []
     throttle_scope = "auth_logout"
 
-    @extend_schema(tags=["Authentication"], request=None, responses={200: OpenApiTypes.OBJECT})
+    @extend_schema(tags=["Authentication"], request=None, responses={200: MessageResponseSerializer})
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
@@ -156,7 +162,7 @@ class CookieTokenRefreshView(APIView):
     authentication_classes = []
     throttle_scope = "auth_refresh"
 
-    @extend_schema(tags=["Authentication"], request=None, responses={200: OpenApiTypes.OBJECT})
+    @extend_schema(tags=["Authentication"], request=None, responses={200: MessageResponseSerializer})
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 

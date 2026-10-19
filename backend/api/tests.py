@@ -203,3 +203,19 @@ class OpenAPISchemaTests(TestCase):
         response_schema = operation["responses"]["201"]["content"]["application/json"]["schema"]
         response_schema = schema["components"]["schemas"][response_schema["$ref"].rsplit("/", 1)[-1]]
         self.assertEqual(set(response_schema["properties"]), {"chapter_id", "question_ids"})
+
+    def test_auth_schema_matches_the_runtime_response_envelopes(self):
+        schema = json.loads(self.client.get("/api/schema/?format=json").content)
+
+        for path, method, expected_properties in (
+            ("/api/v1/auth/login/", "post", {"user"}),
+            ("/api/v1/auth/logout/", "post", {"message"}),
+            ("/api/v1/auth/token/refresh/", "post", {"message"}),
+        ):
+            response_schema = schema["paths"][path][method]["responses"]["200"]["content"][
+                "application/json"
+            ]["schema"]
+            response_schema = schema["components"]["schemas"][
+                response_schema["$ref"].rsplit("/", 1)[-1]
+            ]
+            self.assertEqual(set(response_schema["properties"]), expected_properties)

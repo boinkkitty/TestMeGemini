@@ -25,20 +25,10 @@ class ChapterListCreateAPIView(ListCreateAPIView):
     """
     API endpoint for listing and creating chapters for the authenticated user.
     GET: Returns a list of chapters (optionally limited).
-    POST: Creates a new chapter with uploaded files and category, using AI to generate questions.
+    POST: Creates a chapter and nested questions from JSON.
     """
     permission_classes = [IsAuthenticated]
     max_limit = settings.CHAPTER_LIST_LIMIT_MAX
-
-    def get_throttles(self):
-        # Preserve the legacy upload route without letting it bypass the
-        # stricter generation quota used by the dedicated endpoint.
-        self.throttle_scope = (
-            "chapter_generation"
-            if self.request.method == "POST" and self.request.FILES.getlist("files")
-            else None
-        )
-        return super().get_throttles()
 
     def get_queryset(self):
         """Return chapters belonging to current user with optional limit."""
@@ -73,7 +63,7 @@ class ChapterListCreateAPIView(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         """
-        Create a chapter from nested JSON, or route legacy file uploads through generation.
+        Create a chapter from nested JSON.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -90,6 +80,11 @@ class ChapterGenerationAPIView(APIView):
     @extend_schema(
         tags=["Chapter generation"],
         summary="Generate a chapter quiz from PDF uploads",
+        description=(
+            "Synchronous operation: validates PDFs, extracts text, calls Gemini, "
+            "and persists the chapter before returning 201. A future async design "
+            "may turn this collection into a generation-job resource."
+        ),
         request=inline_serializer(
             name="ChapterGenerationRequest",
             fields={
