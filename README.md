@@ -32,6 +32,9 @@ Turn your notes into interactive quizzes and track your learning progress.
 
 ## Screenshots
 
+The following captures show the current local demo flow, from sign-in through
+quiz completion and answer review.
+
 **Login**
 
 ![Login](docs/login.png)
