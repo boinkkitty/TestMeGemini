@@ -8,6 +8,7 @@ from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import OpenApiResponse, OpenApiTypes, extend_schema
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -87,6 +88,11 @@ class LoginView(APIView):
     authentication_classes = []
     throttle_scope = "auth_login"
 
+    @extend_schema(
+        tags=["Authentication"],
+        request=LoginUserSerializer,
+        responses={200: OpenApiResponse(CustomUserSerializer)},
+    )
     def post(self, request):
         """
         Handle user login, validate credentials, and set JWT cookies.
@@ -117,6 +123,7 @@ class LogoutView(APIView):
     authentication_classes = []
     throttle_scope = "auth_logout"
 
+    @extend_schema(tags=["Authentication"], request=None, responses={200: OpenApiTypes.OBJECT})
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
@@ -149,6 +156,7 @@ class CookieTokenRefreshView(APIView):
     authentication_classes = []
     throttle_scope = "auth_refresh"
 
+    @extend_schema(tags=["Authentication"], request=None, responses={200: OpenApiTypes.OBJECT})
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
 
@@ -170,5 +178,6 @@ class CsrfCookieView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(tags=["Authentication"], responses={204: None})
     def get(self, request):
         return Response(status=status.HTTP_204_NO_CONTENT)

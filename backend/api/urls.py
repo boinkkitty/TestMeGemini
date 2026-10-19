@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+import api.openapi  # Register drf-spectacular authentication extension.
+
 from chapters.urls import chapter_urlpatterns, generation_urlpatterns
 from users.urls import auth_urlpatterns, user_urlpatterns
 
